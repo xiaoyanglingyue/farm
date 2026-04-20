@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>完善个人信息 - 智能农政系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2d5a27;
+            --primary-light: #4a7c42;
+            --primary-dark: #1e3d1a;
+            --error-color: #ff4d4f;
+            --success-color: #52c41a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0f7ee 0%, #e4efe1 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .setup-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 45px;
+            box-shadow: 0 10px 40px rgba(45, 90, 39, 0.15);
+            width: 100%;
+            max-width: 440px;
+            text-align: center;
+        }
+
+        .setup-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: white;
+            font-size: 28px;
+        }
+
+        h1 {
+            font-size: 22px;
+            color: var(--primary-dark);
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+            text-align: left;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e8e8e8;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s;
+            background: #fafafa;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(45, 90, 39, 0.08);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(45, 90, 39, 0.35);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            color: var(--error-color);
+            font-size: 13px;
+            margin-top: 6px;
+            display: none;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .tips {
+            margin-top: 20px;
+            padding: 12px;
+            background: #f6ffed;
+            border-radius: 8px;
+            border: 1px solid #b7eb8f;
+            font-size: 13px;
+            color: #595959;
+            text-align: left;
+            line-height: 1.6;
+        }
+
+        .tips i {
+            color: var(--success-color);
+            margin-right: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="setup-container">
+        <div class="setup-icon">
+            <i class="fas fa-user-edit"></i>
+        </div>
+        <h1>完善个人信息</h1>
+        <p class="subtitle">首次登录请设置您的用户名和密码</p>
+
+        <form id="setupForm">
+            <div class="form-group">
+                <label class="form-label" for="username">
+                    <i class="fas fa-user" style="color: var(--primary-color);"></i> 用户名
+                </label>
+                <input type="text" id="username" class="form-input" placeholder="请输入用户名（至少2位）" required minlength="2">
+                <div class="error-message" id="usernameError">用户名至少需要2个字符</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password">
+                    <i class="fas fa-lock" style="color: var(--primary-color);"></i> 登录密码
+                </label>
+                <input type="password" id="password" class="form-input" placeholder="请设置密码（至少6位）" required minlength="6">
+                <div class="error-message" id="passwordError">密码至少需要6个字符</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="confirmPassword">
+                    <i class="fas fa-check-circle" style="color: var(--primary-color);"></i> 确认密码
+                </label>
+                <input type="password" id="confirmPassword" class="form-input" placeholder="请再次输入密码" required>
+                <div class="error-message" id="confirmError">两次输入的密码不一致</div>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">
+                <i class="fas fa-check"></i> 完成设置
+            </button>
+        </form>
+
+        <div class="tips">
+            <i class="fas fa-lightbulb"></i>
+            <strong>提示：</strong>设置完成后将自动跳转到系统首页。用户名可用于后续登录，请妥善保管密码。
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('setupForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const confirmInput = document.getElementById('confirmPassword');
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // 验证
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value;
+            const confirm = confirmInput.value;
+
+            if (username.length < 2) {
+                showError('usernameError', '用户名至少需要2个字符');
+                return;
+            }
+
+            if (password.length < 6) {
+                showError('passwordError', '密码至少需要6个字符');
+                return;
+            }
+
+            if (password !== confirm) {
+                showError('confirmError', '两次输入的密码不一致');
+                return;
+            }
+
+            // 提交
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="loading"></span>保存中...';
+
+            try {
+                const response = await fetch('/api/user/setup', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        username: username,
+                        password: password,
+                        confirm_password: confirm
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.code === 200) {
+                    alert('设置成功！即将跳转到首页');
+                    window.location.href = result.next_url || '/home';
+                } else {
+                    throw new Error(result.error || '设置失败');
+                }
+            } catch (error) {
+                alert(error.message);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-check"></i> 完成设置';
+            }
+        });
+
+        function showError(id, msg) {
+            const el = document.getElementById(id);
+            el.textContent = msg;
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 3000);
+        }
+    </script>
+</body>
+</html>

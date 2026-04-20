@@ -1,0 +1,244 @@
+2026-04-18 08:03:33,825 [INFO] app.py:208 - 系统启动成功
+2026-04-18 08:23:05,766 [INFO] app.py:208 - 系统启动成功
+2026-04-18 08:28:07,391 [INFO] app.py:208 - 系统启动成功
+2026-04-18 08:34:41,180 [INFO] app.py:208 - 系统启动成功
+2026-04-18 08:37:03,781 [INFO] app.py:208 - 系统启动成功
+2026-04-18 08:44:55,053 [INFO] app.py:208 - 系统启动成功
+2026-04-18 08:49:01,635 [INFO] app.py:208 - 系统启动成功
+2026-04-18 08:49:25,697 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 08:49:32,453 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 08:49:53,710 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 08:50:52,694 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 08:51:40,412 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 08:57:28,867 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 08:58:49,085 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:02:11,845 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:02:46,955 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:03:49,455 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:05:34,650 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:05:42,033 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:05:59,379 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:08:44,836 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:09:28,981 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:10:59,938 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:13:00,461 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:16:00,045 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:18:01,271 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:18:51,793 [INFO] app.py:208 - 系统启动成功
+2026-04-18 09:18:58,931 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:19:52,270 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:23:59,171 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:28:25,422 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:28:41,460 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:29:28,432 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:30:50,929 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:35:50,935 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:37:09,900 [INFO] app.py:208 - 系统启动成功
+2026-04-18 09:38:17,993 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:40:53,319 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:40:58,496 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:43:18,445 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:45:38,744 [INFO] app.py:208 - 系统启动成功
+2026-04-18 09:45:44,674 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:48:16,444 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:48:26,796 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:50:44,963 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:53:09,324 [INFO] app.py:208 - 系统启动成功
+2026-04-18 09:53:16,397 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:57:14,450 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:58:32,437 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:58:38,319 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:58:44,095 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:58:56,886 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:59:44,892 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 09:59:54,804 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 10:00:09,886 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 10:01:04,828 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 10:04:45,416 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 10:05:05,537 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 10:25:47,398 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 10:28:24,363 [INFO] app.py:208 - 系统启动成功
+2026-04-18 10:28:32,783 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 10:29:27,421 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 10:33:33,554 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 10:38:33,480 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 10:42:38,430 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 10:46:10,086 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 10:47:06,805 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 10:47:09,645 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 10:57:41,568 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 12:02:34,659 [INFO] app.py:209 - 系统启动成功
+2026-04-18 12:04:07,810 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 12:04:16,179 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 12:04:21,708 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 12:04:24,678 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 12:04:28,559 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 12:05:20,565 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 12:05:25,688 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 12:05:30,405 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 12:07:46,232 [INFO] _client.py:1025 - HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-18 12:08:01,090 [INFO] _client.py:1025 - HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-18 12:10:31,089 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 12:11:22,005 [INFO] app.py:209 - 系统启动成功
+2026-04-18 12:11:32,314 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 12:14:31,182 [INFO] _client.py:1025 - HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-18 12:15:56,417 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 12:16:17,633 [INFO] app.py:209 - 系统启动成功
+2026-04-18 12:16:23,917 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 12:17:41,353 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 12:20:47,147 [INFO] _client.py:1025 - HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-18 12:21:24,383 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 12:30:25,279 [INFO] app.py:209 - 系统启动成功
+2026-04-18 12:30:36,174 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 12:33:58,559 [INFO] app.py:209 - 系统启动成功
+2026-04-18 12:34:04,579 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 12:36:10,319 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 12:36:15,164 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 12:36:18,649 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 12:39:35,804 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 12:41:15,937 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 12:41:19,217 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 12:43:23,190 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 12:46:59,450 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 12:47:04,113 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 12:54:05,321 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 13:00:30,608 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 13:00:34,163 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 13:03:16,550 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 13:03:24,676 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 13:06:23,962 [INFO] app.py:209 - 系统启动成功
+2026-04-18 13:06:30,525 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 13:06:34,081 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 13:07:19,531 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 13:16:04,175 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 13:16:09,078 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 13:48:07,939 [INFO] app.py:209 - 系统启动成功
+2026-04-18 13:48:24,583 [ERROR] _send_code.py:60 - 邮件发送失败 | 目标: 264917423@qq.com | 错误: (550, b'The "From" header is missing or invalid. Please follow RFC5322, RFC2047, RFC822 standard protocol. https://service.mail.qq.com/detail/124/995.')
+2026-04-18 13:52:09,864 [INFO] app.py:209 - 系统启动成功
+2026-04-18 13:52:25,954 [ERROR] _send_code.py:60 - 邮件发送失败 | 目标: 264917423@qq.com | 错误: (550, b'The "From" header is missing or invalid. Please follow RFC5322, RFC2047, RFC822 standard protocol. https://service.mail.qq.com/detail/124/995.')
+2026-04-18 13:57:27,153 [INFO] app.py:209 - 系统启动成功
+2026-04-18 13:57:38,835 [INFO] _send_code.py:60 - 验证码发送成功 | 目标: 264917423@qq.com | 时间: 2026-04-18 13:57:38
+2026-04-18 14:06:10,746 [INFO] app.py:209 - 系统启动成功
+2026-04-18 14:06:25,477 [INFO] _send_code.py:60 - 验证码发送成功 | 目标: 264917423@qq.com | 时间: 2026-04-18 14:06:25
+2026-04-18 14:07:35,899 [INFO] _send_code.py:60 - 验证码发送成功 | 目标: 264917423@qq.com | 时间: 2026-04-18 14:07:35
+2026-04-18 14:18:36,870 [INFO] app.py:209 - 系统启动成功
+2026-04-18 14:18:52,174 [INFO] _send_code.py:60 - 验证码发送成功 | 目标: 264917423@qq.com | 时间: 2026-04-18 14:18:52
+2026-04-18 14:23:16,937 [INFO] app.py:209 - 系统启动成功
+2026-04-18 14:23:27,860 [INFO] _send_code.py:60 - 验证码发送成功 | 目标: 264917423@qq.com | 时间: 2026-04-18 14:23:27
+2026-04-18 14:24:01,948 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 14:29:02,268 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 14:44:01,228 [INFO] app.py:220 - 系统启动成功
+2026-04-18 14:55:21,512 [INFO] app.py:221 - 系统启动成功
+2026-04-18 15:00:18,576 [INFO] app.py:223 - 系统启动成功
+2026-04-18 15:08:44,664 [INFO] app.py:223 - 系统启动成功
+2026-04-18 15:15:48,948 [INFO] app.py:223 - 系统启动成功
+2026-04-18 15:15:58,036 [ERROR] _send_code.py:62 - 邮件发送失败 | 目标: 264917423@qq.com | 错误: (550, b'The "From" header is missing or invalid. Please follow RFC5322, RFC2047, RFC822 standard protocol. https://service.mail.qq.com/detail/124/995.')
+2026-04-18 15:19:06,169 [INFO] app.py:223 - 系统启动成功
+2026-04-18 15:19:13,509 [INFO] _send_code.py:56 - 验证码发送成功 | 目标: 264917423@qq.com | 时间: 2026-04-18 15:19:13
+2026-04-18 15:21:33,332 [INFO] _send_code.py:56 - 验证码发送成功 | 目标: 264917423@qq.com | 时间: 2026-04-18 15:21:33
+2026-04-18 15:24:53,410 [INFO] app.py:224 - 系统启动成功
+2026-04-18 15:25:02,856 [INFO] _send_code.py:56 - 验证码发送成功 | 目标: 264917423@qq.com | 时间: 2026-04-18 15:25:02
+2026-04-18 15:25:13,126 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 15:26:07,465 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 15:26:09,979 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 15:26:12,424 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 15:26:16,919 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 15:26:26,935 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 15:27:12,945 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 15:30:21,424 [INFO] app.py:224 - 系统启动成功
+2026-04-18 15:31:16,054 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 15:31:44,167 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 15:33:18,615 [INFO] app.py:224 - 系统启动成功
+2026-04-18 15:43:33,188 [INFO] app.py:224 - 系统启动成功
+2026-04-18 15:47:29,660 [INFO] app.py:224 - 系统启动成功
+2026-04-18 15:50:24,463 [INFO] app.py:224 - 系统启动成功
+2026-04-18 15:55:46,295 [INFO] app.py:224 - 系统启动成功
+2026-04-18 16:04:05,478 [INFO] app.py:224 - 系统启动成功
+2026-04-18 16:17:58,699 [INFO] app.py:224 - 系统启动成功
+2026-04-18 16:25:03,867 [INFO] app.py:224 - 系统启动成功
+2026-04-18 16:27:43,810 [INFO] app.py:224 - 系统启动成功
+2026-04-18 16:35:43,358 [INFO] app.py:224 - 系统启动成功
+2026-04-18 16:36:02,272 [INFO] _send_code.py:56 - 验证码发送成功 | 目标: 264917423@qq.com | 时间: 2026-04-18 16:36:02
+2026-04-18 16:36:09,402 [INFO] _send_code.py:56 - 验证码发送成功 | 目标: 264917423@qq.com | 时间: 2026-04-18 16:36:09
+2026-04-18 16:39:49,605 [INFO] app.py:224 - 系统启动成功
+2026-04-18 16:39:56,431 [INFO] _send_code.py:56 - 验证码发送成功 | 目标: 264917423@qq.com | 时间: 2026-04-18 16:39:56
+2026-04-18 16:40:37,001 [INFO] app.py:224 - 系统启动成功
+2026-04-18 16:40:50,838 [INFO] _send_code.py:56 - 验证码发送成功 | 目标: 264917423@qq.com | 时间: 2026-04-18 16:40:50
+2026-04-18 16:42:36,014 [INFO] app.py:224 - 系统启动成功
+2026-04-18 16:43:06,646 [INFO] _send_code.py:56 - 验证码发送成功 | 目标: 264917423@qq.com | 时间: 2026-04-18 16:43:06
+2026-04-18 16:44:30,787 [INFO] app.py:224 - 系统启动成功
+2026-04-18 16:44:59,975 [INFO] app.py:224 - 系统启动成功
+2026-04-18 16:45:07,142 [INFO] _send_code.py:56 - 验证码发送成功 | 目标: 264917423@qq.com | 时间: 2026-04-18 16:45:07
+2026-04-18 16:45:42,905 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 16:45:47,683 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 16:49:26,405 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 16:50:43,443 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 16:51:49,654 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 16:53:05,697 [INFO] app.py:224 - 系统启动成功
+2026-04-18 16:53:24,797 [INFO] _send_code.py:56 - 验证码发送成功 | 目标: 264917423@qq.com | 时间: 2026-04-18 16:53:24
+2026-04-18 16:54:07,030 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 16:54:21,295 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 16:54:31,703 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 16:54:50,107 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 16:55:20,807 [ERROR] base_events.py:1785 - Exception in callback _ProactorBasePipeTransport._call_connection_lost(None)
+handle: <Handle _ProactorBasePipeTransport._call_connection_lost(None)>
+Traceback (most recent call last):
+  File "D:\Anaconda3\envs\pytorch\Lib\asyncio\events.py", line 84, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Anaconda3\envs\pytorch\Lib\asyncio\proactor_events.py", line 165, in _call_connection_lost
+    self._sock.shutdown(socket.SHUT_RDWR)
+ConnectionResetError: [WinError 10054] 远程主机强迫关闭了一个现有的连接。
+2026-04-18 17:02:59,249 [INFO] app.py:224 - 系统启动成功
+2026-04-18 17:03:07,707 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 17:08:08,266 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 17:10:15,209 [INFO] app.py:224 - 系统启动成功
+2026-04-18 17:10:38,779 [INFO] _send_code.py:56 - 验证码发送成功 | 目标: 264917423@qq.com | 时间: 2026-04-18 17:10:38
+2026-04-18 17:11:32,744 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 17:11:55,308 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 17:12:25,800 [ERROR] base_events.py:1785 - Exception in callback _ProactorBasePipeTransport._call_connection_lost(None)
+handle: <Handle _ProactorBasePipeTransport._call_connection_lost(None)>
+Traceback (most recent call last):
+  File "D:\Anaconda3\envs\pytorch\Lib\asyncio\events.py", line 84, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Anaconda3\envs\pytorch\Lib\asyncio\proactor_events.py", line 165, in _call_connection_lost
+    self._sock.shutdown(socket.SHUT_RDWR)
+ConnectionResetError: [WinError 10054] 远程主机强迫关闭了一个现有的连接。
+2026-04-18 17:23:17,553 [INFO] app.py:227 - 系统启动成功
+2026-04-18 17:28:57,004 [INFO] app.py:227 - 系统启动成功
+2026-04-18 17:29:46,089 [INFO] _send_code.py:56 - 验证码发送成功 | 目标: 264917423@qq.com | 时间: 2026-04-18 17:29:46
+2026-04-18 17:33:09,573 [INFO] app.py:227 - 系统启动成功
+2026-04-18 17:33:19,329 [INFO] _send_code.py:56 - 验证码发送成功 | 目标: 264917423@qq.com | 时间: 2026-04-18 17:33:19
+2026-04-18 17:36:26,888 [INFO] app.py:227 - 系统启动成功
+2026-04-18 17:36:33,425 [INFO] _send_code.py:56 - 验证码发送成功 | 目标: 264917423@qq.com | 时间: 2026-04-18 17:36:33
+2026-04-18 17:36:53,653 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 17:37:36,773 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 17:37:46,452 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 17:38:14,710 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 17:39:12,025 [INFO] app.py:227 - 系统启动成功
+2026-04-18 17:39:26,834 [INFO] _send_code.py:56 - 验证码发送成功 | 目标: 264917423@qq.com | 时间: 2026-04-18 17:39:26
+2026-04-18 17:40:11,897 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 17:40:31,239 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 17:40:38,157 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 17:42:04,161 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 17:42:10,091 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 17:42:13,178 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 17:42:16,627 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 17:44:41,822 [INFO] _client.py:1025 - HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-18 17:45:06,049 [INFO] _client.py:1025 - HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-18 17:45:34,231 [INFO] _client.py:1025 - HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-18 17:45:39,892 [INFO] _client.py:1025 - HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-18 17:47:04,973 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 17:47:11,017 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 17:47:17,003 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 17:49:21,126 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 17:54:06,673 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 17:54:23,159 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 17:55:00,769 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 17:58:20,112 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 18:00:08,490 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 18:01:14,448 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 18:01:44,907 [INFO] _client.py:1025 - HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-18 18:01:48,653 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 18:01:49,248 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 18:01:49,861 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-18 18:03:18,523 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"

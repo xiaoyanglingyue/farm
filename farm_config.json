@@ -1,0 +1,13 @@
+{
+  "farmName": "增城农场",
+  "amapKey": "2a8fd060a3850096a26cdca6fa7e3905",
+  "centerLng": 113.8291,
+  "centerLat": 23.3242,
+  "zoom": 12,
+  "enableAlert": true,
+  "enableDailyReport": false,
+  "dailyReportTime": "18:00",
+  "enableOfflineAlert": true,
+  "mapAddress": "",
+  "offlineAlertThreshold": 5
+}

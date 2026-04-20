@@ -1,0 +1,1106 @@
+<!-- login.html - 完整修复版 -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能农政系统 - 登录</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2d5a27;
+            --primary-light: #4a7c42;
+            --primary-dark: #1e3d1a;
+            --accent-color: #52c41a;
+            --bg-color: #f0f2f5;
+            --text-color: #333;
+            --border-color: #e8e8e8;
+            --error-color: #ff4d4f;
+            --success-color: #52c41a;
+            --admin-color: #ff6b6b;
+            --farmer-color: #52c41a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0f7ee 0%, #e4efe1 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 60px 20px;
+            position: relative;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .bg-decoration {
+            position: absolute;
+            opacity: 0.05;
+            color: var(--primary-color);
+            z-index: 0;
+        }
+
+        .bg-decoration.leaf1 {
+            top: 10%;
+            left: 10%;
+            font-size: 200px;
+            transform: rotate(-15deg);
+        }
+
+        .bg-decoration.leaf2 {
+            bottom: 10%;
+            right: 10%;
+            font-size: 150px;
+            transform: rotate(15deg);
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            padding: 40px 50px 50px;
+            box-shadow: 0 10px 40px rgba(45, 90, 39, 0.15);
+            width: 100%;
+            max-width: 480px;
+            border: 1px solid rgba(45, 90, 39, 0.1);
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            color: white;
+            font-size: 32px;
+            box-shadow: 0 4px 15px rgba(45, 90, 39, 0.3);
+            transition: all 0.3s;
+        }
+
+        .logo-icon.admin {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .logo-icon.farmer {
+            background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);
+            box-shadow: 0 4px 15px rgba(82, 196, 26, 0.3);
+        }
+
+        .login-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 8px;
+        }
+
+        .login-subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .role-hint {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 8px;
+            transition: all 0.3s;
+        }
+
+        .role-hint.admin {
+            background: #fff1f0;
+            color: #cf1322;
+            border: 1px solid #ffa39e;
+        }
+
+        .role-hint.farmer {
+            background: #f6ffed;
+            color: #389e0d;
+            border: 1px solid #b7eb8f;
+        }
+
+        .role-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .role-option {
+            padding: 20px;
+            border: 2px solid #e8e8e8;
+            background: white;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .role-option:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(45, 90, 39, 0.1);
+        }
+
+        .role-option.active {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background: linear-gradient(135deg, #f6ffed 0%, #ffffff 100%);
+            box-shadow: 0 4px 16px rgba(82, 196, 26, 0.15);
+        }
+
+        .role-option.active.admin {
+            border-color: #ff6b6b;
+            color: #cf1322;
+            background: linear-gradient(135deg, #fff1f0 0%, #ffffff 100%);
+            box-shadow: 0 4px 16px rgba(255, 107, 107, 0.15);
+        }
+
+        .role-option.active.farmer {
+            border-color: #52c41a;
+            color: #389e0d;
+            background: linear-gradient(135deg, #f6ffed 0%, #ffffff 100%);
+            box-shadow: 0 4px 16px rgba(82, 196, 26, 0.15);
+        }
+
+        .role-option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: transparent;
+            transition: all 0.3s;
+        }
+
+        .role-option.active::before {
+            background: var(--primary-color);
+        }
+
+        .role-option.active.admin::before {
+            background: #ff6b6b;
+        }
+
+        .role-option.active.farmer::before {
+            background: #52c41a;
+        }
+
+        .role-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-color);
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .form-label i {
+            color: var(--primary-color);
+            width: 16px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e8e8e8;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: #fafafa;
+            font-family: inherit;
+        }
+
+        .form-input:hover {
+            border-color: #d0d0d0;
+            background: #fff;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(45, 90, 39, 0.08);
+        }
+
+        .form-input.admin:focus {
+            border-color: #ff6b6b;
+            box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.08);
+        }
+
+        .form-input.farmer:focus {
+            border-color: #52c41a;
+            box-shadow: 0 0 0 4px rgba(82, 196, 26, 0.08);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(45, 90, 39, 0.35);
+        }
+
+        .login-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .login-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to right,
+                transparent 0%,
+                rgba(255,255,255,0.2) 50%,
+                transparent 100%
+            );
+            transform: rotate(30deg);
+            transition: all 0.6s;
+            opacity: 0;
+        }
+
+        .login-btn:hover::after {
+            opacity: 1;
+            left: 100%;
+        }
+
+        .back-btn {
+            width: 100%;
+            padding: 10px;
+            background: transparent;
+            color: #666;
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .back-btn:hover {
+            background: #f5f5f5;
+            border-color: #d0d0d0;
+            color: var(--primary-color);
+        }
+
+        .back-btn.admin:hover {
+            color: #ff6b6b;
+            border-color: #ff6b6b;
+            background: #fff1f0;
+        }
+
+        .back-btn.farmer:hover {
+            color: #52c41a;
+            border-color: #52c41a;
+            background: #f6ffed;
+        }
+
+        .error-message {
+            color: var(--error-color);
+            font-size: 13px;
+            margin-top: 6px;
+            display: none;
+            padding-left: 4px;
+        }
+
+        .success-message {
+            color: var(--success-color);
+            font-size: 13px;
+            margin-top: 6px;
+            display: none;
+            padding-left: 4px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .system-info {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #999;
+            font-size: 12px;
+        }
+
+        .system-info span {
+            margin: 0 10px;
+        }
+
+        .role-info-card {
+            background: #f6ffed;
+            border-left: 4px solid #52c41a;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #595959;
+            line-height: 1.6;
+            display: none;
+            border: 1px solid #e8f5e9;
+            border-left-width: 4px;
+        }
+
+        .role-info-card.admin {
+            background: #fff1f0;
+            border-color: #ffccc7;
+            border-left-color: #ff6b6b;
+        }
+
+        .role-info-card.active {
+            display: block;
+        }
+
+        .login-method-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 25px;
+            background: #f0f0f0;
+            padding: 4px;
+            border-radius: 12px;
+            position: relative;
+        }
+
+        .method-tab {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            background: transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #888;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .method-tab:hover {
+            color: var(--primary-color);
+        }
+
+        .method-tab.active {
+            background: white;
+            color: var(--primary-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            font-weight: 700;
+        }
+
+        .method-tab.active.admin {
+            color: #cf1322;
+            background: #fff1f0;
+        }
+
+        .method-tab.active.farmer {
+            color: #389e0d;
+            background: #f6ffed;
+        }
+
+        .method-tab i {
+            font-size: 14px;
+        }
+
+        .verification-group {
+            display: flex;
+            gap: 12px;
+            align-items: stretch;
+        }
+
+        .verification-input {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .send-code-btn {
+            padding: 0 20px;
+            height: 46px;
+            background: white;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            min-width: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .send-code-btn.admin {
+            color: #ff6b6b;
+            border-color: #ff6b6b;
+        }
+
+        .send-code-btn.admin:hover:not(:disabled) {
+            background: #ff6b6b;
+            color: white;
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.2);
+        }
+
+        .send-code-btn.farmer {
+            color: #52c41a;
+            border-color: #52c41a;
+        }
+
+        .send-code-btn.farmer:hover:not(:disabled) {
+            background: #52c41a;
+            color: white;
+            box-shadow: 0 4px 12px rgba(82, 196, 26, 0.2);
+        }
+
+        .send-code-btn:disabled {
+            background: #f5f5f5;
+            border-color: #d9d9d9;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        /* 新增：记住我 + 忘记密码 区域 */
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .remember-me input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        .forgot-password {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            transition: opacity 0.3s;
+        }
+
+        .forgot-password:hover {
+            opacity: 0.8;
+            text-decoration: underline;
+        }
+
+        /* 新增：底部切换登录/注册 */
+        .auth-switch {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .auth-switch a {
+            color: var(--primary-color);
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .auth-switch a:hover {
+            text-decoration: underline;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 30px 20px;
+            }
+
+            .role-selector {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <i class="fas fa-leaf bg-decoration leaf1"></i>
+    <i class="fas fa-seedling bg-decoration leaf2"></i>
+
+    <div class="login-container">
+        <div class="login-header">
+            <div class="logo-icon" id="logoIcon">
+                <i class="fas fa-leaf"></i>
+            </div>
+            <h1 class="login-title" id="pageTitle">智能农政系统</h1>
+            <p class="login-subtitle" id="loginSubtitle">请选择登录角色</p>
+            <span class="role-hint" id="roleHint" style="display: none;"></span>
+        </div>
+
+        <!-- 角色选择器 -->
+        <div class="role-selector" id="roleSelector">
+            <button type="button" class="role-option" id="adminBtn" onclick="selectRole('admin')">
+                <i class="fas fa-user-shield role-icon"></i>
+                <span>管理员登录</span>
+            </button>
+            <button type="button" class="role-option" id="farmerBtn" onclick="selectRole('farmer')">
+                <i class="fas fa-tractor role-icon"></i>
+                <span>农户登录</span>
+            </button>
+        </div>
+
+        <!-- 角色说明 -->
+        <div class="role-info-card" id="adminInfo">
+            <i class="fas fa-info-circle"></i> <strong>管理员身份</strong>：拥有设备管理、数据审核、评论管理、用户权限配置等全部系统权限
+        </div>
+        <div class="role-info-card" id="farmerInfo">
+            <i class="fas fa-info-circle"></i> <strong>农户身份</strong>：可使用病虫害识别、查看预警、发布经验交流、管理个人地块等生产功能
+        </div>
+
+        <!-- 登录方式切换标签 -->
+        <div class="login-method-tabs" id="methodTabs" style="display: none;">
+            <button type="button" class="method-tab active" id="tabCode" onclick="switchLoginMethod('code')">
+                <i class="fas fa-shield-alt"></i> 验证码登录
+            </button>
+            <button type="button" class="method-tab" id="tabPassword" onclick="switchLoginMethod('password')">
+                <i class="fas fa-lock"></i> 密码登录
+            </button>
+        </div>
+
+        <form id="loginForm" style="display: none;">
+            <button type="button" class="back-btn" id="backBtn" onclick="goBack()">
+                <i class="fas fa-arrow-left"></i> 重新选择角色
+            </button>
+
+            <div class="form-group">
+                <label class="form-label" for="email">
+                    <i class="fas fa-envelope" id="emailIcon"></i>
+                    <span id="emailLabel">邮箱</span>
+                </label>
+                <input type="text" id="email" class="form-input" placeholder="请输入邮箱地址" required>
+                <div class="error-message" id="emailError">请输入有效的邮箱地址</div>
+            </div>
+
+            <!-- 验证码登录区域 -->
+            <div id="codeLoginSection">
+                <div class="form-group">
+                    <label class="form-label" for="verificationCode">
+                        <i class="fas fa-shield-alt" id="codeIcon"></i>
+                        <span>验证码</span>
+                    </label>
+                    <div class="verification-group">
+                        <div class="verification-input">
+                            <input
+                                type="text"
+                                id="verificationCode"
+                                class="form-input"
+                                placeholder="请输入6位验证码"
+                                maxlength="6"
+                            >
+                            <div class="error-message" id="codeError">请输入6位验证码</div>
+                            <div class="success-message" id="codeSuccess">验证码已发送到您的邮箱，请查收</div>
+                        </div>
+                        <button type="button" class="send-code-btn" id="sendCodeBtn">
+                            获取验证码
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 密码登录区域 -->
+            <div id="passwordLoginSection" style="display: none;">
+                <div class="form-group">
+                    <label class="form-label" for="password">
+                        <i class="fas fa-lock" id="passwordIcon"></i>
+                        <span>密码</span>
+                    </label>
+                    <input
+                        type="password"
+                        id="password"
+                        class="form-input"
+                        placeholder="请输入登录密码"
+                        autocomplete="off"
+                        required
+                    >
+                    <div class="error-message" id="passwordError">请输入密码</div>
+                </div>
+            </div>
+
+            <!-- 记住我和忘记密码 -->
+            <div class="form-options" id="formOptions">
+                <label class="remember-me">
+                    <input type="checkbox" id="rememberMe">
+                    <span>记住我（7天免登录）</span>
+                </label>
+                <a href="javascript:void(0)" class="forgot-password" onclick="goReset()">忘记密码？</a>
+            </div>
+
+            <button type="submit" class="login-btn" id="loginBtn">
+                <i class="fas fa-sign-in-alt"></i> <span id="btnText">登录</span>
+            </button>
+        </form>
+
+        <!-- 登录/注册切换 -->
+        <div class="auth-switch" id="authSwitch">
+            <span id="switchText">还没有账号？</span>
+            <a onclick="toggleAuthMode()" id="switchLink">立即注册</a>
+        </div>
+
+        <div class="system-info">
+            <span><i class="fas fa-shield-alt"></i> 安全验证</span>
+            <span>|</span>
+            <span>v2.1.0</span>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 状态变量 ====================
+        let currentRole = null;
+        let currentMode = 'login';      // 'login' 或 'register'
+        let loginMethod = 'code';       // 'code' 或 'password'
+        let countdownTimer = null;
+
+        // ==================== DOM 元素 ====================
+        const emailInput = document.getElementById('email');
+        const codeInput = document.getElementById('verificationCode');
+        const passwordInput = document.getElementById('password');
+        const sendCodeBtn = document.getElementById('sendCodeBtn');
+        const loginBtn = document.getElementById('loginBtn');
+        const loginForm = document.getElementById('loginForm');
+        const roleSelector = document.getElementById('roleSelector');
+        const methodTabs = document.getElementById('methodTabs');
+        const codeSection = document.getElementById('codeLoginSection');
+        const passwordSection = document.getElementById('passwordLoginSection');
+        const formOptions = document.getElementById('formOptions');
+        const authSwitch = document.getElementById('authSwitch');
+        const switchText = document.getElementById('switchText');
+        const switchLink = document.getElementById('switchLink');
+        const btnText = document.getElementById('btnText');
+        const pageTitle = document.getElementById('pageTitle');
+
+        // ==================== 角色选择 ====================
+        function selectRole(role) {
+            currentRole = role;
+
+            // 更新按钮状态
+            document.querySelectorAll('.role-option').forEach(btn => btn.classList.remove('active', 'admin', 'farmer'));
+            document.getElementById(role + 'Btn').classList.add('active', role);
+
+            // 更新图标
+            const logoIcon = document.getElementById('logoIcon');
+            logoIcon.className = 'logo-icon ' + role;
+            logoIcon.innerHTML = role === 'admin' ? '<i class="fas fa-user-shield"></i>' : '<i class="fas fa-tractor"></i>';
+
+            // 更新提示
+            const hint = document.getElementById('roleHint');
+            hint.style.display = 'inline-block';
+            hint.className = 'role-hint ' + role;
+            hint.textContent = role === 'admin' ? '管理员身份' : '农户身份';
+
+            // 显示角色说明
+            document.querySelectorAll('.role-info-card').forEach(card => card.classList.remove('active'));
+            document.getElementById(role + 'Info').classList.add('active');
+
+            // 更新副标题
+            document.getElementById('loginSubtitle').textContent = currentMode === 'register' ? '请输入邮箱注册新账号' : '请选择登录方式';
+
+            // 显示表单和登录方式标签
+            roleSelector.style.display = 'none';
+            methodTabs.style.display = currentMode === 'register' ? 'none' : 'flex';
+            loginForm.style.display = 'block';
+
+            // 注册模式强制验证码
+            if (currentMode === 'register') {
+                codeSection.style.display = 'block';
+                passwordSection.style.display = 'none';
+                formOptions.style.display = 'none';
+            } else {
+                formOptions.style.display = 'flex';
+                switchLoginMethod('code');
+            }
+
+            // 更新主题色
+            updateTheme(role);
+        }
+
+        function updateTheme(role) {
+            const color = role === 'admin' ? '#ff6b6b' : '#52c41a';
+            document.documentElement.style.setProperty('--primary-color', role === 'admin' ? '#c0392b' : '#2d5a27');
+
+            emailInput.className = 'form-input ' + role;
+            codeInput.className = 'form-input ' + role;
+            if(passwordInput) passwordInput.className = 'form-input ' + role;
+            sendCodeBtn.className = 'send-code-btn ' + role;
+        }
+
+        // ==================== 登录/注册模式切换 ====================
+        function toggleAuthMode() {
+            currentMode = currentMode === 'login' ? 'register' : 'login';
+
+            if (currentMode === 'register') {
+                switchText.textContent = '已有账号？';
+                switchLink.textContent = '立即登录';
+                pageTitle.textContent = '注册新账号';
+                btnText.textContent = '注册';
+                methodTabs.style.display = 'none';
+                codeSection.style.display = 'block';
+                passwordSection.style.display = 'none';
+                formOptions.style.display = 'none';
+                document.getElementById('loginSubtitle').textContent = '请输入邮箱注册新账号';
+            } else {
+                switchText.textContent = '还没有账号？';
+                switchLink.textContent = '立即注册';
+                pageTitle.textContent = '智能农政系统';
+                btnText.textContent = '登录';
+                methodTabs.style.display = 'flex';
+                formOptions.style.display = 'flex';
+                switchLoginMethod('code');
+                document.getElementById('loginSubtitle').textContent = '请选择登录方式';
+            }
+        }
+
+        function goBack() {
+            // 重置角色选择状态
+            currentRole = null;
+
+            // 显示角色选择器
+            document.getElementById('roleSelector').style.display = 'grid';
+
+            // 隐藏登录表单和标签
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('methodTabs').style.display = 'none';
+
+            // 重置副标题
+            document.getElementById('loginSubtitle').textContent = '请选择登录角色';
+
+            // 隐藏角色提示
+            document.getElementById('roleHint').style.display = 'none';
+
+            // 隐藏角色说明卡片
+            document.querySelectorAll('.role-info-card').forEach(card => card.classList.remove('active'));
+
+            // 重置角色按钮的激活状态
+            document.querySelectorAll('.role-option').forEach(btn => {
+                btn.classList.remove('active', 'admin', 'farmer');
+            });
+
+            // 重置 Logo 图标
+            const logoIcon = document.getElementById('logoIcon');
+            logoIcon.className = 'logo-icon';
+            logoIcon.innerHTML = '<i class="fas fa-leaf"></i>';
+
+            // 清空输入框（可选，如果希望保留输入可以注释掉）
+            document.getElementById('email').value = '';
+            document.getElementById('verificationCode').value = '';
+            document.getElementById('password').value = '';
+
+            // 重置主题色
+            document.documentElement.style.setProperty('--primary-color', '#2d5a27');
+
+            // 重置页面标题（如果是在注册模式下返回）
+            if (currentMode === 'register') {
+                currentMode = 'login';
+                document.getElementById('switchText').textContent = '还没有账号？';
+                document.getElementById('switchLink').textContent = '立即注册';
+                document.getElementById('pageTitle').textContent = '智能农政系统';
+                document.getElementById('btnText').textContent = '登录';
+            }
+        }
+
+        // ==================== 登录方式切换 ====================
+        function switchLoginMethod(method) {
+            loginMethod = method;
+
+            // 更新标签样式
+            document.querySelectorAll('.method-tab').forEach(tab => tab.classList.remove('active'));
+            document.getElementById('tab' + (method === 'code' ? 'Code' : 'Password')).classList.add('active');
+
+            // 切换显示区域
+            if (method === 'code') {
+                codeSection.style.display = 'block';
+                passwordSection.style.display = 'none';
+            } else {
+                codeSection.style.display = 'none';
+                passwordSection.style.display = 'block';
+            }
+        }
+
+        // ==================== 验证码发送 ====================
+        sendCodeBtn.addEventListener('click', async function() {
+            const email = emailInput.value.trim();
+
+            if (!email || !validateEmail(email)) {
+                showError(emailInput, document.getElementById('emailError'), '请输入有效的邮箱地址');
+                return;
+            }
+
+            const purpose = currentMode === 'register' ? 'register' : 'login';
+
+            this.innerHTML = '<span class="loading"></span>发送中...';
+            this.disabled = true;
+
+            try {
+                const response = await fetch('/api/auth/send-code', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        email: email,
+                        purpose: purpose
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.code === 200 || result.code === '200') {
+                    showSuccess(document.getElementById('codeSuccess'), '验证码已发送，5分钟内有效');
+                    startCountdown(this, 60);
+                } else {
+                    throw new Error(result.message || '发送失败');
+                }
+            } catch (error) {
+                alert(error.message);
+                this.innerHTML = '获取验证码';
+                this.disabled = false;
+            }
+        });
+
+        // ==================== 表单提交 ====================
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const email = emailInput.value.trim();
+            if (!validateEmail(email)) {
+                showError(emailInput, document.getElementById('emailError'), '邮箱格式不正确');
+                return;
+            }
+
+            const code = codeInput.value.trim();
+            const password = passwordInput.value || '';
+            const rememberMe = document.getElementById('rememberMe').checked;
+
+            loginBtn.innerHTML = '<span class="loading"></span>处理中...';
+            loginBtn.disabled = true;
+
+            try {
+                let result;
+
+                if (currentMode === 'register') {
+                    // 注册：验证验证码
+                    if (!code || code.length !== 6) {
+                        throw new Error('请输入6位验证码');
+                    }
+
+                    result = await fetch('/api/auth/verify-code', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            email: email,
+                            code: code,
+                            purpose: 'register',
+                            selected_role: currentRole  // 添加角色
+                        })
+                    }).then(r => r.json());
+
+                    if (result.code === 200) {
+                        window.location.href = result.next_url || '/set-username';
+                        return;
+                    }
+                } else {
+                    // 登录逻辑
+                    if (loginMethod === 'code') {
+                        if (!code || code.length !== 6) {
+                            throw new Error('请输入6位验证码');
+                        }
+
+                        result = await fetch('/api/auth/verify-code', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({
+                                email: email,
+                                code: code,
+                                purpose: 'login',
+                                remember_me: rememberMe,
+                                selected_role: currentRole  // 添加角色
+                            })
+                        }).then(r => r.json());
+                    } else {
+                        // 密码登录
+                        if (!password) {
+                            throw new Error('请输入密码');
+                        }
+
+                        result = await fetch('/api/auth/login', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({
+                                email: email,
+                                password: password,
+                                remember_me: rememberMe,
+                                selected_role: currentRole  // 添加角色
+                            })
+                        }).then(r => r.json());
+                    }
+
+                    if (result.code === 200) {
+                        if (result.needs_setup) {
+                            window.location.href = '/set-username';
+                        } else {
+                            window.location.href = result.next_url || '/home';
+                        }
+                        return;
+                    }
+                }
+
+                throw new Error(result.message || '操作失败');
+
+            } catch (error) {
+                alert(error.message);
+                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> <span>' + (currentMode === 'register' ? '注册' : '登录') + '</span>';
+                loginBtn.disabled = false;
+            }
+        });
+
+        // ==================== 工具函数 ====================
+        function validateEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        function showError(input, errorEl, msg) {
+            errorEl.textContent = msg;
+            errorEl.style.display = 'block';
+            input.style.borderColor = '#ff4d4f';
+            setTimeout(() => {
+                errorEl.style.display = 'none';
+                input.style.borderColor = '';
+            }, 3000);
+        }
+
+        function showSuccess(el, msg) {
+            el.textContent = msg;
+            el.style.display = 'block';
+            setTimeout(() => {
+                el.style.display = 'none';
+            }, 5000);
+        }
+
+        function startCountdown(btn, seconds) {
+            let remaining = seconds;
+            btn.disabled = true;
+
+            if (countdownTimer) clearInterval(countdownTimer);
+
+            countdownTimer = setInterval(() => {
+                remaining--;
+                btn.textContent = remaining + '秒后重试';
+
+                if (remaining <= 0) {
+                    clearInterval(countdownTimer);
+                    btn.textContent = '获取验证码';
+                    btn.disabled = false;
+                }
+            }, 1000);
+        }
+
+        // 页面加载时清理
+        window.addEventListener('beforeunload', () => {
+            if (countdownTimer) clearInterval(countdownTimer);
+        });
+
+        function goReset() {
+            const email = document.getElementById('email').value.trim();
+            if (email && validateEmail(email)) {
+                window.location.href = '/reset-password?email=' + encodeURIComponent(email);
+            } else {
+                window.location.href = '/reset-password';
+            }
+        }
+    </script>
+</body>
+</html>

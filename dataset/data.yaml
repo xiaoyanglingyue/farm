@@ -1,0 +1,17 @@
+# 水稻害虫检测数据集 - YOLOv11
+path: E:\graduation project\dataset
+train: images/train
+val: images/val
+
+nc: 10
+names:
+  0: rice_leaf_roller        # 稻纵卷叶螟
+  1: rice_leaf_caterpillar   # 稻螟蛉
+  2: paddy_stem_maggot       # 稻茎虫
+  3: asiatic_rice_borer      # 二化螟
+  4: yellow_rice_borer       # 三化螟
+  5: rice_gall_midge         # 稻瘿蚊
+  6: rice_water_weevil       # 稻水象甲
+  7: brown_plant_hopper      # 褐飞虱
+  8: small_brown_plant_hopper # 灰飞虱
+  9: rice_leaf_hopper        # 稻叶蝉

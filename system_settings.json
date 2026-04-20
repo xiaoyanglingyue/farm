@@ -1,0 +1,82 @@
+{
+  "tasks": [
+    {
+      "id": "backup",
+      "name": "每日数据备份",
+      "icon": "fas fa-cloud-upload-alt",
+      "color": "#1890ff",
+      "period": "每天",
+      "time": "03:00",
+      "nextRun": "2026-04-19 03:00",
+      "enabled": true,
+      "status": "normal",
+      "statusText": "运行正常",
+      "statusIcon": "fas fa-check"
+    },
+    {
+      "id": "cleanup",
+      "name": "过期数据清理",
+      "icon": "fas fa-broom",
+      "color": "#faad14",
+      "period": "每周日",
+      "time": "02:00",
+      "nextRun": "2026-04-19 02:00",
+      "enabled": true,
+      "status": "normal",
+      "statusText": "运行正常",
+      "statusIcon": "fas fa-check"
+    }
+  ],
+  "retention": {
+    "image": {
+      "enabled": true,
+      "days": 90
+    },
+    "sensor": {
+      "enabled": true,
+      "days": 365
+    },
+    "alert": {
+      "enabled": true,
+      "days": 180
+    },
+    "log": {
+      "enabled": false,
+      "days": 90
+    }
+  },
+  "alerts": [
+    {
+      "id": "pest_season",
+      "name": "病虫害高发期预警",
+      "icon": "fas fa-bug",
+      "color": "#ff4d4f",
+      "desc": "基于季节和历史数据提前3天预警高风险期",
+      "enabled": true
+    },
+    {
+      "id": "extreme_weather",
+      "name": "极端天气监测",
+      "icon": "fas fa-cloud-sun",
+      "color": "#faad14",
+      "desc": "自动监控霜冻、高温、暴雨等极端天气",
+      "enabled": true
+    },
+    {
+      "id": "device_offline",
+      "name": "设备离线预警",
+      "icon": "fas fa-battery-quarter",
+      "color": "#722ed1",
+      "desc": "传感器或摄像头离线超过30分钟通知",
+      "enabled": true
+    },
+    {
+      "id": "growth_cycle",
+      "name": "生长周期提醒",
+      "icon": "fas fa-seedling",
+      "color": "#52c41a",
+      "desc": "根据作物种类自动提醒施肥灌溉时间",
+      "enabled": true
+    }
+  ]
+}

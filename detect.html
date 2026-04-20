@@ -1,0 +1,1886 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>病虫害智能识别 - 农作物病虫害智能监测系统</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="/api/config/js"></script>
+    <style>
+        :root {
+            --primary-color: #2d5a27;
+            --primary-light: #3d7a35;
+            --bg-color: #f0f2f5;
+            --sidebar-width: 240px;
+            --danger-color: #ff4d4f;
+            --warning-color: #faad14;
+            --success-color: #52c41a;
+            --text-primary: #333;
+            --text-secondary: #666;
+            --border-color: #e8e8e8;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg-color);
+            font-family: 'Segoe UI', 'PingFang SC', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--primary-color);
+            height: 100vh;
+            color: white;
+            position: fixed;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+        .sidebar-header {
+            padding: 30px 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .user-info {
+            padding: 15px 20px;
+            background: rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .user-role {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            margin-top: 4px;
+            font-weight: bold;
+        }
+        .role-admin { background: #ff4d4f; color: white; }
+        .role-farmer { background: #52c41a; color: white; }
+
+        .nav-menu {
+            flex: 1;
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+        .nav-item {
+            padding: 15px 25px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: 0.3s;
+            text-decoration: none;
+            color: white;
+            position: relative;
+        }
+        .nav-item:hover, .nav-item.active {
+            background: rgba(255,255,255,0.1);
+            border-left: 4px solid #fff;
+        }
+        .nav-item i { margin-right: 15px; width: 20px; text-align: center; }
+
+        .badge {
+            position: absolute;
+            right: 15px;
+            background: #ff4d4f;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        /* 主内容区 */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+
+        /* 顶部标题区 */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        .page-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .page-title i { color: var(--primary-color); }
+
+        /* 网格布局 */
+        .detect-grid {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+            height: calc(100vh - 140px);
+        }
+
+        /* 卡片通用样式 */
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            overflow-x: hidden;
+        }
+        .card-header {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--text-primary);
+        }
+        .card-header i {
+            color: var(--primary-color);
+            margin-right: 8px;
+        }
+
+        /* 作物选择器 */
+        .crop-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .crop-chip {
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .crop-chip:hover {
+            border-color: var(--primary-light);
+            color: var(--primary-color);
+        }
+        .crop-chip.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* 已选择作物标签样式 */
+        .selected-crop-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(135deg, #f6ffed 0%, #e6f7ff 100%);
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(45, 90, 39, 0.15);
+            margin-left: 10px;
+            animation: slideIn 0.3s ease;
+        }
+        .selected-crop-tag i {
+            color: var(--primary-color);
+            font-size: 12px;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* 上传区域 */
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #fafafa;
+            position: relative;
+            overflow: hidden;
+        }
+        .upload-area:hover {
+            border-color: var(--primary-color);
+            background: #f6ffed;
+        }
+        .upload-area.has-image {
+            border-style: solid;
+            border-color: var(--primary-color);
+            background: white;
+            cursor: default;
+        }
+        .upload-icon {
+            font-size: 48px;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            opacity: 0.6;
+        }
+        .upload-text {
+            color: var(--text-secondary);
+            font-size: 14px;
+            text-align: center;
+        }
+        .upload-hint {
+            font-size: 12px;
+            color: #999;
+            margin-top: 8px;
+        }
+        .upload-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .upload-btn-mini {
+            padding: 8px 16px;
+            background: white;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+        .upload-btn-mini:hover {
+            background: #f6ffed;
+        }
+        .upload-btn-mini:disabled {
+            background: #f5f5f5;
+            border-color: #ccc;
+            color: #999;
+            cursor: not-allowed;
+        }
+        .preview-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+        .scanning-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(45, 90, 39, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: var(--primary-color);
+            box-shadow: 0 0 10px var(--primary-color);
+            animation: scan 2s linear infinite;
+        }
+        @keyframes scan {
+            0% { top: 0; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+        .scanning-text {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            color: var(--primary-color);
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 10;
+        }
+
+        /* 位置信息条 */
+        .location-bar {
+            background: #e6f7ff;
+            border-left: 3px solid #1890ff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #1890ff;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        /* 控制栏 */
+        .control-bar {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            align-items: center;
+        }
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f5f5f5;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        .control-group input[type="range"] {
+            width: 120px;
+            cursor: pointer;
+        }
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+        }
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(45, 90, 39, 0.3);
+        }
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .btn-secondary {
+            background: white;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+        .btn-secondary:hover {
+            background: #f6ffed;
+        }
+        .btn-danger {
+            background: white;
+            color: var(--danger-color);
+            border: 1px solid var(--danger-color);
+            font-size: 13px;
+            padding: 8px 15px;
+        }
+        .btn-danger:hover {
+            background: #fff2f0;
+        }
+
+        /* 优化后的删除按钮 - 更轻盈的风格 */
+        .btn-delete-subtle {
+            background: #f5f5f5;
+            color: #999;
+            border: 1px solid #e0e0e0;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.3s ease;
+        }
+        .btn-delete-subtle:hover {
+            background: #ff4d4f;
+            color: white;
+            border-color: #ff4d4f;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(255, 77, 79, 0.3);
+        }
+        .btn-delete-subtle:active {
+            transform: translateY(0);
+        }
+
+        /* 右侧结果面板 */
+        .results-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* 检测结果列表 */
+        .result-list {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-width: 0;
+        }
+        .result-item {
+            background: #f6ffed;
+            border-left: 4px solid var(--primary-color);
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            min-width: 0;
+            flex-wrap: wrap;
+        }
+        .result-item:hover {
+            transform: translateX(3px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .result-item.low-confidence {
+            border-left-color: var(--warning-color);
+            background: #fffbe6;
+        }
+        .result-info {
+            min-width: 0;
+            flex: 1;
+        }
+        .result-info h4 {
+            margin: 0 0 5px 0;
+            color: var(--primary-color);
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            word-break: break-all;
+            overflow-wrap: break-word;
+        }
+        .result-meta {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        .result-actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 8px;
+        }
+        .action-link {
+            font-size: 12px;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            cursor: pointer;
+        }
+        .action-link:hover {
+            text-decoration: underline;
+        }
+        .confidence-badge {
+            background: var(--primary-color);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        .confidence-badge.low {
+            background: var(--warning-color);
+        }
+
+        /* 低置信度警告 */
+        .alert-box {
+            background: #fff2f0;
+            border: 1px solid #ffccc7;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--danger-color);
+        }
+        .alert-box.warning {
+            background: #fffbe6;
+            border-color: #ffe58f;
+            color: #d48806;
+        }
+
+        /* 防治方案卡片 */
+        .solution-card {
+            background: linear-gradient(135deg, #f6ffed 0%, #ffffff 100%);
+            border: 1px solid #b7eb8f;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+        .solution-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .solution-content {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        .solution-tags {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .solution-tag {
+            background: white;
+            border: 1px solid #b7eb8f;
+            color: var(--primary-color);
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .empty-state i {
+            font-size: 40px;
+            margin-bottom: 10px;
+            color: #ddd;
+        }
+
+        /* 历史记录卡片 */
+        .history-card {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .history-item-mini {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: all 0.3s;
+            gap: 12px;
+        }
+        .history-item-mini:hover {
+            background: #f6ffed;
+        }
+        .history-thumb {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid #eee;
+        }
+        .history-content {
+            flex: 1;
+        }
+        .history-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 3px;
+        }
+        .history-time {
+            font-size: 11px;
+            color: #999;
+        }
+        .history-confidence {
+            font-size: 12px;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        .location-tag {
+            font-size: 10px;
+            color: #1890ff;
+            background: #e6f7ff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 5px;
+        }
+
+        /* 咨询按钮 */
+        .consult-btn {
+            margin-top: 15px;
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(45, 90, 39, 0.3);
+        }
+        .consult-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(45, 90, 39, 0.4);
+        }
+        .consult-btn:disabled {
+            background: #ccc;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        /* 模态框样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 25px;
+            transform: scale(0.9);
+            transition: all 0.3s;
+        }
+        .modal-overlay.show .modal-content {
+            transform: scale(1);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--primary-color);
+        }
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #999;
+        }
+        .modal-close:hover {
+            color: var(--danger-color);
+        }
+        .knowledge-section {
+            margin-bottom: 20px;
+        }
+        .knowledge-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .knowledge-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            padding-left: 20px;
+        }
+
+        /* 后端相机拍摄中的模态框 */
+        .camera-capture-modal .modal-content {
+            max-width: 400px;
+            text-align: center;
+            padding: 40px;
+        }
+        .camera-capture-modal .capture-icon {
+            font-size: 60px;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        @keyframes progress {
+            0% { width: 0%; }
+            50% { width: 100%; }
+            100% { width: 0%; }
+        }
+
+        /* 报告预览 */
+        .report-preview {
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        .report-header {
+            text-align: center;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .report-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+        .report-meta {
+            font-size: 12px;
+            color: #999;
+        }
+        .report-section {
+            margin-bottom: 20px;
+        }
+        .report-section-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            background: #f6ffed;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+        .report-image {
+            max-width: 100%;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            margin: 10px 0;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 1200px) {
+            .detect-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto;
+            }
+            .results-panel {
+                flex-direction: row;
+            }
+            .results-panel .card {
+                flex: 1;
+            }
+        }
+    </style>
+<base target="_blank">
+<base target="_blank">
+</head>
+<body>
+<div id="app" style="display: contents;">
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-leaf"></i> 智能农政系统
+        </div>
+        <div class="user-info" v-if="currentUser">
+            <div style="font-weight: 600; font-size: 14px;">
+                <i class="fas fa-user-circle"></i> {{ currentUser.name || currentUser.email }}
+            </div>
+            <span :class="['user-role', currentUser.role === 'admin' ? 'role-admin' : 'role-farmer']">
+                {{ currentUser.role === 'admin' ? '管理员' : '种植农户' }}
+            </span>
+        </div>
+        <div class="nav-menu">
+            <a href="/home" class="nav-item"><i class="fas fa-chart-line"></i> 实时监控</a>
+            <a href="/detect" class="nav-item active"><i class="fas fa-bug"></i> 病虫害识别</a>
+            <template v-if="currentUser && currentUser.role === 'admin'">
+                <a href="/admin/comments" class="nav-item" style="position: relative;">
+                    <i class="fas fa-comments"></i> 评论审核
+                    <span v-if="pendingComments > 0" class="badge">{{ pendingComments }}</span>
+                </a>
+                <a href="/admin/users" class="nav-item"><i class="fas fa-users-cog"></i> 用户管理</a>
+            </template>
+            <template v-if="currentUser && currentUser.role === 'farmer'">
+                <a href="/comments" class="nav-item"><i class="fas fa-comments"></i> 经验交流</a>
+                <a href="/my-farm" class="nav-item"><i class="fas fa-tractor"></i> 我的农场</a>
+            </template>
+            <a href="/map" class="nav-item"><i class="fas fa-map-marked-alt"></i> 风险地图</a>
+            <a href="/chat" class="nav-item"><i class="fas fa-robot"></i> AI问诊</a>
+            <a href="/knowledge" class="nav-item">
+                <i class="fas fa-book-medical"></i> <span>知识库</span>
+            </a>
+            <a href="/farm-records" class="nav-item"><i class="fas fa-history"></i> 农事记录</a>
+            <a href="/set" class="nav-item"><i class="fas fa-cog"></i> 系统设置</a>
+        </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="main-content">
+        <div class="page-header">
+            <div class="page-title">
+                <i class="fas fa-microscope"></i>
+                病虫害智能识别
+                <span v-if="selectedCrop" class="selected-crop-tag">
+                    <i class="fas fa-check-circle"></i>
+                    {{ selectedCrop.name }}专用模型
+                </span>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button class="btn btn-secondary" @click="generateReport" :disabled="isGenerating" title="生成PDF报告">
+                    <i class="fas fa-file-pdf"></i> 导出报告
+                </button>
+                <div style="color: #666; font-size: 14px;">
+                    <i class="fas fa-robot" style="color: var(--primary-color);"></i>
+                    YOLOv11 深度学习引擎
+                </div>
+            </div>
+        </div>
+
+        <div class="detect-grid">
+            <!-- 左侧：上传与预览 -->
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <i class="fas fa-camera"></i>
+                        图像检测区
+                        <span v-if="isAnalyzing" style="color: var(--primary-color); font-size: 13px; margin-left: 10px;">
+                            <i class="fas fa-circle-notch fa-spin"></i> 分析中...
+                        </span>
+                        <span v-if="isCapturing" style="color: #1890ff; font-size: 13px; margin-left: 10px;">
+                            <i class="fas fa-camera fa-spin"></i> 后端相机拍摄中...
+                        </span>
+                    </div>
+                    <button v-if="imgSrc" class="btn btn-secondary" @click="speakResult" :disabled="!displayedResults.length" title="语音播报结果" style="font-size: 12px; padding: 5px 10px;">
+                        <i class="fas fa-volume-up"></i> 播报
+                    </button>
+                </div>
+
+                <!-- 作物类型选择 -->
+                <div class="crop-selector">
+                    <span style="font-size: 13px; color: #666; margin-right: 5px;">检测作物：</span>
+                    <div v-for="crop in crops" :key="crop.id"
+                         :class="['crop-chip', { active: selectedCrop && selectedCrop.id === crop.id }]"
+                         @click="selectCrop(crop)">
+                        <i :class="crop.icon"></i>
+                        {{ crop.name }}
+                    </div>
+                </div>
+
+                <div class="upload-area" :class="{ 'has-image': imgSrc }" @click="!imgSrc && triggerUpload()">
+                    <template v-if="!imgSrc">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="upload-text">
+                            <div style="font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 5px;">
+                                点击上传或拖拽图片至此处
+                            </div>
+                            <div class="upload-hint">支持 JPG、PNG 格式，建议分辨率 1920×1080 以上</div>
+                        </div>
+                        <div class="upload-buttons">
+                            <div class="upload-btn-mini" @click.stop="captureFromBackend" :disabled="isCapturing || isAnalyzing">
+                                <i class="fas fa-camera"></i>
+                                {{ isCapturing ? '拍摄中...' : '相机拍摄' }}
+                            </div>
+                            <div class="upload-btn-mini" @click.stop="triggerUpload" :disabled="isCapturing || isAnalyzing">
+                                <i class="fas fa-folder-open"></i> 从相册选择
+                            </div>
+                        </div>
+                    </template>
+                    <img v-else :src="imgSrc" class="preview-image" alt="检测图片">
+                    <div v-if="isAnalyzing" class="scanning-overlay">
+                        <div class="scan-line"></div>
+                        <div class="scanning-text">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            AI 正在分析农作物特征...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 位置信息 -->
+                <div v-if="locationInfo" class="location-bar">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>检测位置：{{ locationInfo }}</span>
+                    <span v-if="gpsCoords" style="font-size: 10px; opacity: 0.8;">
+                        ({{ gpsCoords.lat.toFixed(4) }}, {{ gpsCoords.lng.toFixed(4) }})
+                    </span>
+                </div>
+
+                <div class="control-bar">
+                    <div class="control-group">
+                        <i class="fas fa-sliders-h" style="color: var(--primary-color);"></i>
+                        <span>置信度阈值</span>
+                        <input type="range" v-model="confThreshold" min="0.1" max="0.9" step="0.05" :disabled="isAnalyzing || isCapturing">
+                        <span style="font-weight: bold; color: var(--primary-color); min-width: 35px;">
+                            {{ (confThreshold * 100).toFixed(0) }}%
+                        </span>
+                        <i class="fas fa-question-circle" style="color: #999; margin-left: 8px; cursor: help;"
+                           title="数值越高，识别越严格，误报越少但可能漏检；数值越低，检出率越高但可能误报"></i>
+                    </div>
+                    <div style="flex: 1;"></div>
+                    <button v-if="imgSrc" class="btn btn-secondary" @click="triggerUpload" :disabled="isAnalyzing || isCapturing">
+                        <i class="fas fa-redo"></i> 重新上传
+                    </button>
+                    <input type="file" ref="fileRef" hidden @change="onFileChange" accept="image/*">
+                </div>
+            </div>
+
+            <!-- 右侧：结果与历史 -->
+            <div class="results-panel">
+                <!-- 检测结果卡片 -->
+                <div class="card" style="flex: 1;">
+                    <div class="card-header">
+                        <div>
+                            <i class="fas fa-clipboard-check"></i>
+                            识别结果
+                            <span v-if="displayedResults.length > 0" style="font-size: 13px; color: #999; font-weight: normal;">
+                                ({{ displayedResults.length }} 项)
+                            </span>
+                        </div>
+                        <button v-if="displayedResults.length > 0 && !showingSolutions" class="btn btn-secondary" @click="showAllSolutions" style="font-size: 12px; padding: 5px 10px;">
+                            <i class="fas fa-lightbulb"></i> 查看防治方案
+                        </button>
+                    </div>
+
+                    <!-- 低置信度警告 -->
+                    <div v-if="showLowConfidenceWarning" class="alert-box warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div>
+                            <div style="font-weight: bold;">识别置信度较低</div>
+                            <div style="font-size: 12px; margin-top: 3px;">
+                                建议人工复核或上传更清晰的图片。您可以
+                                <span style="cursor: pointer; text-decoration: underline;" @click="submitForReview">提交给专家复核</span>
+                                或
+                                <span style="cursor: pointer; text-decoration: underline;" @click="goToChat">咨询AI问诊</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="result-list" v-if="displayedResults.length > 0">
+                        <div v-for="(res, i) in displayedResults" :key="i"
+                             :class="['result-item', { 'low-confidence': res.conf < 70 }]"
+                             @click="showKnowledgeModal(res)">
+                            <div class="result-info">
+                                <h4>
+                                    {{ res.name }}
+                                    <i class="fas fa-info-circle" style="font-size: 12px; color: #999;" title="点击查看知识库"></i>
+                                </h4>
+                                <div class="result-meta">置信度: {{ res.conf }}% · {{ selectedCrop ? selectedCrop.name : '通用检测' }}</div>
+                                <div class="result-actions">
+                                    <span class="action-link" @click.stop="showKnowledgeModal(res)">
+                                        <i class="fas fa-book"></i> 知识库
+                                    </span>
+                                    <span class="action-link" @click.stop="goToChatWithPest(res.name)">
+                                        <i class="fas fa-user-md"></i> 咨询专家
+                                    </span>
+                                </div>
+                            </div>
+                            <div :class="['confidence-badge', { low: res.conf < 70 }]">{{ res.conf }}%</div>
+                        </div>
+
+                        <!-- 防治方案展示区 -->
+                        <div v-if="showingSolutions" class="solution-card">
+                            <div class="solution-title">
+                                <i class="fas fa-shield-alt"></i>
+                                推荐防治方案
+                                <button @click="showingSolutions = false" style="margin-left: auto; background: none; border: none; cursor: pointer; color: #999;">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="solution-content">
+                                <div v-for="(result, idx) in displayedResults" :key="idx" style="margin-bottom: 12px;">
+                                    <strong style="color: var(--primary-color);">{{ result.name }}：</strong>
+                                    <span v-if="result.solutionLoading">正在加载防治方案...</span>
+                                    <span v-else-if="result.solutionError" style="color: #ff4d4f;">
+                                        <i class="fas fa-exclamation-circle"></i> {{ result.solution?.prevention_methods || '加载失败' }}
+                                    </span>
+                                    <span v-else>{{ result.solution?.prevention_methods || result.solution?.chemical_control }}</span>
+                                </div>
+                            </div>
+                            <div class="solution-tags">
+                                <span class="solution-tag"><i class="fas fa-flask"></i> 化学防治</span>
+                                <span class="solution-tag"><i class="fas fa-leaf"></i> 生物防治</span>
+                                <span class="solution-tag"><i class="fas fa-tools"></i> 物理防治</span>
+                            </div>
+                        </div>
+
+                        <button class="consult-btn" @click="goToChat" :disabled="isAnalyzing">
+                            <i class="fas fa-user-md"></i>
+                            咨询 AI 专家防治方案
+                        </button>
+                    </div>
+
+                    <!-- 阈值过滤空状态 -->
+                    <div v-else-if="rawResults.length > 0 && displayedResults.length === 0" class="empty-state">
+                        <i class="fas fa-filter" style="color: var(--warning-color);"></i>
+                        <div>当前置信度阈值过滤掉了所有结果</div>
+                        <div style="font-size: 12px; margin-top: 5px; color: #999;">建议调低阈值或重新上传图片</div>
+                    </div>
+
+                    <div v-else class="empty-state">
+                        <i class="fas fa-search"></i>
+                        <div>上传图片后将在此处显示识别结果</div>
+                    </div>
+                </div>
+
+                <!-- 历史记录卡片 -->
+                <div class="card history-card">
+                    <div class="card-header">
+                        <div>
+                            <i class="fas fa-history"></i>
+                            近期检测
+                        </div>
+                        <div style="display: flex; gap: 5px;">
+                            <button v-if="historyList.length > 0" class="btn btn-secondary" @click="showTrendModal" style="font-size: 12px; padding: 5px 10px;">
+                                <i class="fas fa-chart-line"></i> 趋势分析
+                            </button>
+                            <button v-if="historyList.length > 0" class="btn-delete-subtle" @click="clearHistory" title="清空历史记录">
+                                <i class="fas fa-trash-alt"></i>
+                                <span>清空</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div v-if="historyList.length === 0" class="empty-state" style="padding: 20px;">
+                        <i class="fas fa-inbox"></i>
+                        <div style="font-size: 12px;">暂无检测记录</div>
+                    </div>
+
+                    <div v-else>
+                        <div v-for="item in historyList.slice(0, 5)" :key="item.id" class="history-item-mini" @click="loadHistory(item)">
+                            <img v-if="item.image_base64" :src="item.image_base64" class="history-thumb" alt="历史图片">
+                            <div class="history-content">
+                                <div class="history-title">
+                                    {{ item.pest_name }}
+                                    <span v-if="item.location" class="location-tag">
+                                        <i class="fas fa-map-marker-alt"></i> {{ item.location.split('市')[0] }}
+                                    </span>
+                                </div>
+                                <div class="history-time">{{ formatTime(item.created_at) }}</div>
+                            </div>
+                            <div class="history-confidence">{{ item.confidence }}%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 前端摄像头模态框 -->
+    <div :class="['modal-overlay', { show: showFrontCamera }]" style="z-index: 1100;">
+        <div class="modal-content" style="max-width: 800px; width: 90%;">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-camera"></i>
+                    前端摄像头拍照
+                </div>
+                <button class="modal-close" @click="closeFrontCamera">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div style="position: relative; background: #000; border-radius: 8px; overflow: hidden;">
+                <video ref="videoRef" autoplay playsinline style="width: 100%; max-height: 400px; display: block;"></video>
+                <div v-if="!videoStream" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; text-align: center;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 30px; margin-bottom: 10px;"></i>
+                    <div>正在启动摄像头...</div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 15px; justify-content: center;">
+                <button class="btn btn-primary" @click="captureFromFront" :disabled="!videoStream" style="padding: 12px 30px;">
+                    <i class="fas fa-camera"></i> 拍照识别
+                </button>
+                <button class="btn btn-secondary" @click="closeFrontCamera">
+                    取消
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 知识库模态框 -->
+    <div :class="['modal-overlay', { show: knowledgeModal.show }]">
+        <div class="modal-content" v-if="knowledgeModal.data">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-bug"></i>
+                    {{ knowledgeModal.data.name }} 知识库
+                </div>
+                <button class="modal-close" @click="knowledgeModal.show = false">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="knowledge-section">
+                <div class="knowledge-title">
+                    <i class="fas fa-virus"></i> 病害/虫害特征
+                </div>
+                <div class="knowledge-text">
+                    {{ knowledgeModal.data.description }}
+                </div>
+            </div>
+            <div class="knowledge-section">
+                <div class="knowledge-title">
+                    <i class="fas fa-calendar-alt"></i> 高发季节与条件
+                </div>
+                <div class="knowledge-text">
+                    {{ knowledgeModal.data.season }}
+                </div>
+            </div>
+            <div class="knowledge-section">
+                <div class="knowledge-title">
+                    <i class="fas fa-exclamation-circle"></i> 易混淆病虫害鉴别
+                </div>
+                <div class="knowledge-text">
+                    {{ knowledgeModal.data.similar }}
+                </div>
+            </div>
+            <div class="knowledge-section">
+                <div class="knowledge-title">
+                    <i class="fas fa-shield-alt"></i> 推荐防治措施
+                </div>
+                <div class="knowledge-text">
+                    <strong>化学防治：</strong>{{ knowledgeModal.data.chemical }}<br><br>
+                    <strong>生物防治：</strong>{{ knowledgeModal.data.biological }}<br><br>
+                    <strong>农业防治：</strong>{{ knowledgeModal.data.agricultural }}
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-primary" style="flex: 1;" @click="goToChatWithPest(knowledgeModal.data.name)">
+                    <i class="fas fa-user-md"></i> 咨询AI专家
+                </button>
+                <button class="btn btn-secondary" style="flex: 1;" @click="knowledgeModal.show = false">
+                    <i class="fas fa-check"></i> 知道了
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 报告生成模态框 -->
+    <div :class="['modal-overlay', { show: reportModal.show }]">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-file-alt"></i>
+                    检测报告
+                </div>
+                <button class="modal-close" @click="reportModal.show = false">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div v-if="isGenerating" style="text-align: center; padding: 40px;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 30px; color: var(--primary-color); margin-bottom: 15px;"></i>
+                <div>正在生成检测报告...</div>
+            </div>
+            <template v-else>
+                <div class="report-preview" id="report-content">
+                    <div class="report-header">
+                        <div class="report-title">农作物病虫害检测报告</div>
+                        <div class="report-meta">报告编号：{{ reportModal.reportId }} | 生成时间：{{ reportModal.time }}</div>
+                    </div>
+                    <div class="report-section">
+                        <div class="report-section-title"><i class="fas fa-user"></i> 检测信息</div>
+                        <div style="font-size: 12px; color: #666; line-height: 1.8;">
+                            <strong>农户：</strong>{{ currentUser && currentUser.name ? currentUser.name : '未知用户' }}<br>
+                            <strong>检测作物：</strong>{{ selectedCrop ? selectedCrop.name : '未指定' }}<br>
+                            <strong>检测位置：</strong>{{ locationInfo || '未获取位置信息' }}<br>
+                            <strong>AI引擎：</strong>YOLOv11 深度学习模型
+                        </div>
+                    </div>
+                    <div class="report-section">
+                        <div class="report-section-title"><i class="fas fa-image"></i> 检测图像</div>
+                        <img :src="imgSrc" class="report-image" alt="检测图片">
+                    </div>
+                    <div class="report-section">
+                        <div class="report-section-title"><i class="fas fa-bug"></i> 识别结果</div>
+                        <div v-for="(res, idx) in displayedResults" :key="idx" style="margin-bottom: 10px; padding: 10px; background: #f6ffed; border-radius: 6px; border-left: 3px solid var(--primary-color);">
+                            <div style="font-weight: bold; color: var(--primary-color);">{{ res.name }}</div>
+                            <div style="font-size: 12px; color: #666;">置信度：{{ res.conf }}% | 检测时间：{{ reportModal.time }}</div>
+                        </div>
+                    </div>
+                    <div class="report-section">
+                        <div class="report-section-title"><i class="fas fa-lightbulb"></i> 建议措施</div>
+                        <div style="font-size: 12px; color: #666; line-height: 1.8;">
+                            根据AI识别结果，建议及时采取相应防治措施。详细防治方案请咨询专业农技人员或使用本系统AI问诊功能。
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin-top: 20px; font-size: 11px; color: #999; border-top: 1px solid #eee; padding-top: 15px;">
+                        本报告由智能农政系统自动生成，仅供参考。如需确诊，请联系当地农技推广站。
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button class="btn btn-primary" style="flex: 1;" @click="downloadPDF">
+                        <i class="fas fa-download"></i> 下载PDF
+                    </button>
+                    <button class="btn btn-secondary" style="flex: 1;" @click="reportModal.show = false">
+                        关闭
+                    </button>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <!-- 趋势分析模态框 -->
+    <div :class="['modal-overlay', { show: trendModal.show }]">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-chart-line"></i>
+                    检测趋势分析
+                </div>
+                <button class="modal-close" @click="trendModal.show = false">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div v-if="trendModal.loading" style="text-align: center; padding: 40px;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 30px; color: var(--primary-color);"></i>
+                <div style="margin-top: 15px;">正在分析历史数据...</div>
+            </div>
+            <div v-else>
+                <div style="background: #f6ffed; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <div style="font-size: 14px; font-weight: bold; color: var(--primary-color); margin-bottom: 10px;">
+                        <i class="fas fa-info-circle"></i> 近30天统计摘要
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 13px;">
+                        <div>总检测次数：<strong>{{ trendModal.stats.total }}</strong></div>
+                        <div>高置信度检测：<strong>{{ trendModal.stats.highConf }}</strong></div>
+                        <div>最常检测作物：<strong>{{ trendModal.stats.topCrop || '暂无数据' }}</strong></div>
+                        <div>高发病虫害：<strong>{{ trendModal.stats.topPest || '暂无数据' }}</strong></div>
+                    </div>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <div style="font-size: 13px; font-weight: bold; margin-bottom: 10px;">病虫害发生频率TOP5</div>
+                    <div v-for="(item, idx) in trendModal.topPests" :key="idx" style="display: flex; align-items: center; margin-bottom: 8px; font-size: 12px;">
+                        <span style="width: 20px; color: #999;">{{ idx + 1 }}.</span>
+                        <span style="flex: 1;">{{ item.name }}</span>
+                        <div style="flex: 2; background: #f0f0f0; height: 8px; border-radius: 4px; margin: 0 10px; overflow: hidden;">
+                            <div style="background: var(--primary-color); height: 100%; border-radius: 4px;" :style="{ width: item.percent + '%' }"></div>
+                        </div>
+                        <span style="width: 30px; text-align: right;">{{ item.count }}次</span>
+                    </div>
+                </div>
+                <button class="btn btn-primary" style="width: 100%;" @click="trendModal.show = false">
+                    <i class="fas fa-check"></i> 知道了
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const { createApp, ref, onMounted, computed } = Vue;
+createApp({
+    setup() {
+        const imgSrc = ref('');
+        const isAnalyzing = ref(false);
+        const isGenerating = ref(false);
+        const isCapturing = ref(false);
+        const fileRef = ref(null);
+        const currentImageBase64 = ref('');
+        const currentUser = ref(null);
+        const locationInfo = ref('');
+        const locationStatus = ref('');
+        const gpsCoords = ref(null);
+        const confThreshold = ref(parseFloat(localStorage.getItem('confThreshold') || 0.25));
+        const historyList = ref([]);
+        const rawResults = ref([]);
+        const pendingComments = ref(0);
+        const showingSolutions = ref(false);
+        const knowledgeModal = ref({ show: false, data: null });
+        const reportModal = ref({ show: false, reportId: '', time: '' });
+        const trendModal = ref({
+            show: false,
+            loading: false,
+            stats: { total: 0, highConf: 0, topCrop: '', topPest: '' },
+            topPests: []
+        });
+        const showFrontCamera = ref(false);
+        const videoStream = ref(null);
+        const videoRef = ref(null);
+        const amapKey = ref('');
+        const amapServiceKey = ref('');
+
+        const crops = ref([
+            { id: 'rice', name: '水稻', icon: 'fas fa-seedling' },
+            { id: 'wheat', name: '小麦', icon: 'fas fa-wheat-awn' },  // 修复：fa-wheat-awn 改为 fa-wheat
+            { id: 'corn', name: '玉米', icon: 'fas fa-leaf' },
+            { id: 'vegetable', name: '蔬菜', icon: 'fas fa-carrot' },
+            { id: 'fruit', name: '果树', icon: 'fas fa-apple-alt' },
+            { id: 'general', name: '通用', icon: 'fas fa-spa' }
+        ]);
+        const selectedCrop = ref(null);
+
+        const currentSolutions = computed(() => {
+            return displayedResults.value.map(r => ({
+                pest: r.name,
+                method: (solutionDatabase[r.name] || solutionDatabase['default']).method
+            }));
+        });
+
+        const displayedResults = computed(() => {
+            return rawResults.value.filter(r => r.conf >= confThreshold.value * 100);
+        });
+
+        const showLowConfidenceWarning = computed(() => {
+            if (rawResults.value.length === 0) return false;
+            const maxConf = Math.max(...rawResults.value.map(r => r.conf));
+            return maxConf < 60;
+        });
+
+        const fetchMapConfig = async () => {
+            try {
+                if (window.APP_CONFIG) {
+                    amapKey.value = window.APP_CONFIG.AMAP_KEY || '';
+                    amapServiceKey.value = window.APP_CONFIG.AMAP_SERVICE_KEY || '';
+                }
+                if (!amapServiceKey.value) {
+                    const response = await fetch('/api/config/full');
+                    if (response.ok) {
+                        const data = await response.json();
+                        amapServiceKey.value = data.amapServiceKey || data.amap_key || '';
+                    }
+                }
+            } catch (e) { console.error('获取地图配置失败:', e); }
+        };
+
+        const getAddressFromCoords = async (lng, lat) => {
+            const serviceKey = amapServiceKey.value || window.APP_CONFIG?.AMAP_SERVICE_KEY;
+            if (!serviceKey) return null;
+            try {
+                const url = `https://restapi.amap.com/v3/geocode/regeo?key=${serviceKey}&location=${lng},${lat}&extensions=base`;
+                const response = await fetch(url);
+                const data = await response.json();
+                if (data.status === '1' && data.regeocode) {
+                    return data.regeocode.formatted_address || null;
+                }
+                return null;
+            } catch (e) { return null; }
+        };
+
+        const getLocation = async () => {
+            locationStatus.value = 'loading';
+            locationInfo.value = '';
+            if (!navigator.geolocation) {
+                locationInfo.value = '浏览器不支持地理定位';
+                locationStatus.value = 'error';
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const coords = { lat: position.coords.latitude, lng: position.coords.longitude };
+                    gpsCoords.value = coords;
+                    const address = await getAddressFromCoords(coords.lng, coords.lat);
+                    if (address) {
+                        locationInfo.value = address;
+                        locationStatus.value = 'success';
+                    } else {
+                        locationInfo.value = '当前位置（坐标模式）';
+                        locationStatus.value = 'coords_only';
+                    }
+                },
+                (error) => {
+                    let msg = '定位失败';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED: msg = '用户拒绝了定位权限'; break;
+                        case error.POSITION_UNAVAILABLE: msg = '位置信息不可用'; break;
+                        case error.TIMEOUT: msg = '定位超时'; break;
+                    }
+                    locationInfo.value = msg;
+                    locationStatus.value = 'error';
+                },
+                { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
+            );
+        };
+
+        const openFrontCamera = async () => {
+            showFrontCamera.value = true;
+            try {
+                const constraints = {
+                    video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } },
+                    audio: false
+                };
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                videoStream.value = stream;
+                setTimeout(() => { if (videoRef.value) videoRef.value.srcObject = stream; }, 100);
+            } catch (err) {
+                alert('无法访问摄像头: ' + err.message);
+                showFrontCamera.value = false;
+            }
+        };
+
+        const closeFrontCamera = () => {
+            if (videoStream.value) {
+                videoStream.value.getTracks().forEach(track => track.stop());
+                videoStream.value = null;
+            }
+            showFrontCamera.value = false;
+        };
+
+        const captureFromFront = () => {
+            if (!videoRef.value || !videoStream.value) return;
+            try {
+                const video = videoRef.value;
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth || 1920;
+                canvas.height = video.videoHeight || 1080;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageBase64 = canvas.toDataURL('image/jpeg', 0.95);
+                imgSrc.value = imageBase64;
+                currentImageBase64.value = imageBase64;
+                closeFrontCamera();
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        const file = new File([blob], "camera_capture.jpg", { type: "image/jpeg" });
+                        processFile(file);
+                    }
+                }, 'image/jpeg', 0.95);
+            } catch (err) { alert('拍照失败: ' + err.message); }
+        };
+
+        const captureFromBackend = async () => {
+            if (isCapturing.value || isAnalyzing.value) return;
+            try {
+                isCapturing.value = true;
+                showingSolutions.value = false;
+                rawResults.value = [];
+                getLocation();
+
+                const cropId = selectedCrop.value ? selectedCrop.value.id : null;
+
+                const timeoutPromise = new Promise((_, reject) => {
+                    setTimeout(() => reject(new Error('后端相机响应超时')), 5000);
+                });
+                const fetchPromise = fetch('/api/camera/detect', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ conf: confThreshold.value, crop: cropId })
+                });
+                const response = await Promise.race([fetchPromise, timeoutPromise]);
+                const data = await response.json();
+                if (!response.ok || data.error) {
+                    isCapturing.value = false;
+                    openFrontCamera();
+                    return;
+                }
+                imgSrc.value = data.image_base64;
+                currentImageBase64.value = data.image_base64;
+                rawResults.value = data.results || [];
+                fetchHistory();
+                if (data.results && data.results.length > 0 && 'speechSynthesis' in window) {
+                    setTimeout(speakResult, 500);
+                }
+            } catch (error) {
+                isCapturing.value = false;
+                openFrontCamera();
+            } finally { isCapturing.value = false; }
+        };
+
+        const processFile = async (file) => {
+            if (!file.type.startsWith('image/')) {
+                alert('请上传图片文件（JPG、PNG格式）');
+                return;
+            }
+            imgSrc.value = URL.createObjectURL(file);
+            isAnalyzing.value = true;
+            showingSolutions.value = false;
+            rawResults.value = [];
+            getLocation();
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('conf', '0.1');
+            if (selectedCrop.value) formData.append('crop', selectedCrop.value.id);
+
+            if (gpsCoords.value) {
+                formData.append('location_lat', gpsCoords.value.lat.toString());
+                formData.append('location_lng', gpsCoords.value.lng.toString());
+            }
+            if (locationInfo.value) {
+                formData.append('location_address', locationInfo.value);
+            }
+
+            try {
+                const response = await fetch('/api/detect', { method: 'POST', body: formData });
+                const data = await response.json();
+                if (data.error) {
+                    alert(data.error);
+                    imgSrc.value = '';
+                    return;
+                }
+                imgSrc.value = data.image_base64;
+                currentImageBase64.value = data.image_base64;
+                rawResults.value = data.results;
+                if (data.results.length > 0 && 'speechSynthesis' in window) {
+                    setTimeout(speakResult, 500);
+                }
+                fetchHistory();
+            } catch (error) {
+                alert('检测失败，请检查网络连接或稍后重试');
+            } finally { isAnalyzing.value = false; }
+        };
+
+        const onFileChange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            await processFile(file);
+        };
+
+        const triggerUpload = () => { fileRef.value.click(); };
+
+        const fetchCurrentUser = async () => {
+            try {
+                const response = await fetch('/api/auth/me');
+                if (response.ok) {
+                    currentUser.value = await response.json();
+                    // 新增：如果是管理员，获取待审核评论数
+                    if (currentUser.value && currentUser.value.role === 'admin') {
+                        fetchPendingComments();
+                    }
+                }
+            } catch (e) { }
+        };
+
+        const fetchPendingComments = async () => {
+            try {
+                const response = await fetch('/api/comments?status=pending');
+                if (response.ok) {
+                    const data = await response.json();
+                    pendingComments.value = data.stats?.pending || 0;
+                }
+            } catch (e) {
+                console.error('获取评论统计失败:', e);
+            }
+        };
+
+        const fetchHistory = async () => {
+            try {
+                const res = await fetch('/api/history');
+                if (res.ok) historyList.value = await res.json();
+            } catch (e) { }
+        };
+
+        const clearHistory = async () => {
+            if (!confirm('确定要清空所有检测历史吗？此操作不可恢复。')) return;
+            try {
+                const res = await fetch('/api/history/clear', { method: 'POST' });
+                if (res.ok) {
+                    historyList.value = [];
+                    alert('历史记录已清空');
+                } else {
+                    const err = await res.json();
+                    alert('清空失败：' + (err.error || '无权操作'));
+                }
+            } catch (e) {
+                alert('网络错误，请稍后重试');
+            }
+        };
+
+        const loadHistory = (item) => {
+            if (isAnalyzing.value || isCapturing.value) return;
+            imgSrc.value = item.image_base64;
+            currentImageBase64.value = item.image_base64;
+            rawResults.value = [{ name: item.pest_name, conf: item.confidence }];
+            if (item.crop_type) {
+                const crop = crops.value.find(c => c.id === item.crop_type);
+                if (crop) selectedCrop.value = crop;
+            }
+        };
+
+        const formatTime = (timeStr) => {
+            if (!timeStr) return '';
+            try {
+                const date = new Date(timeStr);
+                const now = new Date();
+                const diff = Math.floor((now - date) / 1000);
+                if (diff < 60) return '刚刚';
+                if (diff < 3600) return Math.floor(diff/60) + '分钟前';
+                if (diff < 86400) return Math.floor(diff/3600) + '小时前';
+                return date.toLocaleDateString();
+            } catch { return timeStr; }
+        };
+
+        const showAllSolutions = async () => {
+            showingSolutions.value = true;
+
+            // 为每个检测结果添加loading状态
+            displayedResults.value.forEach(r => {
+                r.solutionLoading = true;
+                r.solutionError = false;  // 新增错误标记
+            });
+
+            // 使用 Promise.allSettled 代替 await 循环，避免一个失败影响其他
+            const promises = displayedResults.value.map(async (result) => {
+                try {
+                    const res = await fetch(`/api/pest-solutions/${encodeURIComponent(result.name)}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        result.solution = data.data;
+                    } else {
+                        result.solutionError = true;
+                        result.solution = {
+                            prevention_methods: '获取方案失败，请稍后重试',
+                            chemical_control: '暂无数据',
+                            biological_control: '暂无数据'
+                        };
+                    }
+                } catch (e) {
+                    console.error('获取防治方案失败:', e);
+                    result.solutionError = true;
+                    result.solution = {
+                        prevention_methods: '网络错误，无法加载防治方案',
+                        chemical_control: '暂无数据',
+                        biological_control: '暂无数据'
+                    };
+                } finally {
+                    result.solutionLoading = false;
+                }
+            });
+
+            await Promise.all(promises);
+        };
+
+        // 修改知识库弹窗，调用真实API
+        const showKnowledgeModal = async (result) => {
+            knowledgeModal.value.show = true;
+            knowledgeModal.value.data = null; // 先显示loading状态
+
+            try {
+                const res = await fetch(`/api/pest-solutions/${encodeURIComponent(result.name)}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    knowledgeModal.value.data = {
+                        name: data.data.pest_name,
+                        description: data.data.prevention_methods,
+                        chemical: data.data.chemical_control,
+                        biological: data.data.biological_control,
+                        agricultural: data.data.agricultural_control,
+                        severity: data.data.severity_level
+                    };
+                }
+            } catch (e) {
+                // fallback到简化数据
+                knowledgeModal.value.data = {
+                    name: result.name,
+                    description: '获取详细知识库信息失败，请检查网络连接',
+                    chemical: '暂无数据',
+                    biological: '暂无数据',
+                    agricultural: '暂无数据'
+                };
+            }
+        };
+
+        const showTrendModal = async () => {
+            trendModal.value.show = true;
+            trendModal.value.loading = true;
+
+            try {
+                const res = await fetch('/api/history/stats');
+                if (res.ok) {
+                    const data = await res.json();
+
+                    // 直接使用数据库返回的数据（最近30天真实统计）
+                    trendModal.value.stats = {
+                        total: data.total || 0,
+                        highConf: data.highConf || 0,
+                        topCrop: data.topCrop || '暂无数据',
+                        topPest: data.topPests?.[0]?.name || '暂无数据'
+                    };
+
+                    // 计算百分比（用于进度条展示）
+                    const total = data.total || 1;
+                    trendModal.value.topPests = (data.topPests || []).map(p => ({
+                        name: p.name,
+                        count: p.count,
+                        percent: (p.count / total) * 100
+                    }));
+
+                    // 如果没有数据，显示提示
+                    if (data.total === 0) {
+                        trendModal.value.stats.topCrop = '无检测记录';
+                        trendModal.value.stats.topPest = '无检测记录';
+                    }
+                } else {
+                    // API 失败时显示错误，不使用模拟数据
+                    trendModal.value.stats = {
+                        total: 0,
+                        highConf: 0,
+                        topCrop: '获取失败',
+                        topPest: '获取失败'
+                    };
+                    trendModal.value.topPests = [];
+                    alert('获取趋势数据失败：' + (await res.json()).error);
+                }
+            } catch (e) {
+                console.error('获取趋势数据失败:', e);
+                alert('网络错误，请稍后重试');
+                trendModal.value.stats = {
+                    total: 0,
+                    highConf: 0,
+                    topCrop: '获取失败',
+                    topPest: '获取失败'
+                };
+            } finally {
+                trendModal.value.loading = false;
+            }
+        };
+
+        const generateReport = async () => {
+            if (!imgSrc.value) {
+                alert('请先上传图片并完成识别');
+                return;
+            }
+            if (displayedResults.value.length === 0) {
+                alert('暂无识别结果，请上传图片进行检测');
+                return;
+            }
+            isGenerating.value = true;
+            reportModal.value.show = true;
+            reportModal.value.reportId = 'REP' + Date.now().toString().slice(-8);
+            reportModal.value.time = new Date().toLocaleString('zh-CN');
+            setTimeout(() => { isGenerating.value = false; }, 800);
+            try {
+                await fetch('/api/detection-reports', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        report_id: reportModal.value.reportId,
+                        results: displayedResults.value,
+                        image_base64: currentImageBase64.value,
+                        location: locationInfo.value
+                    })
+                });
+            } catch (e) {
+                console.error('保存报告失败:', e);
+            }
+        };
+
+        const downloadPDF = async () => {
+            const element = document.getElementById('report-content');
+            try {
+                const canvas = await html2canvas(element, { scale: 2 });
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                pdf.save('病虫害检测报告_' + reportModal.value.reportId + '.pdf');
+            } catch (e) { alert('PDF生成失败'); }
+        };
+
+        const submitForReview = () => {
+            alert('已提交至专家复核队列。');
+        };
+
+        const goToChat = () => {
+            if (displayedResults.value.length === 0) return;
+            const pNames = [...new Set(displayedResults.value.map(r => r.name))].join('、');
+            if (currentImageBase64.value) {
+                sessionStorage.setItem('detected_pest_image', currentImageBase64.value);
+                sessionStorage.setItem('detected_pest_names', pNames);
+            }
+            window.location.href = '/chat?pest=' + encodeURIComponent(pNames);
+        };
+
+        const goToChatWithPest = (pestName) => {
+            if (currentImageBase64.value) {
+                sessionStorage.setItem('detected_pest_image', currentImageBase64.value);
+                sessionStorage.setItem('detected_pest_names', pestName);
+            }
+            window.location.href = '/chat?pest=' + encodeURIComponent(pestName);
+        };
+
+        const speakResult = () => {
+            if (!('speechSynthesis' in window)) return;
+            const synth = window.speechSynthesis;
+            synth.cancel();
+            if (displayedResults.value.length === 0) {
+                const utter = new SpeechSynthesisUtterance('未检测到病虫害。');
+                utter.lang = 'zh-CN';
+                synth.speak(utter);
+                return;
+            }
+            const pestNames = displayedResults.value.map(r => r.name).join('、');
+            const utter = new SpeechSynthesisUtterance('检测完成。发现' + displayedResults.value.length + '种病虫害：' + pestNames + '。');
+            utter.lang = 'zh-CN';
+            utter.rate = 0.9;
+            synth.speak(utter);
+        };
+
+        const selectCrop = (crop) => {
+            selectedCrop.value = crop;
+            localStorage.setItem('preferredCrop', crop.id);
+        };
+
+        onMounted(() => {
+            fetchCurrentUser();
+            fetchHistory();
+            fetchMapConfig();
+            const savedCrop = localStorage.getItem('preferredCrop');
+            if (savedCrop) {
+                const crop = crops.value.find(c => c.id === savedCrop);
+                if (crop) selectedCrop.value = crop;
+            }
+        });
+
+        return {
+            imgSrc, isAnalyzing, isGenerating, isCapturing, confThreshold, historyList,
+            fileRef, currentUser, locationInfo, locationStatus, gpsCoords, crops, selectedCrop,
+            amapKey, amapServiceKey, showingSolutions, knowledgeModal, reportModal, trendModal,
+            showFrontCamera, videoStream, videoRef, pendingComments, rawResults,
+            displayedResults, showLowConfidenceWarning, currentSolutions,
+            selectCrop, triggerUpload, onFileChange, speakResult, generateReport, downloadPDF,
+            formatTime, captureFromBackend, openFrontCamera, closeFrontCamera, captureFromFront,
+            showKnowledgeModal, showAllSolutions, showTrendModal, submitForReview,
+            goToChat, goToChatWithPest, clearHistory, loadHistory, processFile
+        };
+    }
+}).mount('#app');
+</script>
+</body>
+</html>

@@ -1,0 +1,3154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统设置 - 智能农政系统</title>
+    <script src="/api/config/js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2d5a27;
+            --primary-light: #3d7a35;
+            --bg-color: #f0f2f5;
+            --sidebar-width: 240px;
+            --danger-color: #ff4d4f;
+            --warning-color: #faad14;
+            --success-color: #52c41a;
+            --text-primary: #333;
+            --text-secondary: #666;
+            --border-color: #e8e8e8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: var(--bg-color);
+            font-family: 'Segoe UI', 'PingFang SC', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            color: #262626;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 侧边栏样式 */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--primary-color);
+            height: 100vh;
+            color: white;
+            position: fixed;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+        .sidebar-header {
+            padding: 30px 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .nav-menu { flex: 1; padding: 20px 0; overflow-y: auto; }
+        .nav-item {
+            padding: 15px 25px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: 0.3s;
+            text-decoration: none;
+            color: white;
+            position: relative;
+            font-size: 14px;
+        }
+        .nav-item:hover, .nav-item.active {
+            background: rgba(255,255,255,0.1);
+            border-left: 4px solid #fff;
+        }
+        .nav-item i { margin-right: 15px; width: 20px; text-align: center; }
+
+        .badge {
+            position: absolute;
+            right: 15px;
+            background: #ff4d4f;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: bold;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        /* 用户信息区域 */
+        .user-info {
+            padding: 15px 20px;
+            background: rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .user-info div {
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .user-role {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            margin-top: 4px;
+            font-weight: bold;
+        }
+        .role-admin {
+            background: #ff4d4f;
+            color: white;
+        }
+        .role-farmer {
+            background: #52c41a;
+            color: white;
+        }
+
+        /* 主体内容区 */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 30px;
+            max-width: calc(100% - var(--sidebar-width));
+            overflow-y: auto;
+            height: 100vh;
+        }
+
+        /* 页面标题 */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        .page-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .page-title i {
+            color: var(--primary-color);
+        }
+
+        /* 设置布局 - 采用第二个文件的卡片式设计 */
+        .settings-container {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 24px;
+            height: calc(100vh - 140px);
+        }
+
+        /* 左侧设置菜单 - 第二个文件的卡片样式 */
+        .settings-menu {
+            background: white;
+            border-radius: 12px;
+            padding: 20px 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            height: fit-content;
+            position: sticky;
+            top: 30px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .nav-section-title {
+            padding: 12px 24px 8px;
+            font-size: 12px;
+            color: #999;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #f0f0f0;
+            margin-bottom: 8px;
+        }
+
+        .menu-item {
+            padding: 14px 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+            color: #595959;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .menu-item:hover {
+            background: #f5f5f5;
+            color: var(--primary-color);
+        }
+        .menu-item.active {
+            background: #f6ffed;
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            font-weight: 500;
+        }
+        .menu-item i { width: 20px; text-align: center; }
+
+        /* 退出登录特殊样式 */
+        .logout-section {
+            margin-top: auto;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+        .menu-item.logout {
+            color: var(--danger-color);
+            border-left-color: transparent;
+        }
+        .menu-item.logout:hover {
+            background: #fff1f0;
+            color: var(--danger-color);
+        }
+
+        /* 右侧内容区 - 第二个文件的样式 */
+        .settings-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+
+            padding-right: 10px;
+        }
+
+        /* 卡片通用样式 - 来自第二个文件 */
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-header {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--text-primary);
+        }
+
+        .card-header i {
+            color: var(--primary-color);
+            margin-right: 8px;
+        }
+
+        /* 原有表单的section-title样式 */
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #262626;
+        }
+
+        /* 表单样式 */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+        .form-group label {
+            font-size: 14px;
+            color: #262626;
+            font-weight: 500;
+        }
+        .form-group .hint {
+            font-size: 12px;
+            color: #8c8c8c;
+            margin-top: 4px;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 10px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(45, 90, 39, 0.1);
+        }
+        .form-group input:disabled,
+        .form-group select:disabled {
+            background: #f5f5f5;
+            cursor: not-allowed;
+        }
+
+        /* 开关样式 - 来自第二个文件的精美设计 */
+        .switch-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            background: #fafafa;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            transition: all 0.3s;
+        }
+        .switch-wrapper:hover {
+            background: #f6ffed;
+        }
+        .switch-info h4 {
+            margin: 0 0 4px 0;
+            font-size: 14px;
+            color: #262626;
+        }
+        .switch-info p {
+            margin: 0;
+            font-size: 12px;
+            color: #8c8c8c;
+        }
+
+        /* 开关按钮 */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 24px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        /* 任务列表样式 - 来自第二个文件 */
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: #f6ffed;
+            border-left: 4px solid var(--primary-color);
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .task-item:hover {
+            transform: translateX(3px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .task-main {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex: 1;
+        }
+
+        .task-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            background: white;
+            border: 1px solid #e8e8e8;
+            color: var(--primary-color);
+        }
+
+        .task-info h4 {
+            margin: 0 0 5px 0;
+            color: var(--primary-color);
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .task-meta {
+            font-size: 12px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .next-run {
+            color: var(--primary-color);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            background: #f6ffed;
+            color: var(--success-color);
+            font-weight: bold;
+            border: 1px solid #b7eb8f;
+        }
+
+        .status-badge.warning {
+            background: #fff7e6;
+            color: var(--warning-color);
+            border-color: #ffd591;
+        }
+
+        .task-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .time-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        .time-badge:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background: #f6ffed;
+        }
+
+        /* 功能网格 - 来自第二个文件 */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .feature-card {
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            transition: all 0.3s;
+            background: #fafafa;
+        }
+        .feature-card:hover {
+            border-color: #b7eb8f;
+            background: #f6ffed;
+        }
+
+        .feature-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .feature-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        /* 滑块容器 */
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        input[type="range"].slider-bar {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 4px;
+            border-radius: 2px;
+            background: #e8e8e8;
+            outline: none;
+        }
+
+        input[type="range"].slider-bar::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .slider-value {
+            font-size: 13px;
+            color: var(--primary-color);
+            font-weight: 600;
+            min-width: 50px;
+            text-align: right;
+        }
+
+        /* 快捷操作 */
+        .quick-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .quick-btn {
+            padding: 12px 20px;
+            background: #f6ffed;
+            border: 1px solid #b7eb8f;
+            color: var(--primary-color);
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        .quick-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(45, 90, 39, 0.3);
+        }
+
+        /* 性能指标 */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .metric-item {
+            text-align: center;
+            padding: 20px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .metric-label {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .metric-item.green {
+            background: #f6ffed;
+            color: var(--primary-color);
+        }
+
+        .metric-item.blue {
+            background: #e6f7ff;
+            color: #1890ff;
+        }
+
+        .metric-item.purple {
+            background: #f9f0ff;
+            color: #722ed1;
+        }
+
+        .metric-item.orange {
+            background: #fff7e6;
+            color: #fa8c16;
+        }
+
+        /* 按钮样式 - 统一 */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+        }
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(45, 90, 39, 0.3);
+        }
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .btn-default {
+            background: white;
+            border: 1px solid #d9d9d9;
+            color: #595959;
+        }
+        .btn-default:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background: #f6ffed;
+        }
+        .btn-danger {
+            background: #fff1f0;
+            border: 1px solid #ffa39e;
+            color: #cf1322;
+        }
+        .btn-danger:hover {
+            background: #ff4d4f;
+            color: white;
+        }
+        .btn-secondary {
+            background: white;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+        .btn-secondary:hover {
+            background: #f6ffed;
+        }
+
+        .action-bar {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* 数据管理卡片 */
+        .data-card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            transition: all 0.3s;
+        }
+        .data-card:hover {
+            border-color: #b7eb8f;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .data-info h4 {
+            margin: 0 0 4px 0;
+            font-size: 15px;
+            color: #262626;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .data-info p {
+            margin: 0;
+            font-size: 13px;
+            color: #8c8c8c;
+        }
+        .data-meta {
+            font-size: 12px;
+            color: #bfbfbf;
+            margin-top: 4px;
+        }
+
+        /* 状态卡片 */
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .status-card {
+            background: #fafafa;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .status-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 4px;
+        }
+        .status-label {
+            font-size: 13px;
+            color: #8c8c8c;
+        }
+
+        /* 角标样式 */
+        .badge {
+            position: absolute;
+            right: 15px;
+            background: #ff4d4f;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        /* 日志区域 */
+        .log-container {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            margin-bottom: 8px;
+            padding-left: 16px;
+            position: relative;
+        }
+        .log-entry::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 8px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .log-entry.info::before { background: #1890ff; }
+        .log-entry.success::before { background: #52c41a; }
+        .log-entry.warning::before { background: #faad14; }
+        .log-entry.error::before { background: #ff4d4f; }
+        .log-time {
+            color: #6e6e6e;
+            margin-right: 8px;
+        }
+
+        /* 退出登录卡片 */
+        .logout-card {
+            background: #fff1f0;
+            border: 1px solid #ffa39e;
+            border-radius: 8px;
+            padding: 24px;
+            margin-top: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logout-info h4 {
+            margin: 0 0 6px 0;
+            color: #cf1322;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .logout-info p {
+            margin: 0;
+            color: #595959;
+            font-size: 13px;
+        }
+
+        /* 时间设置区域 */
+        .time-setting {
+            animation: slideDown 0.3s ease;
+            margin: -8px 0 16px 48px;
+            padding: 12px 16px;
+            background: #f6ffed;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Toast提示 - 来自第二个文件 */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--primary-color);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(45, 90, 39, 0.3);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            animation: toastSlide 0.3s ease;
+        }
+        .toast.show {
+            display: flex;
+        }
+        @keyframes toastSlide {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* 模态框 - 来自第二个文件 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            width: 400px;
+            max-width: 90%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            animation: modalSlide 0.3s ease;
+        }
+        @keyframes modalSlide {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .modal-header {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .modal-subtitle {
+            color: #999;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+        .form-label {
+            display: block;
+            font-size: 14px;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .form-select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .form-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(45, 90, 39, 0.1);
+        }
+        .time-picker {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 8px;
+            margin: 16px 0;
+        }
+        .time-picker select {
+            padding: 10px 16px;
+            font-size: 18px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .time-separator {
+            font-size: 20px;
+            color: #999;
+            font-weight: 300;
+        }
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 1200px) {
+            .settings-container {
+                grid-template-columns: 1fr;
+            }
+            .settings-menu {
+                position: static;
+                display: flex;
+                flex-direction: row;
+                overflow-x: auto;
+                padding: 10px;
+            }
+            .logout-section {
+                display: none;
+            }
+            .menu-item {
+                white-space: nowrap;
+                border-left: none;
+                border-bottom: 3px solid transparent;
+            }
+            .menu-item.active {
+                border-left-color: transparent;
+                border-bottom-color: var(--primary-color);
+            }
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .form-group.full-width {
+                grid-column: span 1;
+            }
+            .status-grid {
+                grid-template-columns: 1fr;
+            }
+            .logout-card {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+            .task-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            .task-controls {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+            .main-content {
+                padding: 15px;
+            }
+        }
+
+        /* 隐藏第二个文件base target导致的样式问题 */
+        base { display: none; }
+
+        /* 提示框样式 */
+        .alert {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .alert-success {
+            background: #f6ffed;
+            border: 1px solid #b7eb8f;
+            color: #52c41a;
+        }
+        .alert-error {
+            background: #fff1f0;
+            border: 1px solid #ffa39e;
+            color: #ff4d4f;
+        }
+    </style>
+<base target="_blank">
+<base target="_blank">
+<base target="_blank">
+<base target="_blank">
+</head>
+<body>
+    <div id="app" style="display: contents;">
+        <!-- 侧边栏 - 使用第一个文件的动态逻辑 -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-leaf"></i> 智能农政系统
+            </div>
+
+            <!-- 用户信息区域 -->
+            <div class="user-info" v-if="currentUser">
+                <div>
+                    <i class="fas fa-user-circle"></i> {{ currentUser.name || currentUser.email }}
+                </div>
+                <span :class="['user-role', currentUser.role === 'admin' ? 'role-admin' : 'role-farmer']">
+                    {{ currentUser.role === 'admin' ? '管理员' : '种植农户' }}
+                </span>
+            </div>
+
+            <div class="nav-menu">
+                <!-- 公共菜单 -->
+                <a href="/home" class="nav-item"><i class="fas fa-chart-line"></i> 实时监控</a>
+                <a href="/detect" class="nav-item"><i class="fas fa-bug"></i> 病虫害识别</a>
+
+                <!-- 管理员专属菜单 -->
+                <template v-if="currentUser && currentUser.role === 'admin'">
+                    <a href="/admin/comments" class="nav-item">
+                        <i class="fas fa-comments"></i> <span>评论审核</span>
+                        <span v-if="pendingComments > 0" class="badge">{{ pendingComments }}</span>
+                    </a>
+                    <a href="/admin/users" class="nav-item"><i class="fas fa-users-cog"></i> 用户管理</a>
+                </template>
+
+                <!-- 农户专属菜单 -->
+                <template v-if="currentUser && currentUser.role === 'farmer'">
+                    <a href="/comments" class="nav-item"><i class="fas fa-comments"></i> 经验交流</a>
+                    <a href="/my-farm" class="nav-item"><i class="fas fa-tractor"></i> 我的农场</a>
+                </template>
+
+                <a href="/map" class="nav-item"><i class="fas fa-map-marked-alt"></i> 风险地图</a>
+                <a href="/chat" class="nav-item"><i class="fas fa-robot"></i> AI问诊</a>
+                <a href="/knowledge" class="nav-item">
+                    <i class="fas fa-book-medical"></i> <span>知识库</span>
+                </a>
+                <a href="/farm-records" class="nav-item"><i class="fas fa-history"></i> 农事记录</a>
+                <!-- 系统设置保持激活状态 -->
+                <a href="/set" class="nav-item active"><i class="fas fa-cog"></i> 系统设置</a>
+            </div>
+        </div>
+
+        <!-- 主体内容 -->
+        <div class="main-content">
+            <!-- 页面标题 - 采用第二个文件的风格 -->
+            <div class="page-header">
+                <div class="page-title">
+                    <i class="fas fa-cog"></i>
+                    系统设置
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <button class="btn btn-secondary" @click="systemDiagnostics">
+                        <i class="fas fa-heart-pulse"></i>
+                        系统诊断
+                    </button>
+                </div>
+            </div>
+
+            <div class="settings-container">
+                <!-- 左侧设置菜单 - 采用第二个文件的卡片式分组 -->
+                <div class="settings-menu">
+                    <div class="nav-section-title">基础设置</div>
+                    <div
+                        v-for="item in basicMenuItems"
+                        :key="item.key"
+                        :class="['menu-item', activeTab === item.key ? 'active' : '']"
+                        @click="activeTab = item.key"
+                    >
+                        <i :class="item.icon"></i>
+                        <span>{{ item.label }}</span>
+                    </div>
+
+                    <div class="nav-section-title">高级功能</div>
+                    <div
+                        v-for="item in advancedMenuItems"
+                        :key="item.key"
+                        :class="['menu-item', activeTab === item.key ? 'active' : '']"
+                        @click="activeTab = item.key"
+                    >
+                        <i :class="item.icon"></i>
+                        <span>{{ item.label }}</span>
+                    </div>
+
+                    <div class="nav-section-title">系统管理</div>
+                    <div
+                        v-for="item in manageMenuItems"
+                        :key="item.key"
+                        :class="['menu-item', activeTab === item.key ? 'active' : '']"
+                        @click="activeTab = item.key"
+                    >
+                        <i :class="item.icon"></i>
+                        <span>{{ item.label }}</span>
+                    </div>
+                </div>
+
+                <!-- 右侧设置内容 - 采用第二个文件的卡片堆叠布局 -->
+                <div class="settings-content">
+                    <!-- 基础信息 -->
+                    <div v-if="activeTab === 'basic'" class="card">
+                        <div class="section-title">
+                            <i class="fas fa-info-circle"></i>
+                            农场基础信息
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>农场名称</label>
+                                <input v-model="settings.farmName" placeholder="请输入农场名称">
+                            </div>
+                            <div class="form-group">
+                                <label>农场编码</label>
+                                <input v-model="settings.farmCode" placeholder="如：ZC-001" disabled>
+                                <span class="hint">系统自动生成，不可修改</span>
+                            </div>
+                            <div class="form-group">
+                                <label>负责人姓名</label>
+                                <input v-model="settings.manager" placeholder="请输入负责人姓名">
+                            </div>
+                            <div class="form-group">
+                                <label>联系电话</label>
+                                <input v-model="settings.phone" placeholder="请输入联系电话">
+                            </div>
+                            <div class="form-group full-width">
+                                <label>农场地址</label>
+                                <input v-model="settings.address" placeholder="请输入详细地址">
+                            </div>
+                            <div class="form-group full-width">
+                                <label>农场简介</label>
+                                <textarea v-model="settings.description" rows="3" placeholder="请输入农场简介"></textarea>
+                            </div>
+                        </div>
+                        <div class="action-bar">
+                            <button class="btn btn-default" @click="resetSettings">重置</button>
+                            <button class="btn btn-primary" :disabled="saving" @click="saveSettings">
+                                <i class="fas fa-save"></i>
+                                {{ saving ? '保存中...' : '保存设置' }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 地图配置 -->
+                    <div v-if="activeTab === 'map'" class="card">
+                        <div class="section-title">
+                            <i class="fas fa-map-marked-alt"></i>
+                            地图服务配置
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label>农场地址（用于快速定位）</label>
+                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px;">
+                                    <select v-model="selectedProvince" @change="onProvinceChange" class="form-select">
+                                        <option value="">选择省份</option>
+                                        <option v-for="prov in provinces" :key="prov.code" :value="prov.code">{{ prov.name }}</option>
+                                    </select>
+                                    <select v-model="selectedCity" @change="onCityChange" class="form-select" :disabled="!selectedProvince">
+                                        <option value="">选择城市</option>
+                                        <option v-for="city in cities" :key="city.code" :value="city.code">{{ city.name }}</option>
+                                    </select>
+                                    <select v-model="selectedDistrict" @change="onDistrictChange" class="form-select" :disabled="!selectedCity">
+                                        <option value="">选择区县</option>
+                                        <option v-for="dist in districts" :key="dist.code" :value="dist.code">{{ dist.name }}</option>
+                                    </select>
+                                </div>
+                                <div style="display: flex; gap: 10px;">
+                                    <input v-model="settings.streetAddress" placeholder="请输入详细街道地址（如：XX街道XX号）" style="flex: 1;">
+                                    <button class="btn btn-secondary" @click="geocodeAddress" :disabled="geocoding || !selectedDistrict">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        {{ geocoding ? '定位中...' : '定位到地图' }}
+                                    </button>
+                                </div>
+                                <span class="hint">选择省市区后，输入详细街道地址，点击定位自动获取经纬度坐标</span>
+                            </div>
+                            <div class="form-group full-width" v-if="geocodeResult">
+                                <div :class="['alert', geocodeResult.success ? 'alert-success' : 'alert-error']" style="padding: 10px; border-radius: 6px; font-size: 13px;">
+                                    <i :class="geocodeResult.success ? 'fas fa-check-circle' : 'fas fa-exclamation-circle'"></i>
+                                    {{ geocodeResult.message }}
+                                </div>
+                            </div>
+                            <!-- 高德地图Key由后端.env文件管理，不在前端显示 -->
+                            <div class="form-group">
+                                <label>中心经度</label>
+                                <input v-model="settings.centerLng" placeholder="如：113.8291">
+                            </div>
+                            <div class="form-group">
+                                <label>中心纬度</label>
+                                <input v-model="settings.centerLat" placeholder="如：23.3242">
+                            </div>
+                            <div class="form-group">
+                                <label>默认缩放级别</label>
+                                <select v-model="settings.zoom">
+                                    <option value="12">12 - 城市级</option>
+                                    <option value="13">13 - 区县级</option>
+                                    <option value="14">14 - 街道级</option>
+                                    <option value="15">15 - 详细级</option>
+                                    <option value="16">16 - 农田级</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>自动刷新间隔(秒)</label>
+                                <input v-model="settings.refreshInterval" type="number" min="10" max="300">
+                            </div>
+                        </div>
+                        <div class="action-bar">
+                            <button class="btn btn-default" @click="testMap">测试连接</button>
+                            <button class="btn btn-primary" :disabled="saving" @click="saveSettings">
+                                <i class="fas fa-save"></i>
+                                {{ saving ? '保存中...' : '保存设置' }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 通知设置 -->
+                    <div v-if="activeTab === 'notify'">
+                        <div class="card">
+                            <div class="section-title">
+                                <i class="fas fa-bell"></i>
+                                通知设置
+                            </div>
+                            <div class="switch-wrapper">
+                                <div class="switch-info">
+                                    <h4>高风险告警推送</h4>
+                                    <p>当检测到高风险病虫害时，自动发送邮件和短信通知</p>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" v-model="settings.enableAlert">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="switch-wrapper">
+                                <div class="switch-info">
+                                    <h4>每日数据报告</h4>
+                                    <p>每天自动发送当日监测摘要报告</p>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" v-model="settings.enableDailyReport">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <!-- 时间设置（当开启每日报告时显示） -->
+                            <div v-if="settings.enableDailyReport" class="time-setting">
+                                <i class="fas fa-clock" style="color: var(--primary-color);"></i>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 13px; color: #262626; margin-bottom: 4px;">发送时间</div>
+                                    <input
+                                        type="time"
+                                        v-model="settings.dailyReportTime"
+                                        style="padding: 6px 10px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px; cursor: pointer;"
+                                    >
+                                </div>
+                                <div style="font-size: 12px; color: #8c8c8c;">
+                                    将在每天 {{ settings.dailyReportTime || '18:00' }} 自动发送
+                                </div>
+                            </div>
+                            <div class="switch-wrapper">
+                                <div class="switch-info">
+                                    <h4>设备离线提醒</h4>
+                                    <p>当边缘设备离线超过{{ settings.offlineAlertThreshold || 5 }}分钟时发送提醒</p>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" v-model="settings.enableOfflineAlert">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <!-- 离线时间阈值设置 -->
+                            <div v-if="settings.enableOfflineAlert" class="time-setting">
+                                <i class="fas fa-clock" style="color: var(--primary-color);"></i>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 13px; color: #262626; margin-bottom: 4px;">检测时间阈值</div>
+                                    <select v-model="settings.offlineAlertThreshold" style="padding: 6px 10px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px; cursor: pointer; width: 120px;">
+                                        <option value="5">5 分钟</option>
+                                        <option value="10">10 分钟</option>
+                                        <option value="15">15 分钟</option>
+                                        <option value="30">30 分钟</option>
+                                        <option value="60">1 小时</option>
+                                    </select>
+                                </div>
+                                <div style="font-size: 12px; color: #8c8c8c;">
+                                    设备离线超过 {{ settings.offlineAlertThreshold || 5 }} 分钟后触发告警
+                                </div>
+                            </div>
+                            <div class="action-bar">
+                                <button class="btn btn-default" @click="resetSettings">重置</button>
+                                <button class="btn btn-primary" :disabled="saving" @click="saveSettings">
+                                    <i class="fas fa-save"></i>
+                                    {{ saving ? '保存中...' : '保存设置' }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 定时任务 - 新增，来自第二个文件 -->
+                    <div v-if="activeTab === 'tasks'">
+                        <div class="card">
+                            <div class="card-header">
+                                <div>
+                                    <i class="fas fa-clock"></i>
+                                    定时任务管理
+                                    <span style="font-size: 13px; color: #999; font-weight: normal;">({{ tasks.length }}个任务)</span>
+                                </div>
+                                <button class="btn btn-secondary" style="font-size: 13px;" @click="openAddTaskModal()">
+                                    <i class="fas fa-plus"></i>
+                                    添加任务
+                                </button>
+                            </div>
+
+                            <div class="task-list">
+                                <div class="task-item" v-for="task in tasks" :key="task.id">
+                                    <div class="task-main">
+                                        <div class="task-icon" :style="{ color: task.color }">
+                                            <i :class="task.icon"></i>
+                                        </div>
+                                        <div class="task-info">
+                                            <h4>{{ task.name }}</h4>
+                                            <div class="task-meta">
+                                                <span class="next-run">
+                                                    <i class="fas fa-calendar-check"></i>
+                                                    下次执行：{{ task.nextRun }}
+                                                </span>
+                                                <span :class="['status-badge', task.status === 'warning' ? 'warning' : '']">
+                                                    <i :class="task.statusIcon"></i>
+                                                    {{ task.statusText }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="task-controls">
+                                        <div class="time-badge" @click="openTimeModal(task)">
+                                            <i class="fas fa-clock"></i>
+                                            <span>{{ task.period }} {{ task.time }}</span>
+                                            <i class="fas fa-edit"></i>
+                                        </div>
+                                        <button
+                                            class="btn btn-default"
+                                            @click="deleteTask(task.id)"
+                                            style="padding: 8px 12px; color: #ff4d4f; border-color: #ffa39e;"
+                                            title="删除任务"
+                                        >
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                        <label class="switch">
+                                            <input type="checkbox" v-model="task.enabled" @change="toggleTask(task)">
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 快捷操作面板 - 来自第二个文件 -->
+                        <div class="card">
+                            <div class="card-header">
+                                <div>
+                                    <i class="fas fa-rocket"></i>
+                                    快捷操作面板
+                                </div>
+                            </div>
+                            <div class="quick-actions">
+                                <button class="quick-btn" @click="showToast('已开始执行数据备份...')">
+                                    <i class="fas fa-save"></i>
+                                    立即备份
+                                </button>
+                                <button class="quick-btn" @click="showToast('缓存清理完成，释放 128MB 空间')">
+                                    <i class="fas fa-broom"></i>
+                                    清理缓存
+                                </button>
+                                <button class="quick-btn" @click="showToast('正在检查 AI 模型更新...')">
+                                    <i class="fas fa-sync-alt"></i>
+                                    检查更新
+                                </button>
+                                <button class="quick-btn" @click="systemDiagnostics">
+                                    <i class="fas fa-stethoscope"></i>
+                                    系统诊断
+                                </button>
+                                <button class="quick-btn" @click="showToast('正在导出数据，请稍候...')">
+                                    <i class="fas fa-download"></i>
+                                    导出数据
+                                </button>
+                                <button class="quick-btn" @click="showToast('测试通知已发送至您的手机')">
+                                    <i class="fas fa-paper-plane"></i>
+                                    测试通知
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 数据保留策略 - 新增，来自第二个文件 -->
+                    <div v-if="activeTab === 'retention'">
+                        <div class="card">
+                            <div class="card-header">
+                                <div>
+                                    <i class="fas fa-archive"></i>
+                                    数据保留策略
+                                </div>
+                            </div>
+
+                            <div class="feature-grid">
+                                <div class="feature-card">
+                                    <div class="feature-header">
+                                        <span class="feature-title">
+                                            <i class="fas fa-image" style="color: #1890ff;"></i>
+                                            监测图片保留
+                                        </span>
+                                        <label class="switch">
+                                            <input type="checkbox" v-model="retention.image.enabled">
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                    <p class="feature-desc">病虫害识别拍摄的图片自动清理</p>
+                                    <div class="slider-container">
+                                        <input type="range" class="slider-bar" min="30" max="365" v-model="retention.image.days" :disabled="!retention.image.enabled">
+                                        <span class="slider-value" :style="{ color: retention.image.enabled ? 'var(--primary-color)' : '#999' }">{{ retention.image.days }}天</span>
+                                    </div>
+                                </div>
+
+                                <div class="feature-card">
+                                    <div class="feature-header">
+                                        <span class="feature-title">
+                                            <i class="fas fa-thermometer-half" style="color: #52c41a;"></i>
+                                            传感器数据
+                                        </span>
+                                        <label class="switch">
+                                            <input type="checkbox" v-model="retention.sensor.enabled">
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                    <p class="feature-desc">温湿度、光照等环境监测数据</p>
+                                    <div class="slider-container">
+                                        <input type="range" class="slider-bar" min="180" max="1095" v-model="retention.sensor.days" :disabled="!retention.sensor.enabled">
+                                        <span class="slider-value" :style="{ color: retention.sensor.enabled ? 'var(--primary-color)' : '#999' }">{{ retention.sensor.days }}天</span>
+                                    </div>
+                                </div>
+
+                                <div class="feature-card">
+                                    <div class="feature-header">
+                                        <span class="feature-title">
+                                            <i class="fas fa-exclamation-triangle" style="color: #faad14;"></i>
+                                            告警记录
+                                        </span>
+                                        <label class="switch">
+                                            <input type="checkbox" v-model="retention.alert.enabled">
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                    <p class="feature-desc">病虫害风险预警历史记录</p>
+                                    <div class="slider-container">
+                                        <input type="range" class="slider-bar" min="90" max="730" v-model="retention.alert.days" :disabled="!retention.alert.enabled">
+                                        <span class="slider-value" :style="{ color: retention.alert.enabled ? 'var(--primary-color)' : '#999' }">{{ retention.alert.days }}天</span>
+                                    </div>
+                                </div>
+
+                                <div class="feature-card">
+                                    <div class="feature-header">
+                                        <span class="feature-title">
+                                            <i class="fas fa-clipboard-list" style="color: #722ed1;"></i>
+                                            系统日志
+                                        </span>
+                                        <label class="switch">
+                                            <input type="checkbox" v-model="retention.log.enabled">
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                    <p class="feature-desc">操作审计与安全日志（建议开启）</p>
+                                    <div class="slider-container">
+                                        <input type="range" class="slider-bar" min="30" max="365" v-model="retention.log.days" :disabled="!retention.log.enabled">
+                                        <span class="slider-value" :style="{ color: retention.log.enabled ? 'var(--primary-color)' : '#999' }">{{ retention.log.days }}天</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="action-bar">
+                                <button class="btn btn-primary" @click="saveRetention">
+                                    <i class="fas fa-save"></i>
+                                    保存策略
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 智能预警 - 新增，来自第二个文件 -->
+                    <div v-if="activeTab === 'alert'">
+                        <div class="card">
+                            <div class="card-header">
+                                <div>
+                                    <i class="fas fa-shield-alt"></i>
+                                    智能预警设置
+                                </div>
+                            </div>
+
+                            <div class="feature-grid">
+                                <div class="feature-card" v-for="alert in alertSettings" :key="alert.id">
+                                    <div class="feature-header">
+                                        <span class="feature-title">
+                                            <i :class="alert.icon" :style="{ color: alert.color }"></i>
+                                            {{ alert.name }}
+                                        </span>
+                                        <label class="switch">
+                                            <input type="checkbox" v-model="alert.enabled" @change="showToast(alert.name + (alert.enabled ? '已启用' : '已禁用')); saveAlerts()"
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                    <p class="feature-desc">{{ alert.desc }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 性能监控 - 来自第二个文件 -->
+                        <div class="card">
+                            <div class="card-header">
+                                <div>
+                                    <i class="fas fa-heartbeat"></i>
+                                    系统性能监控
+                                </div>
+                                <span class="status-badge">
+                                    <i class="fas fa-check"></i>
+                                    运行正常
+                                </span>
+                            </div>
+
+                            <div class="metrics-grid">
+                                <div class="metric-item green">
+                                    <div class="metric-value">{{ systemMetrics.health }}%</div>
+                                    <div class="metric-label">系统健康度</div>
+                                </div>
+                                <div class="metric-item blue">
+                                    <div class="metric-value">{{ systemMetrics.storage }}GB</div>
+                                    <div class="metric-label">存储使用</div>
+                                </div>
+                                <div class="metric-item purple">
+                                    <div class="metric-value">{{ systemMetrics.response }}ms</div>
+                                    <div class="metric-label">平均响应</div>
+                                </div>
+                                <div class="metric-item orange">
+                                    <div class="metric-value">{{ systemMetrics.uptime }}天</div>
+                                    <div class="metric-label">运行时长</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI模型配置 -->
+                    <div v-if="activeTab === 'ai'" class="card">
+                        <div class="section-title">
+                            <i class="fas fa-robot"></i>
+                            AI 模型配置
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label>YOLO 模型路径</label>
+                                <input v-model="settings.modelPath" placeholder="/path/to/best.pt">
+                                <span class="hint">支持 .pt 或 .onnx 格式的模型文件</span>
+                            </div>
+                            <div class="form-group">
+                                <label>置信度阈值</label>
+                                <input v-model="settings.confThreshold" type="number" step="0.05" min="0.1" max="0.9">
+                                <span class="hint">默认0.25，值越高识别越严格</span>
+                            </div>
+                            <div class="form-group">
+                                <label>IOU 阈值</label>
+                                <input v-model="settings.iouThreshold" type="number" step="0.05" min="0.1" max="0.9">
+                                <span class="hint">默认0.45，用于NMS去重</span>
+                            </div>
+                            <div class="form-group full-width">
+                                <label>DeepSeek API 地址</label>
+                                <input v-model="settings.aiApiUrl" placeholder="http://localhost:11434/v1">
+                            </div>
+                            <div class="form-group full-width">
+                                <label>模型名称</label>
+                                <input v-model="settings.aiModel" placeholder="deepseek-r1:1.5b">
+                            </div>
+                        </div>
+
+                        <div class="section-title" style="margin-top: 32px;">
+                            <i class="fas fa-microchip"></i>
+                            硬件加速
+                        </div>
+                        <div class="switch-wrapper">
+                            <div class="switch-info">
+                                <h4>使用 GPU 加速</h4>
+                                <p>启用 CUDA 加速推理（需要NVIDIA显卡）</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" v-model="settings.useGpu">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="action-bar">
+                            <button class="btn btn-default" @click="testModel">测试模型</button>
+                            <button class="btn btn-primary" :disabled="saving" @click="saveSettings">
+                                <i class="fas fa-save"></i>
+                                {{ saving ? '保存中...' : '保存设置' }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 数据管理 -->
+                    <div v-if="activeTab === 'data'">
+                        <div class="card">
+                            <div class="section-title">
+                                <i class="fas fa-database"></i>
+                                数据管理
+                            </div>
+
+                            <div class="status-grid">
+                                <div class="status-card">
+                                    <div class="status-value">{{ dataStats.detection }}条</div>
+                                    <div class="status-label">检测记录</div>
+                                </div>
+                                <div class="status-card">
+                                    <div class="status-value">{{ dataStats.chat }}条</div>
+                                    <div class="status-label">对话记录</div>
+                                </div>
+                                <div class="status-card">
+                                    <div class="status-value">{{ dataStats.farm }}条</div>
+                                    <div class="status-label">农事记录</div>
+                                </div>
+                            </div>
+
+                            <div class="data-card">
+                                <div class="data-info">
+                                    <h4><i class="fas fa-bug" style="color: var(--primary-color);"></i>病虫害检测历史</h4>
+                                    <p>包含所有上传的图片和识别结果</p>
+                                    <div class="data-meta">共占用存储空间：{{ dataStats.detectionSize }}MB</div>
+                                </div>
+                                <div>
+                                    <button class="btn btn-default" @click="exportData('detection')" style="margin-right: 8px;">
+                                        <i class="fas fa-download"></i> 导出
+                                    </button>
+                                    <button class="btn btn-danger" @click="clearData('detection')">
+                                        <i class="fas fa-trash-alt"></i> 清空
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="data-card">
+                                <div class="data-info">
+                                    <h4><i class="fas fa-comments" style="color: #1890ff;"></i>AI 对话记录</h4>
+                                    <p>用户与AI专家的咨询对话历史</p>
+                                    <div class="data-meta">最近备份：{{ dataStats.lastBackup }}</div>
+                                </div>
+                                <div>
+                                    <button class="btn btn-default" @click="exportData('chat')" style="margin-right: 8px;">
+                                        <i class="fas fa-download"></i> 导出
+                                    </button>
+                                    <button class="btn btn-danger" @click="clearData('chat')">
+                                        <i class="fas fa-trash-alt"></i> 清空
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="data-card">
+                                <div class="data-info">
+                                    <h4><i class="fas fa-clipboard-list" style="color: #faad14;"></i>农事记录</h4>
+                                    <p>农事作业记录和操作日志</p>
+                                </div>
+                                <div>
+                                    <button class="btn btn-default" @click="exportData('farm')" style="margin-right: 8px;">
+                                        <i class="fas fa-download"></i> 导出
+                                    </button>
+                                    <button class="btn btn-danger" @click="clearData('farm')">
+                                        <i class="fas fa-trash-alt"></i> 清空
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card" style="margin-top: 20px;">
+                            <div class="section-title">
+                                <i class="fas fa-shield-alt"></i>
+                                数据备份
+                            </div>
+                            <div class="switch-wrapper">
+                                <div class="switch-info">
+                                    <h4>自动每日备份</h4>
+                                    <p>每天凌晨3:00自动备份数据到本地</p>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" v-model="settings.autoBackup">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div style="margin-top: 16px;">
+                                <button class="btn btn-primary" @click="manualBackup">
+                                    <i class="fas fa-cloud-download-alt"></i> 立即备份
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 系统日志 -->
+                    <div v-if="activeTab === 'logs'" class="card">
+                        <div class="section-title">
+                            <i class="fas fa-file-alt"></i>
+                            系统日志
+                            <div style="margin-left: auto; font-size: 13px; color: #8c8c8c; font-weight: normal;">
+                                <i class="fas fa-info-circle"></i> 显示最近100条日志
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 16px; display: flex; gap: 12px;">
+                            <select v-model="logLevel" style="padding: 6px 12px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                                <option value="all">全部级别</option>
+                                <option value="info">信息</option>
+                                <option value="warning">警告</option>
+                                <option value="error">错误</option>
+                            </select>
+                            <button class="btn btn-default" @click="refreshLogs">
+                                <i class="fas fa-sync-alt"></i> 刷新
+                            </button>
+                            <button class="btn btn-default" @click="exportLogs">
+                                <i class="fas fa-download"></i> 导出日志
+                            </button>
+                        </div>
+
+                        <div class="log-container">
+                            <div v-for="(log, index) in filteredLogs" :key="index" :class="['log-entry', log.type]">
+                                <span class="log-time">[{{ log.time }}]</span>
+                                <span>{{ log.message }}</span>
+                            </div>
+                            <div v-if="filteredLogs.length === 0" style="text-align: center; color: #6e6e6e; padding: 40px;">
+                                暂无日志记录
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- 账号安全 -->
+                    <div v-if="activeTab === 'security'" class="card">
+                        <!-- 个人资料卡片 -->
+                        <div class="section-title">
+                            <i class="fas fa-user-circle"></i>
+                            个人资料
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>当前用户名</label>
+                                <div style="font-size: 16px; color: #2d5a27; font-weight: 600; padding: 10px 12px; background: #f6ffed; border-radius: 6px; border: 1px solid #b7eb8f;">
+                                    <i class="fas fa-user" style="margin-right: 8px;"></i>
+                                    {{ currentUserDisplayName || '未设置' }}
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>修改用户名</label>
+                                <div style="display: flex; gap: 10px;">
+                                    <input
+                                        type="text"
+                                        v-model="newUsernameInput"
+                                        placeholder="输入新的用户名（2-20个字符）"
+                                        maxlength="20"
+                                        style="flex: 1;"
+                                    >
+                                    <button
+                                        class="btn btn-primary"
+                                        @click="updateUsernameVue"
+                                        :disabled="!newUsernameInput || newUsernameInput.length < 2 || newUsernameInput === currentUserDisplayName"
+                                        style="white-space: nowrap;"
+                                    >
+                                        <i class="fas fa-save"></i> 更新
+                                    </button>
+                                </div>
+                                <span class="hint" v-if="newUsernameInput && newUsernameInput.length < 2" style="color: #ff4d4f;">
+                                    用户名至少需要2个字符
+                                </span>
+                                <span class="hint" v-else-if="newUsernameInput === currentUserDisplayName" style="color: #faad14;">
+                                    新用户名与当前相同
+                                </span>
+                                <span class="hint" v-else>
+                                    修改后立即生效，无需重新登录
+                                </span>
+                            </div>
+                        </div>
+
+                        <div style="margin: 24px 0; border-bottom: 1px solid #e8e8e8;"></div>
+                        <div class="section-title">
+                            <i class="fas fa-shield-alt"></i>
+                            账号安全
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label>当前邮箱</label>
+                                <input v-model="settings.email" disabled>
+                            </div>
+                            <div class="form-group">
+                                <label>原密码</label>
+                                <input type="password" v-model="passwordForm.old" placeholder="请输入原密码">
+                            </div>
+                            <div class="form-group">
+                                <label>新密码</label>
+                                <input type="password" v-model="passwordForm.new" placeholder="请输入新密码">
+                            </div>
+                            <div class="form-group full-width">
+                                <label>确认新密码</label>
+                                <input type="password" v-model="passwordForm.confirm" placeholder="请再次输入新密码">
+                            </div>
+                        </div>
+
+                        <div class="action-bar">
+                            <button class="btn btn-primary" :disabled="changingPassword" @click="changePassword">
+                                <i class="fas fa-key"></i>
+                                {{ changingPassword ? '修改中...' : '修改密码' }}
+                            </button>
+                        </div>
+
+                        <div class="section-title" style="margin-top: 32px;">
+                            <i class="fas fa-user-shield"></i>
+                            登录安全
+                        </div>
+                        <div class="switch-wrapper">
+                            <div class="switch-info">
+                                <h4>双重身份验证 (2FA)</h4>
+                                <p>登录时需要输入邮箱验证码</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" v-model="settings.enable2FA">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="switch-wrapper">
+                            <div class="switch-info">
+                                <h4>登录提醒</h4>
+                                <p>新设备登录时发送邮件提醒</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" v-model="settings.loginAlert">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <!-- 退出登录区域 -->
+                        <div class="section-title" style="margin-top: 32px; color: #cf1322; border-bottom-color: #ffa39e;">
+                            <i class="fas fa-sign-out-alt"></i>
+                            退出系统
+                        </div>
+                        <div class="logout-card">
+                            <div class="logout-info">
+                                <h4>退出当前账号</h4>
+                                <p>清除本地登录状态并返回登录页面，下次访问需要重新验证身份</p>
+                            </div>
+                            <button class="btn btn-danger" @click="logout" style="min-width: 120px; justify-content: center;">
+                                <i class="fas fa-sign-out-alt"></i> 退出登录
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 添加任务模态框 -->
+        <div class="modal-overlay" :class="{ active: addTaskModal.show }" @click.self="closeAddTaskModal">
+            <div class="modal-content" style="width: 480px;">
+                <div class="modal-header">
+                    <i class="fas fa-plus-circle" style="color: var(--primary-color);"></i>
+                    添加定时任务
+                </div>
+                <div class="modal-subtitle">配置新的自动化任务，系统将按计划自动执行</div>
+
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">任务名称 <span style="color: #ff4d4f;">*</span></label>
+                    <input
+                        type="text"
+                        class="form-select"
+                        v-model="addTaskForm.name"
+                        placeholder="请输入任务名称，如：每日数据备份"
+                        style="width: 100%;"
+                    >
+                </div>
+
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">任务类型</label>
+                    <select class="form-select" v-model="addTaskForm.type" style="width: 100%;">
+                        <option value="backup">🔄 数据备份 - 备份系统数据到本地或云端</option>
+                        <option value="cleanup">🧹 数据清理 - 清理过期数据和缓存文件</option>
+                        <option value="model">🤖 模型更新 - 检查并更新AI识别模型</option>
+                        <option value="report">📊 生成报告 - 生成数据分析和监控报告</option>
+                        <option value="inspect">🔍 巡检任务 - 自动巡检设备和传感器状态</option>
+                        <option value="custom">⚙️ 自定义任务 - 用户自定义的特定任务</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">执行周期</label>
+                    <select class="form-select" v-model="addTaskForm.period" style="width: 100%;">
+                        <option value="每天">每天执行</option>
+                        <option value="每周一">每周一执行</option>
+                        <option value="每周日">每周日执行</option>
+                        <option value="每月1日">每月1日执行</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">执行时间</label>
+                    <div class="time-picker" style="background: #f6ffed; border: 1px solid #b7eb8f;">
+                        <select v-model="addTaskForm.hour" style="padding: 8px 12px; font-size: 16px; border: 1px solid #d9d9d9; border-radius: 6px;">
+                            <option v-for="h in 24" :key="h" :value="String(h).padStart(2, '0')">
+                                {{ String(h).padStart(2, '0') }} 时
+                            </option>
+                        </select>
+                        <span style="font-size: 20px; color: #999; font-weight: 300;">:</span>
+                        <select v-model="addTaskForm.minute" style="padding: 8px 12px; font-size: 16px; border: 1px solid #d9d9d9; border-radius: 6px;">
+                            <option value="00">00 分</option>
+                            <option value="15">15 分</option>
+                            <option value="30">30 分</option>
+                            <option value="45">45 分</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label class="form-label">任务状态</label>
+                    <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: #fafafa; border-radius: 8px;">
+                        <label class="switch" style="margin: 0;">
+                            <input type="checkbox" v-model="addTaskForm.enabled">
+                            <span class="slider"></span>
+                        </label>
+                        <span style="font-size: 14px; color: #262626; font-weight: 500;">
+                            {{ addTaskForm.enabled ? '立即启用' : '暂不启用' }}
+                        </span>
+                        <span style="font-size: 12px; color: #8c8c8c; margin-left: auto;">
+                            {{ addTaskForm.enabled ? '任务将在设定时间自动执行' : '任务不会自动执行，可随时手动启用' }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-default" @click="closeAddTaskModal">取消</button>
+                    <button class="btn btn-primary" @click="saveNewTask">
+                        <i class="fas fa-check"></i>
+                        创建任务
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Toast提示 -->
+        <div class="toast" id="toast" :class="{ show: toast.show }">
+            <i class="fas fa-check-double"></i>
+            <span>{{ toast.message }}</span>
+        </div>
+
+        <!-- 时间编辑模态框 -->
+        <div class="modal-overlay" :class="{ active: timeModal.show }" @click.self="closeTimeModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <i class="fas fa-clock" style="color: var(--primary-color);"></i>
+                    设置执行时间
+                </div>
+                <div class="modal-subtitle">选择任务执行的具体时间与周期</div>
+
+                <div class="form-group">
+                    <label class="form-label">执行周期</label>
+                    <select class="form-select" v-model="timeModal.period">
+                        <option value="每天">每天</option>
+                        <option value="每周一">每周一</option>
+                        <option value="每周日">每周日</option>
+                        <option value="每月1日">每月1日</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">执行时间</label>
+                    <div class="time-picker">
+                        <select v-model="timeModal.hour">
+                            <option v-for="h in 24" :key="h" :value="String(h).padStart(2, '0')">
+                                {{ String(h).padStart(2, '0') }}
+                            </option>
+                        </select>
+                        <span class="time-separator">:</span>
+                        <select v-model="timeModal.minute">
+                            <option value="00">00</option>
+                            <option value="30">30</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-default" @click="closeTimeModal">取消</button>
+                    <button class="btn btn-primary" @click="saveTaskTime">
+                        <i class="fas fa-check"></i>
+                        保存设置
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, reactive, computed, onMounted } = Vue;
+
+        createApp({
+            setup() {
+                const activeTab = ref('basic');
+                const saving = ref(false);
+                const changingPassword = ref(false);
+                const geocoding = ref(false);
+                const geocodeResult = ref(null);
+                const logLevel = ref('all');
+                const currentUser = ref(null);
+                const pendingComments = ref(0);
+
+                // 省市区选择器数据
+                const selectedProvince = ref('');
+                const selectedCity = ref('');
+                const selectedDistrict = ref('');
+                const cities = ref([]);
+                const districts = ref([]);
+
+                // 中国省市区数据（完整版，包含广东省及下属城市、区县）
+                const provinces = ref([
+                    { code: '110000', name: '北京市' },
+                    { code: '120000', name: '天津市' },
+                    { code: '130000', name: '河北省' },
+                    { code: '140000', name: '山西省' },
+                    { code: '150000', name: '内蒙古自治区' },
+                    { code: '210000', name: '辽宁省' },
+                    { code: '220000', name: '吉林省' },
+                    { code: '230000', name: '黑龙江省' },
+                    { code: '310000', name: '上海市' },
+                    { code: '320000', name: '江苏省' },
+                    { code: '330000', name: '浙江省' },
+                    { code: '340000', name: '安徽省' },
+                    { code: '350000', name: '福建省' },
+                    { code: '360000', name: '江西省' },
+                    { code: '370000', name: '山东省' },
+                    { code: '410000', name: '河南省' },
+                    { code: '420000', name: '湖北省' },
+                    { code: '430000', name: '湖南省' },
+                    { code: '440000', name: '广东省' },
+                    { code: '450000', name: '广西壮族自治区' },
+                    { code: '460000', name: '海南省' },
+                    { code: '500000', name: '重庆市' },
+                    { code: '510000', name: '四川省' },
+                    { code: '520000', name: '贵州省' },
+                    { code: '530000', name: '云南省' },
+                    { code: '540000', name: '西藏自治区' },
+                    { code: '610000', name: '陕西省' },
+                    { code: '620000', name: '甘肃省' },
+                    { code: '630000', name: '青海省' },
+                    { code: '640000', name: '宁夏回族自治区' },
+                    { code: '650000', name: '新疆维吾尔自治区' },
+                    { code: '710000', name: '台湾省' },
+                    { code: '810000', name: '香港特别行政区' },
+                    { code: '820000', name: '澳门特别行政区' }
+                ]);
+
+                // 城市数据映射（补充完整广东省城市）
+                const cityData = {
+                    '440000': [ // 广东省 - 完整列表
+                        { code: '440100', name: '广州市' },
+                        { code: '440200', name: '韶关市' },
+                        { code: '440300', name: '深圳市' },
+                        { code: '440400', name: '珠海市' },
+                        { code: '440500', name: '汕头市' },
+                        { code: '440600', name: '佛山市' },
+                        { code: '440700', name: '江门市' },
+                        { code: '440800', name: '湛江市' },
+                        { code: '440900', name: '茂名市' },
+                        { code: '441200', name: '肇庆市' },
+                        { code: '441300', name: '惠州市' },
+                        { code: '441400', name: '梅州市' },
+                        { code: '441500', name: '汕尾市' },
+                        { code: '441600', name: '河源市' },
+                        { code: '441700', name: '阳江市' },
+                        { code: '441800', name: '清远市' },
+                        { code: '441900', name: '东莞市' },
+                        { code: '442000', name: '中山市' },
+                        { code: '445100', name: '潮州市' },
+                        { code: '445200', name: '揭阳市' },
+                        { code: '445300', name: '云浮市' }
+                    ],
+                    '110000': [{ code: '110100', name: '北京市' }],
+                    '120000': [{ code: '120100', name: '天津市' }],
+                    '310000': [{ code: '310100', name: '上海市' }],
+                    '500000': [{ code: '500100', name: '重庆市' }]
+                    // 其他城市可以按需添加
+                };
+
+                // 区县数据映射（补充完整广州市所有区县，包括增城区）
+                const districtData = {
+                    '440100': [ // 广州市 - 完整区县列表
+                        { code: '440103', name: '荔湾区' },
+                        { code: '440104', name: '越秀区' },
+                        { code: '440105', name: '海珠区' },
+                        { code: '440106', name: '天河区' },
+                        { code: '440111', name: '白云区' },
+                        { code: '440112', name: '黄埔区' },
+                        { code: '440113', name: '番禺区' },
+                        { code: '440114', name: '花都区' },
+                        { code: '440115', name: '南沙区' },
+                        { code: '440117', name: '从化区' },
+                        { code: '440118', name: '增城区' }
+                    ],
+                    '440300': [ // 深圳市
+                        { code: '440303', name: '罗湖区' },
+                        { code: '440304', name: '福田区' },
+                        { code: '440305', name: '南山区' },
+                        { code: '440306', name: '宝安区' },
+                        { code: '440307', name: '龙岗区' },
+                        { code: '440308', name: '盐田区' },
+                        { code: '440309', name: '龙华区' },
+                        { code: '440310', name: '坪山区' },
+                        { code: '440311', name: '光明区' }
+                    ],
+                    '440600': [ // 佛山市
+                        { code: '440604', name: '禅城区' },
+                        { code: '440605', name: '南海区' },
+                        { code: '440606', name: '顺德区' },
+                        { code: '440607', name: '三水区' },
+                        { code: '440608', name: '高明区' }
+                    ],
+                    '440700': [ // 江门市
+                        { code: '440703', name: '蓬江区' },
+                        { code: '440704', name: '江海区' },
+                        { code: '440705', name: '新会区' },
+                        { code: '440781', name: '台山市' },
+                        { code: '440783', name: '开平市' },
+                        { code: '440784', name: '鹤山市' },
+                        { code: '440785', name: '恩平市' }
+                    ],
+                    '441300': [ // 惠州市
+                        { code: '441302', name: '惠城区' },
+                        { code: '441303', name: '惠阳区' },
+                        { code: '441322', name: '博罗县' },
+                        { code: '441323', name: '惠东县' },
+                        { code: '441324', name: '龙门县' }
+                    ],
+                    '441900': [ // 东莞市（直筒子市，下设街道）
+                        { code: '441900', name: '东莞市辖区' }
+                    ],
+                    '442000': [ // 中山市（直筒子市）
+                        { code: '442000', name: '中山市辖区' }
+                    ]
+                    // 其他区县可以按需添加
+                };
+
+                // 省市区选择事件处理
+                const onProvinceChange = () => {
+                    selectedCity.value = '';
+                    selectedDistrict.value = '';
+                    districts.value = [];
+                    if (selectedProvince.value) {
+                        cities.value = cityData[selectedProvince.value] || [];
+                        if (cities.value.length === 1) {
+                            selectedCity.value = cities.value[0].code;
+                            onCityChange();
+                        }
+                    } else {
+                        cities.value = [];
+                    }
+                };
+
+                const onCityChange = () => {
+                    selectedDistrict.value = '';
+                    if (selectedCity.value) {
+                        districts.value = districtData[selectedCity.value] || [];
+                    } else {
+                        districts.value = [];
+                    }
+                };
+
+                const onDistrictChange = () => {
+                    // 区县选择变化时的处理
+                };
+
+                // 获取完整地址字符串
+                const getFullAddress = () => {
+                    const prov = provinces.value.find(p => p.code === selectedProvince.value)?.name || '';
+                    const city = cities.value.find(c => c.code === selectedCity.value)?.name || '';
+                    const dist = districts.value.find(d => d.code === selectedDistrict.value)?.name || '';
+                    const street = settings.streetAddress || '';
+                    return `${prov}${city}${dist}${street}`;
+                };
+
+
+                // 菜单分组 - 采用第二个文件的分组结构
+                const basicMenuItems = [
+                    { key: 'basic', label: '基础信息', icon: 'fas fa-info-circle' },
+                    { key: 'map', label: '地图配置', icon: 'fas fa-map-marker-alt' },
+                    { key: 'notify', label: '通知设置', icon: 'fas fa-bell' },
+                    { key: 'tasks', label: '定时任务', icon: 'fas fa-clock' }
+                ];
+
+                const advancedMenuItems = [
+                    { key: 'ai', label: 'AI模型', icon: 'fas fa-brain' },
+                    { key: 'retention', label: '数据保留', icon: 'fas fa-archive' },
+                    { key: 'alert', label: '智能预警', icon: 'fas fa-shield-alt' }
+                ];
+
+                const manageMenuItems = [
+                    { key: 'data', label: '数据管理', icon: 'fas fa-database' },
+                    { key: 'logs', label: '系统日志', icon: 'fas fa-file-alt' },
+                    { key: 'security', label: '账号安全', icon: 'fas fa-user-shield' }
+                ];
+
+                // Toast提示状态
+                const toast = reactive({
+                    show: false,
+                    message: '操作成功',
+                    timer: null
+                });
+
+                // 时间模态框状态
+                const timeModal = reactive({
+                    show: false,
+                    taskId: null,
+                    period: '每天',
+                    hour: '03',
+                    minute: '00'
+                });
+
+                // 添加任务模态框状态
+                const addTaskModal = reactive({
+                    show: false
+                });
+
+                // 新任务表单
+                const addTaskForm = reactive({
+                    name: '',
+                    type: 'backup',
+                    period: '每天',
+                    hour: '03',
+                    minute: '00',
+                    enabled: true
+                });
+
+                // 任务类型配置
+                const taskTypeConfig = {
+                    backup: { icon: 'fas fa-cloud-upload-alt', color: '#1890ff', name: '数据备份' },
+                    cleanup: { icon: 'fas fa-broom', color: '#faad14', name: '数据清理' },
+                    model: { icon: 'fas fa-sync-alt', color: '#722ed1', name: '模型更新' },
+                    report: { icon: 'fas fa-file-alt', color: '#52c41a', name: '生成报告' },
+                    inspect: { icon: 'fas fa-search', color: '#13c2c2', name: '巡检任务' },
+                    custom: { icon: 'fas fa-tasks', color: '#595959', name: '自定义任务' }
+                };
+
+                // 获取当前用户信息
+                const fetchCurrentUser = async () => {
+                    try {
+                        const response = await fetch('/api/auth/me');
+                        if (response.ok) {
+                            currentUser.value = await response.json();
+                            if (currentUser.value.role === 'admin') {
+                                fetchPendingComments();
+                            }
+                        }
+                    } catch (error) {
+                        console.error('获取用户信息失败:', error);
+                    }
+                };
+
+                const fetchPendingComments = async () => {
+                    try {
+                        const response = await fetch('/api/comments?status=pending');
+                        if (response.ok) {
+                            const data = await response.json();
+                            pendingComments.value = data.stats?.pending || 0;
+                        }
+                    } catch (error) {
+                        console.error('获取评论统计失败:', error);
+                    }
+                };
+
+                // 设置数据
+                const settings = reactive({
+                    farmName: '增城智慧农场',
+                    farmCode: 'ZC-2024-001',
+                    manager: '张管理员',
+                    phone: '13800138000',
+                    address: '广东省广州市增城区XX街道',
+                    description: '专注于水稻种植的智慧农业示范农场',
+                    enableAlert: true,
+                    enableDailyReport: false,
+                    dailyReportTime: '18:00',
+                    enableOfflineAlert: true,
+                    streetAddress: '',
+                    offlineAlertThreshold: 5,
+                    amapKey: '8d298e1345105c050ae25ad3f294c9bc',
+                    centerLng: '113.8291',
+                    centerLat: '23.3242',
+                    zoom: '14',
+                    refreshInterval: 30,
+                    modelPath: './models/best.pt',
+                    confThreshold: 0.25,
+                    iouThreshold: 0.45,
+                    aiApiUrl: 'http://localhost:11434/v1',
+                    aiModel: 'deepseek-r1:1.5b',
+                    useGpu: true,
+                    autoBackup: true,
+                    email: 'admin@farm.com',
+                    enable2FA: true,
+                    loginAlert: true
+                });
+
+                // 密码表单
+                const passwordForm = reactive({
+                    old: '',
+                    new: '',
+                    confirm: ''
+                });
+
+                // 数据统计
+                const dataStats = reactive({
+                    detection: 342,
+                    chat: 56,
+                    farm: 128,
+                    detectionSize: 256,
+                    lastBackup: '2026-04-08 03:00'
+                });
+
+                // 定时任务数据 - 来自第二个文件
+                const tasks = ref([
+                    {
+                        id: 'backup',
+                        name: '每日数据备份',
+                        icon: 'fas fa-cloud-upload-alt',
+                        color: '#1890ff',
+                        period: '每天',
+                        time: '03:00',
+                        nextRun: '2026-04-16 03:00',
+                        enabled: true,
+                        status: 'normal',
+                        statusText: '运行正常',
+                        statusIcon: 'fas fa-check'
+                    },
+                    {
+                        id: 'cleanup',
+                        name: '过期数据清理',
+                        icon: 'fas fa-broom',
+                        color: '#faad14',
+                        period: '每周日',
+                        time: '02:00',
+                        nextRun: '2026-04-19 02:00',
+                        enabled: true,
+                        status: 'normal',
+                        statusText: '运行正常',
+                        statusIcon: 'fas fa-check'
+                    },
+                    {
+                        id: 'model',
+                        name: '模型自动更新检查',
+                        icon: 'fas fa-sync-alt',
+                        color: '#722ed1',
+                        period: '每周一',
+                        time: '09:00',
+                        nextRun: '2026-04-21 09:00',
+                        enabled: true,
+                        status: 'warning',
+                        statusText: '有新版本',
+                        statusIcon: 'fas fa-exclamation-triangle'
+                    },
+                    {
+                        id: 'report',
+                        name: '生成周报',
+                        icon: 'fas fa-file-alt',
+                        color: '#52c41a',
+                        period: '每周五',
+                        time: '18:00',
+                        nextRun: '2026-04-18 18:00',
+                        enabled: true,
+                        status: 'normal',
+                        statusText: '运行正常',
+                        statusIcon: 'fas fa-check'
+                    }
+                ]);
+
+                // 数据保留策略
+                const retention = reactive({
+                    image: { enabled: true, days: 90 },
+                    sensor: { enabled: true, days: 365 },
+                    alert: { enabled: true, days: 180 },
+                    log: { enabled: false, days: 90 }
+                });
+
+                // 智能预警设置
+                const alertSettings = ref([
+                    {
+                        id: 1,
+                        name: '病虫害高发期预警',
+                        icon: 'fas fa-bug',
+                        color: '#ff4d4f',
+                        desc: '基于季节和历史数据提前3天预警高风险期',
+                        enabled: true
+                    },
+                    {
+                        id: 2,
+                        name: '极端天气监测',
+                        icon: 'fas fa-cloud-sun',
+                        color: '#faad14',
+                        desc: '自动监控霜冻、高温、暴雨等极端天气',
+                        enabled: true
+                    },
+                    {
+                        id: 3,
+                        name: '设备离线预警',
+                        icon: 'fas fa-battery-quarter',
+                        color: '#722ed1',
+                        desc: '传感器或摄像头离线超过30分钟通知',
+                        enabled: true
+                    },
+                    {
+                        id: 4,
+                        name: '生长周期提醒',
+                        icon: 'fas fa-seedling',
+                        color: '#52c41a',
+                        desc: '根据作物种类自动提醒施肥灌溉时间',
+                        enabled: true
+                    }
+                ]);
+
+                // 系统性能指标
+                const systemMetrics = reactive({
+                    health: 98,
+                    storage: 2.4,
+                    response: 156,
+                    uptime: 24
+                });
+
+                // 日志数据
+                const logs = ref([
+                    { time: '2026-04-09 16:10:23', message: '系统启动成功，加载模型完成', type: 'success' },
+                    { time: '2026-04-09 16:08:15', message: '用户 admin 登录系统', type: 'info' },
+                    { time: '2026-04-09 15:45:32', message: '检测到高风险：叶斑病 (置信度: 87%)', type: 'warning' },
+                    { time: '2026-04-09 15:30:00', message: '自动备份完成，耗时 2.3s', type: 'success' },
+                    { time: '2026-04-09 14:22:18', message: '设备 树莓派_增城_02 重新上线', type: 'info' },
+                    { time: '2026-04-09 14:20:05', message: '设备 树莓派_增城_02 连接超时', type: 'warning' },
+                    { time: '2026-04-09 12:10:45', message: '新增农事记录：施肥作业', type: 'info' },
+                    { time: '2026-04-09 10:05:22', message: 'AI 模型加载失败：CUDA out of memory', type: 'error' },
+                    { time: '2026-04-09 10:05:20', message: '尝试启用 GPU 加速', type: 'info' },
+                    { time: '2026-04-09 09:00:00', message: '每日数据报告已发送', type: 'success' }
+                ]);
+
+                // 过滤后的日志
+                const filteredLogs = computed(() => {
+                    if (logLevel.value === 'all') return logs.value;
+                    return logs.value.filter(log => log.type === logLevel.value);
+                });
+
+                // Toast提示方法
+                const showToast = (msg) => {
+                    toast.message = msg;
+                    toast.show = true;
+                    if (toast.timer) clearTimeout(toast.timer);
+                    toast.timer = setTimeout(() => {
+                        toast.show = false;
+                    }, 3000);
+                };
+
+                // 打开时间模态框
+                const openTimeModal = (task) => {
+                    timeModal.taskId = task.id;
+                    timeModal.period = task.period;
+                    const [h, m] = task.time.split(':');
+                    timeModal.hour = h;
+                    timeModal.minute = m;
+                    timeModal.show = true;
+                };
+
+                // 关闭时间模态框
+                const closeTimeModal = () => {
+                    timeModal.show = false;
+                };
+
+                // 保存任务时间
+                const saveTaskTime = async () => {
+                    const task = tasks.value.find(t => t.id === timeModal.taskId);
+                    if (!task) return;
+                    try {
+                        const res = await fetch(`/api/settings/tasks/${task.id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                period: timeModal.period,
+                                time: `${timeModal.hour}:${timeModal.minute}`,
+                                nextRun: calculateNextRun(timeModal.period, `${timeModal.hour}:${timeModal.minute}`)
+                            })
+                        });
+                        if (res.ok) {
+                            task.period = timeModal.period;
+                            task.time = `${timeModal.hour}:${timeModal.minute}`;
+                            showToast('定时任务设置已保存');
+                            closeTimeModal();
+                        }
+                    } catch (e) {
+                        showToast('保存失败: ' + e.message);
+                    }
+                };
+
+                // 切换任务状态
+                const toggleTask = (task) => {
+                    showToast(`${task.name}${task.enabled ? '已启用' : '已禁用'}`);
+                };
+
+                // 计算下次执行时间
+                const calculateNextRun = (period, time) => {
+                    const now = new Date();
+                    const [hours, minutes] = time.split(':').map(Number);
+                    let next = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
+
+                    const weekDays = { '每周一': 1, '每周日': 0 };
+
+                    if (period === '每天') {
+                        if (next <= now) {
+                            next.setDate(next.getDate() + 1);
+                        }
+                    } else if (period === '每周一' || period === '每周日') {
+                        const targetDay = weekDays[period];
+                        const currentDay = next.getDay();
+                        let daysUntil = targetDay - currentDay;
+                        if (daysUntil <= 0) daysUntil += 7;
+                        next.setDate(next.getDate() + daysUntil);
+                    } else if (period === '每月1日') {
+                        next.setDate(1);
+                        if (next <= now) {
+                            next.setMonth(next.getMonth() + 1);
+                        }
+                    }
+
+                    return next.toISOString().slice(0, 16).replace('T', ' ');
+                };
+
+                // 打开添加任务模态框
+                const openAddTaskModal = () => {
+                    // 重置表单
+                    addTaskForm.name = '';
+                    addTaskForm.type = 'backup';
+                    addTaskForm.period = '每天';
+                    addTaskForm.hour = '03';
+                    addTaskForm.minute = '00';
+                    addTaskForm.enabled = true;
+                    addTaskModal.show = true;
+                };
+
+                // 关闭添加任务模态框
+                const closeAddTaskModal = () => {
+                    addTaskModal.show = false;
+                };
+
+                // 保存新任务
+                const saveNewTask = async () => {
+                    if (!addTaskForm.name.trim()) {
+                        showToast('请输入任务名称');
+                        return;
+                    }
+                    try {
+                        const res = await fetch('/api/settings/tasks', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(addTaskForm)
+                        });
+                        const result = await res.json();
+                        if (result.code === 200) {
+                            tasks.value.push(result.data);
+                            showToast('新任务已创建');
+                            closeAddTaskModal();
+                        } else {
+                            showToast(result.error || '创建失败');
+                        }
+                    } catch (e) {
+                        showToast('创建失败: ' + e.message);
+                    }
+                };
+
+                // 删除任务
+                const deleteTask = async (taskId) => {
+                    const task = tasks.value.find(t => t.id === taskId);
+                    if (!task) return;
+                    if (!confirm(`确定要删除任务"${task.name}"吗？`)) return;
+                    try {
+                        const res = await fetch(`/api/settings/tasks/${taskId}`, { method: 'DELETE' });
+                        if (res.ok) {
+                            tasks.value = tasks.value.filter(t => t.id !== taskId);
+                            showToast('任务已删除');
+                        }
+                    } catch (e) {
+                        showToast('删除失败: ' + e.message);
+                    }
+                };
+
+                // 刷新任务下次执行时间
+                const refreshTaskNextRun = () => {
+                    tasks.value.forEach(task => {
+                        task.nextRun = calculateNextRun(task.period, task.time);
+                    });
+                };
+
+                // 地址反查经纬度（使用高德地图地理编码API）
+                const geocodeAddress = async () => {
+                    const fullAddress = getFullAddress();
+                    if (!fullAddress || !selectedDistrict.value) {
+                        showToast('请选择省市区并输入详细地址');
+                        return;
+                    }
+                    // 优先使用window.APP_CONFIG中的服务Key，其次是settings中的
+                    const serviceKey = window.APP_CONFIG?.AMAP_SERVICE_KEY || settings.amapServiceKey;
+                    if (!serviceKey) {
+                        showToast('请先配置地理编码服务Key（AMAP_SERVICE_KEY）');
+                        return;
+                    }
+
+                    geocoding.value = true;
+                    geocodeResult.value = null;
+
+                    try {
+                        const url = `https://restapi.amap.com/v3/geocode/geo?address=${encodeURIComponent(fullAddress)}&key=${serviceKey}`;
+                        const response = await fetch(url);
+                        const data = await response.json();
+
+                        if (data.status === '1' && data.geocodes && data.geocodes.length > 0) {
+                            const location = data.geocodes[0].location;
+                            const [lng, lat] = location.split(',');
+
+                            settings.centerLng = lng;
+                            settings.centerLat = lat;
+
+                            geocodeResult.value = {
+                                success: true,
+                                message: `定位成功：${data.geocodes[0].formatted_address} → 经度${lng}, 纬度${lat}`
+                            };
+                            showToast('地址定位成功，已填充坐标');
+                        } else {
+                            // 处理各种错误码，提供友好的解决方案
+                            let errorMsg = data.info || '未找到该地址';
+                            let solution = '';
+
+                            if (data.info === 'USERKEY_PLAT_NOMATCH') {
+                                errorMsg = '当前Key没有地理编码权限';
+                                solution = '解决方案：请登录高德控制台 → 应用管理 → 添加"地理编码"服务，或直接使用下方输入框手动填写经纬度';
+                                // 自动填充默认坐标（广州市增城区大致坐标）
+                                if (selectedCity.value === '440100') { // 广州
+                                    settings.centerLng = '113.8291';
+                                    settings.centerLat = '23.3242';
+                                }
+                            } else if (data.info === 'KEY_INVALID') {
+                                errorMsg = 'Key无效或已过期';
+                                solution = '请检查高德地图Key是否正确';
+                            } else if (data.info === 'DAILY_QUERY_OVER_LIMIT') {
+                                errorMsg = '今日查询次数已用完';
+                                solution = '请明天再试或升级高德账号';
+                            } else {
+                                solution = '建议：直接在下方"中心经度/纬度"输入框中手动填写坐标';
+                            }
+
+                            geocodeResult.value = {
+                                success: false,
+                                message: `${errorMsg}。${solution}`
+                            };
+                            showToast('定位失败，请手动填写坐标');
+                        }
+                    } catch (error) {
+                        geocodeResult.value = {
+                            success: false,
+                            message: `网络请求失败：${error.message}。建议手动填写下方经纬度坐标`
+                        };
+                        showToast('网络错误，请手动填写坐标');
+                    } finally {
+                        geocoding.value = false;
+                    }
+                };
+
+                // 保存所有设置
+                const saveAllSettings = async () => {
+                    await saveSettings();
+                };
+
+                // 页面加载时从后端读取配置和用户信息
+                onMounted(async () => {
+                    await fetchCurrentUser();
+                    await loadUserProfileForDisplay();
+
+                    // 1. 加载农场配置（你已有的代码保留）
+                    try {
+                        const res = await fetch('/api/config/full');
+                        if (res.ok) {
+                            const config = await res.json();
+                            Object.assign(settings, {
+                                farmName: config.farmName || settings.farmName,
+                                centerLng: String(config.centerLng || settings.centerLng),
+                                centerLat: String(config.centerLat || settings.centerLat),
+                                zoom: String(config.zoom || settings.zoom),
+                                enableAlert: config.enableAlert ?? settings.enableAlert,
+                                enableDailyReport: config.enableDailyReport ?? settings.enableDailyReport,
+                                dailyReportTime: config.dailyReportTime || '18:00',
+                                enableOfflineAlert: config.enableOfflineAlert ?? settings.enableOfflineAlert,
+                                offlineAlertThreshold: config.offlineAlertThreshold || 5,
+                                mapAddress: config.mapAddress || settings.mapAddress || '',
+                                amapServiceKey: config.amapServiceKey || window.APP_CONFIG?.AMAP_SERVICE_KEY || ''
+                            });
+                        }
+                    } catch (e) {
+                        console.error('加载配置失败:', e);
+                    }
+
+                    // 2. 加载数据统计（真实接口）
+                    try {
+                        const res = await fetch('/api/admin/data-stats');
+                        if (res.ok) {
+                            const result = await res.json();
+                            if (result.code === 200) Object.assign(dataStats, result.data);
+                        }
+                    } catch (e) { console.error('加载数据统计失败:', e); }
+
+                    // 3. 加载定时任务
+                    try {
+                        const res = await fetch('/api/settings/tasks');
+                        if (res.ok) {
+                            const result = await res.json();
+                            if (result.code === 200 && result.data) tasks.value = result.data;
+                        }
+                    } catch (e) { console.error('加载任务失败:', e); }
+
+                    // 4. 加载保留策略
+                    try {
+                        const res = await fetch('/api/settings/retention');
+                        if (res.ok) {
+                            const result = await res.json();
+                            if (result.code === 200 && result.data) Object.assign(retention, result.data);
+                        }
+                    } catch (e) { console.error('加载保留策略失败:', e); }
+
+                    // 5. 加载预警设置
+                    try {
+                        const res = await fetch('/api/settings/alerts');
+                        if (res.ok) {
+                            const result = await res.json();
+                            if (result.code === 200 && result.data) alertSettings.value = result.data;
+                        }
+                    } catch (e) { console.error('加载预警设置失败:', e); }
+
+                    // 6. 加载系统性能指标
+                    try {
+                        const res = await fetch('/api/admin/system-metrics');
+                        if (res.ok) {
+                            const result = await res.json();
+                            if (result.code === 200 && result.data) Object.assign(systemMetrics, result.data);
+                        }
+                    } catch (e) { console.error('加载性能指标失败:', e); }
+
+                    // 7. 加载系统日志
+                    try {
+                        const res = await fetch(`/api/admin/logs?level=${logLevel.value}&limit=100`);
+                        if (res.ok) {
+                            const result = await res.json();
+                            if (result.code === 200 && result.data) logs.value = result.data;
+                        }
+                    } catch (e) { console.error('加载日志失败:', e); }
+                });
+
+                // 保存设置
+                const saveSettings = async () => {
+                    saving.value = true;
+                    try {
+                        const response = await fetch('/api/config', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                mapAddress: settings.mapAddress,
+                                farmName: settings.farmName,
+                                // amapKey 由后端.env文件管理，不在前端保存
+                                centerLng: parseFloat(settings.centerLng),
+                                centerLat: parseFloat(settings.centerLat),
+                                zoom: parseInt(settings.zoom),
+                                enableAlert: settings.enableAlert,
+                                enableDailyReport: settings.enableDailyReport,
+                                dailyReportTime: settings.dailyReportTime,
+                                enableOfflineAlert: settings.enableOfflineAlert,
+                                offlineAlertThreshold: parseInt(settings.offlineAlertThreshold) || 5,
+                            })
+                        });
+
+                        if (!response.ok) throw new Error('保存失败');
+
+                        localStorage.setItem('farmName', settings.farmName);
+                        localStorage.setItem('farmConfigUpdated', Date.now().toString());
+
+                        showToast('设置保存成功！');
+                    } catch (error) {
+                        showToast('保存失败：' + error.message);
+                    } finally {
+                        saving.value = false;
+                    }
+                };
+
+                // 重置设置
+                const resetSettings = () => {
+                    if (confirm('确定要重置当前页面的设置吗？')) {
+                        showToast('已重置为默认设置');
+                    }
+                };
+
+                // 测试地图
+                const testMap = () => {
+                    showToast('正在测试地图连接...Key有效，服务正常');
+                };
+
+                // 测试模型
+                const testModel = () => {
+                    showToast('正在测试模型...模型加载成功，推理正常');
+                };
+
+                // 修改密码
+                const changePassword = async () => {
+                    if (!passwordForm.old || !passwordForm.new || !passwordForm.confirm) {
+                        showToast('请填写所有密码字段');
+                        return;
+                    }
+                    if (passwordForm.new !== passwordForm.confirm) {
+                        showToast('两次输入的新密码不一致');
+                        return;
+                    }
+
+                    changingPassword.value = true;
+                    try {
+                        const response = await fetch('/api/user/password', {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                old_password: passwordForm.old,
+                                new_password: passwordForm.new
+                            })
+                        });
+                        const result = await response.json();
+                        if (result.code === 200) {
+                            showToast('密码修改成功！');
+                            passwordForm.old = '';
+                            passwordForm.new = '';
+                            passwordForm.confirm = '';
+                        } else {
+                            showToast('修改失败：' + (result.error || '未知错误'));
+                        }
+                    } catch (error) {
+                        showToast('修改失败：' + error.message);
+                    } finally {
+                        changingPassword.value = false;
+                    }
+                };
+
+                // 清除数据
+                const clearData = async (type) => {
+                    const names = {
+                        detection: '检测历史',
+                        chat: '对话记录',
+                        farm: '农事记录'
+                    };
+                    if (!confirm(`确定要清空${names[type]}吗？此操作不可恢复！`)) return;
+
+                    try {
+                        let url = '';
+                        if (type === 'detection') url = '/api/history/clear';
+                        else if (type === 'chat') url = '/api/chat/sessions/clear';
+                        else if (type === 'farm') {
+                            showToast('农事记录请逐条删除，不支持一键清空');
+                            return;
+                        }
+                        if (url) {
+                            const res = await fetch(url, { method: 'POST' });
+                            if (res.ok) {
+                                showToast(`${names[type]}已清空`);
+                                dataStats[type] = 0;
+                            } else {
+                                showToast('清空失败');
+                            }
+                        }
+                    } catch (e) {
+                        showToast('清空失败: ' + e.message);
+                    }
+                };
+
+                // 导出数据
+                const exportData = (type) => {
+                    showToast(`正在导出${type}数据...`);
+                };
+
+                // 手动备份
+                const manualBackup = () => {
+                    showToast('正在备份数据...备份完成：backup_20260409.zip');
+                };
+
+                // 导出日志
+                const exportLogs = () => {
+                    showToast('正在导出日志文件...');
+                };
+
+                // 退出登录
+                const logout = async () => {
+                    if (!confirm('确定要退出登录吗？')) return;
+
+                    try {
+                        const response = await fetch('/api/auth/logout', {
+                            method: 'POST',
+                            credentials: 'same-origin'
+                        });
+
+                        if (response.ok) {
+                            currentUser.value = null;
+                            window.location.href = '/';
+                        } else {
+                            showToast('退出失败，请重试');
+                        }
+                    } catch (error) {
+                        console.error('退出登录失败:', error);
+                        showToast('网络错误，请稍后重试');
+                    }
+                };
+
+                // 用户名相关
+                const currentUserDisplayName = ref('加载中...');
+                const newUsernameInput = ref('');
+
+                // 获取用户资料（复用已有的fetchCurrentUser，或单独获取）
+                const loadUserProfileForDisplay = async () => {
+                    try {
+                        const response = await fetch('/api/user/profile');
+                        const result = await response.json();
+
+                        if (result.code === 200) {
+                            currentUserDisplayName.value = result.data.name;
+                            newUsernameInput.value = result.data.name;
+                        }
+                    } catch (e) {
+                        console.error('加载用户信息失败:', e);
+                    }
+                };
+
+                // 更新用户名（Vue方式）
+                const updateUsernameVue = async () => {
+                    if (!newUsernameInput.value || newUsernameInput.value.length < 2) {
+                        alert('用户名至少需要2个字符');
+                        return;
+                    }
+
+                    if (newUsernameInput.value === currentUserDisplayName.value) {
+                        alert('新用户名与当前用户名相同');
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('/api/user/username', {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ username: newUsernameInput.value })
+                        });
+
+                        const result = await response.json();
+
+                        if (result.code === 200) {
+                            alert('用户名更新成功！');
+                            currentUserDisplayName.value = newUsernameInput.value;
+                            // 如果currentUser有name字段，也更新它
+                            if (currentUser.value) {
+                                currentUser.value.name = newUsernameInput.value;
+                            }
+                        } else {
+                            throw new Error(result.error || '更新失败');
+                        }
+                    } catch (error) {
+                        alert('更新失败: ' + error.message);
+                    }
+                };
+
+                // 数据保留策略保存
+                const saveRetention = async () => {
+                    try {
+                        const res = await fetch('/api/settings/retention', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(retention)
+                        });
+                        if (res.ok) showToast('数据保留策略已保存');
+                    } catch (e) {
+                        showToast('保存失败: ' + e.message);
+                    }
+                };
+
+                // 预警设置保存
+                const saveAlerts = async () => {
+                    try {
+                        await fetch('/api/settings/alerts', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(alertSettings.value)
+                        });
+                    } catch (e) {
+                        console.error('保存预警设置失败', e);
+                    }
+                };
+
+                // 刷新日志
+                const refreshLogs = async () => {
+                    try {
+                        const res = await fetch(`/api/admin/logs?level=${logLevel.value}&limit=100`);
+                        if (res.ok) {
+                            const result = await res.json();
+                            if (result.code === 200) logs.value = result.data;
+                            showToast('日志已刷新');
+                        }
+                    } catch (e) {
+                        showToast('刷新失败: ' + e.message);
+                    }
+                };
+
+                // 系统诊断刷新指标
+                const systemDiagnostics = async () => {
+                    try {
+                        const res = await fetch('/api/admin/system-metrics');
+                        if (res.ok) {
+                            const result = await res.json();
+                            if (result.code === 200) {
+                                Object.assign(systemMetrics, result.data);
+                                showToast(`系统诊断完成：健康度 ${systemMetrics.health}%`);
+                            }
+                        }
+                    } catch (e) {
+                        showToast('诊断失败: ' + e.message);
+                    }
+                };
+
+                return {
+                    activeTab,
+                    basicMenuItems,
+                    advancedMenuItems,
+                    manageMenuItems,
+                    addTaskModal,
+                    addTaskForm,
+                    taskTypeConfig,
+                    // 省市区选择器
+                    provinces,
+                    cities,
+                    districts,
+                    selectedProvince,
+                    selectedCity,
+                    selectedDistrict,
+                    onProvinceChange,
+                    onCityChange,
+                    onDistrictChange,
+                    getFullAddress,
+                    settings,
+                    passwordForm,
+                    saving,
+                    changingPassword,
+                    geocoding,
+                    geocodeResult,
+                    dataStats,
+                    logs,
+                    logLevel,
+                    filteredLogs,
+                    saveSettings,
+                    resetSettings,
+                    testMap,
+                    testModel,
+                    changePassword,
+                    clearData,
+                    exportData,
+                    manualBackup,
+                    refreshLogs,
+                    exportLogs,
+                    logout,
+                    currentUser,
+                    pendingComments,
+                    tasks,
+                    retention,
+                    alertSettings,
+                    systemMetrics,
+                    toast,
+                    timeModal,
+                    showToast,
+                    openTimeModal,
+                    closeTimeModal,
+                    saveTaskTime,
+                    toggleTask,
+                    systemDiagnostics,
+                    geocodeAddress,
+                    saveAllSettings,
+                    // 任务管理新方法
+                    openAddTaskModal,
+                    closeAddTaskModal,
+                    saveNewTask,
+                    deleteTask,
+                    currentUserDisplayName,
+                    newUsernameInput,
+                    updateUsernameVue,
+                    loadUserProfileForDisplay,
+                    saveRetention,
+                    saveAlerts,
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

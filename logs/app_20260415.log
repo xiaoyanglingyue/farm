@@ -1,0 +1,33 @@
+2026-04-15 09:02:21,047 [INFO] app.py:139 - 系统启动成功
+2026-04-15 09:05:51,848 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-15 09:15:33,115 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-15 09:33:47,477 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-15 10:26:14,672 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-15 10:40:02,123 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-15 10:49:04,098 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-15 10:49:11,959 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-15 10:49:16,873 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-15 10:49:23,998 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-15 10:49:28,646 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-15 10:49:31,047 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-15 10:57:55,999 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-15 11:00:19,043 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-15 11:18:27,497 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-15 11:31:39,631 [INFO] app.py:140 - 系统启动成功
+2026-04-15 11:42:11,576 [INFO] _client.py:1025 - HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-15 11:45:29,463 [INFO] _client.py:1025 - HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-15 13:18:59,605 [INFO] app.py:140 - 系统启动成功
+2026-04-15 14:03:23,170 [INFO] app.py:140 - 系统启动成功
+2026-04-15 15:18:49,694 [INFO] app.py:141 - 系统启动成功
+2026-04-15 15:28:31,416 [INFO] app.py:141 - 系统启动成功
+2026-04-15 16:32:13,278 [INFO] app.py:141 - 系统启动成功
+2026-04-15 16:38:24,864 [INFO] app.py:141 - 系统启动成功
+2026-04-15 16:55:08,716 [INFO] app.py:142 - 系统启动成功
+2026-04-15 17:00:08,197 [INFO] _client.py:1025 - HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-15 17:11:38,143 [INFO] _client.py:1025 - HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-15 17:19:12,078 [INFO] _client.py:1025 - HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-15 17:19:33,205 [INFO] _client.py:1025 - HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-15 17:26:34,126 [INFO] _client.py:1025 - HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-15 17:27:20,488 [INFO] _client.py:1025 - HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-15 17:27:55,534 [INFO] _client.py:1025 - HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-15 17:35:14,790 [INFO] _client.py:1025 - HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"

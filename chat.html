@@ -1,0 +1,2044 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <base target="_blank">
+    <title>AI 农技专家 - 智能问诊</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2d5a27;
+            --bg-color: #f0f2f5;
+            --sidebar-width: 240px;
+            --chat-sidebar-width: 280px;
+            --chat-bg: #f7f8fa;
+            --thinking-bg: #f5f5f5;
+            --danger-color: #ff4d4f;
+            --success-color: #52c41a;
+            --warning-color: #faad14;
+        }
+
+        body {
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--chat-bg);
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--primary-color);
+            height: 100vh;
+            color: white;
+            position: fixed;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: 30px 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .user-info {
+            padding: 15px 20px;
+            background: rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .user-role {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            margin-top: 4px;
+            font-weight: bold;
+        }
+
+        .role-admin { background: #ff4d4f; color: white; }
+        .role-farmer { background: #52c41a; color: white; }
+
+        .nav-menu {
+            flex: 1;
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            padding: 15px 25px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: 0.3s;
+            text-decoration: none;
+            color: white;
+            position: relative;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(255,255,255,0.1);
+            border-left: 4px solid #fff;
+        }
+
+        .nav-item i { margin-right: 15px; width: 20px; }
+
+        .badge {
+            position: absolute;
+            right: 15px;
+            background: #ff4d4f;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .chat-sidebar {
+            width: var(--chat-sidebar-width);
+            background: white;
+            border-right: 1px solid #e8e8e8;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            height: 100%;
+        }
+
+        .chat-sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #e8e8e8;
+            background: #fafafa;
+            flex-shrink: 0;
+        }
+
+        .new-chat {
+            border: 1px solid var(--primary-color);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--primary-color);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .new-chat:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .history-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .session-item {
+            padding: 12px;
+            font-size: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 8px;
+            background: #f5f5f5;
+            border: 1px solid transparent;
+            position: relative;
+            transition: all 0.3s;
+            color: #333;
+        }
+
+        .session-item:hover {
+            background: #e8f5e9;
+            border-color: var(--primary-color);
+        }
+
+        .session-item.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .session-item.active .session-time {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .session-title {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 4px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .session-time { font-size: 11px; color: #8c8c8c; }
+
+        .delete-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: #8c8c8c;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s;
+            padding: 4px;
+            width: 28px;
+            height: 28px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .session-item:hover .delete-btn { opacity: 1; }
+        .session-item.active .delete-btn { color: white; }
+
+        .delete-btn:hover {
+            background: rgba(255, 77, 79, 0.1);
+            color: #ff4d4f !important;
+        }
+
+        .chat-sidebar-footer {
+            padding: 15px;
+            border-top: 1px solid #e8e8e8;
+            font-size: 12px;
+            color: #8c8c8c;
+            text-align: center;
+            background: #fafafa;
+            flex-shrink: 0;
+        }
+
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+            position: relative;
+            background: var(--chat-bg);
+        }
+
+        .top-nav {
+            height: 60px;
+            background: white;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            justify-content: space-between;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .nav-left { display: flex; align-items: center; gap: 15px; }
+
+        .save-status {
+            font-size: 12px;
+            color: var(--primary-color);
+            opacity: 0;
+            transition: opacity 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .save-status.show { opacity: 1; }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 10% 140px 10%;
+            scroll-behavior: smooth;
+            position: relative;
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 25px;
+            animation: fadeIn 0.3s ease;
+            position: relative;
+            width: 100%;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 18px;
+        }
+
+        .ai .avatar {
+            background: var(--primary-color);
+            margin-right: 15px;
+        }
+
+        .user .avatar {
+            background: #5436da;
+            margin-left: 15px;
+            order: 2;
+        }
+
+        .user-image-content {
+            background: var(--primary-color);
+            color: white;
+            margin-left: auto;
+            border-radius: 10px;
+            padding: 15px;
+            max-width: 70%;
+            order: 1;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .user-image-content img {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: block;
+            cursor: zoom-in;
+            transition: transform 0.3s;
+        }
+
+        .user-image-content img:hover { transform: scale(1.02); }
+
+        .user-text {
+            background: var(--primary-color);
+            color: white;
+            margin-left: auto;
+            border-radius: 10px;
+            padding: 15px;
+            max-width: 70%;
+            font-size: 15px;
+            line-height: 1.6;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            order: 1;
+        }
+
+        .ai-content-wrapper {
+            max-width: 70%;
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 10px;
+            overflow: visible;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            flex: 1;
+        }
+
+        .interrupted-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: linear-gradient(135deg, #ff4d4f, #ff7875);
+            color: white;
+            font-size: 11px;
+            padding: 3px 10px;
+            border-bottom-left-radius: 8px;
+            z-index: 10;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(255, 77, 79, 0.2);
+        }
+
+        .thinking-section {
+            background: var(--thinking-bg);
+            border-bottom: 1px solid #eee;
+        }
+
+        .thinking-header {
+            padding: 10px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #666;
+            user-select: none;
+        }
+
+        .thinking-header:hover { background: #ebebeb; }
+
+        .thinking-icon { transition: transform 0.3s; }
+        .thinking-icon.expanded { transform: rotate(90deg); }
+
+        .thinking-body {
+            padding: 0 15px;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            font-size: 13px;
+            color: #888;
+            line-height: 1.6;
+            border-left: 3px solid #ddd;
+            margin: 0 15px;
+        }
+
+        .thinking-body.expanded {
+            padding: 10px 15px;
+            max-height: 500px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+        }
+
+        .content-body {
+            padding: 15px;
+            font-size: 15px;
+            line-height: 1.8;
+            color: #333;
+        }
+
+        .content-body h3 {
+            color: var(--primary-color);
+            border-left: 4px solid var(--primary-color);
+            padding-left: 10px;
+            margin: 15px 0 10px 0;
+        }
+
+        .content-body ul { padding-left: 20px; }
+        .content-body pre {
+            background: #f6f8fa;
+            border-radius: 6px;
+            padding: 16px;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .content-body code {
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-size: 14px;
+        }
+
+        .code-block-wrapper { position: relative; margin: 12px 0; }
+
+        .code-copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(255,255,255,0.9);
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 12px;
+            cursor: pointer;
+            opacity: 0;
+            transition: all 0.3s;
+            color: #666;
+        }
+
+        .code-block-wrapper:hover .code-copy-btn { opacity: 1; }
+
+        .code-copy-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .code-copy-btn.copied {
+            background: var(--success-color);
+            color: white;
+            border-color: var(--success-color);
+        }
+
+        .message-actions {
+            display: flex;
+            gap: 8px;
+            padding: 8px 15px;
+            border-top: 1px solid #f0f0f0;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .ai-content-wrapper:hover .message-actions { opacity: 1; }
+
+        .action-btn {
+            background: transparent;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 13px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            background: #f0f0f0;
+            color: var(--primary-color);
+        }
+
+        .action-btn.favorited { color: var(--warning-color); }
+        .action-btn.favorited:hover { background: rgba(250, 173, 20, 0.1); }
+
+        .message-time {
+            font-size: 11px;
+            color: rgba(255,255,255,0.7);
+            margin-top: 4px;
+            text-align: right;
+        }
+
+        .user .message-time {
+            margin-right: 55px;
+            color: #999;
+        }
+
+        .input-wrapper {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 20px 10%;
+            background: linear-gradient(to top, var(--chat-bg) 0%, var(--chat-bg) 70%, transparent 100%);
+            z-index: 100;
+        }
+
+        .input-area {
+            background: white;
+            border-radius: 12px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 1px solid #ddd;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .input-area:focus-within {
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 15px rgba(45, 90, 39, 0.15);
+        }
+
+        .input-area input {
+            flex: 1;
+            border: none;
+            outline: none;
+            padding: 10px;
+            font-size: 16px;
+            background: transparent;
+        }
+
+        .input-status-bar {
+            position: absolute;
+            top: -28px;
+            left: 0;
+            right: 0;
+            background: linear-gradient(90deg, #2d5a27, #4caf50);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 6px 6px 0 0;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            z-index: 5;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .input-status-bar.show {
+            opacity: 1;
+        }
+
+        .quick-questions {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            padding: 0 10%;
+        }
+
+        .quick-tag {
+            background: white;
+            border: 1px solid #d9d9d9;
+            border-radius: 16px;
+            padding: 6px 12px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .quick-tag:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background: #f6ffed;
+        }
+
+        .quick-tag i { font-size: 12px; }
+
+        .send-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            background: #234a1f;
+            transform: scale(1.05);
+        }
+
+        .send-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .stop-btn {
+            background: var(--danger-color) !important;
+            animation: pulse 1.5s infinite;
+        }
+
+        .stop-btn:hover:not(:disabled) {
+            background: #d9363e !important;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 77, 79, 0.4); }
+            50% { box-shadow: 0 0 0 10px rgba(255, 77, 79, 0); }
+        }
+
+        .scroll-to-bottom-btn {
+            position: fixed;
+            bottom: 160px;
+            right: calc(10% + 20px);
+            background: white;
+            color: var(--primary-color);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+            font-size: 13px;
+            z-index: 101;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid #e5e5e5;
+            transition: all 0.3s ease;
+            animation: slideUp 0.3s ease;
+            user-select: none;
+        }
+
+        .scroll-to-bottom-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(45, 90, 39, 0.25);
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .scroll-to-bottom-btn.has-new::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 8px;
+            height: 8px;
+            background: var(--danger-color);
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        .scroll-to-bottom-btn .new-count {
+            background: var(--danger-color);
+            color: white;
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 4px;
+            font-weight: bold;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .interrupt-dialog-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .interrupt-dialog {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            animation: dialogPop 0.3s ease;
+        }
+
+        @keyframes dialogPop {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .interrupt-dialog h3 {
+            margin: 0 0 12px 0;
+            color: #333;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .interrupt-dialog p {
+            margin: 0 0 20px 0;
+            color: #666;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .interrupt-dialog .dialog-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .dialog-btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .dialog-btn.secondary { background: #f0f0f0; color: #666; }
+        .dialog-btn.secondary:hover { background: #e0e0e0; }
+        .dialog-btn.primary { background: var(--primary-color); color: white; }
+        .dialog-btn.primary:hover { background: #234a1f; }
+
+        .interrupt-hint {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #ff4d4f;
+            font-size: 13px;
+            background: #fff2f0;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #ffccc7;
+            margin: 0 15px 15px;
+        }
+
+        .interrupt-hint i { color: #ff4d4f; }
+
+        .continue-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            margin-left: auto;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .continue-btn:hover {
+            background: #234a1f;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(45, 90, 39, 0.3);
+        }
+
+        /* 思考中指示器样式 - 新增 */
+        .thinking-indicator {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            color: #666;
+            font-size: 14px;
+        }
+
+        .thinking-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e5e5e5;
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .stopping-indicator {
+            background: #fff2f0;
+            border: 1px solid #ffccc7;
+            color: #ff4d4f;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: fit-content;
+        }
+
+        .stopping-icon {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ff4d4f;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .empty-state {
+            padding: 40px 20px;
+            color: #8c8c8c;
+            text-align: center;
+        }
+
+        .image-modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            cursor: zoom-out;
+        }
+
+        .image-modal img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 8px;
+            animation: zoomIn 0.3s ease;
+        }
+
+        @keyframes zoomIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .image-modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.3s;
+        }
+
+        .image-modal-close:hover { background: rgba(255,255,255,0.1); }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 3000;
+            animation: slideDown 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translate(-50%, -20px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 12px 16px;
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 10px;
+            width: fit-content;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .typing-indicator .dot {
+            width: 8px;
+            height: 8px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite ease-in-out both;
+        }
+
+        .typing-indicator .dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator .dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typingBounce {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        @media (max-width: 1200px) {
+            .messages-container { padding: 20px 5% 140px 5%; }
+            .input-wrapper { padding: 20px 5%; }
+            .quick-questions { padding: 0 5%; }
+            .scroll-to-bottom-btn { right: calc(5% + 20px); }
+            .ai-content-wrapper, .user-text, .user-image-content { max-width: 85%; }
+        }
+
+        @media (max-width: 768px) {
+            .chat-sidebar { display: none; }
+            .messages-container { padding: 20px 15px 140px 15px; }
+            .input-wrapper { padding: 20px 15px; }
+            .ai-content-wrapper, .user-text, .user-image-content { max-width: 90%; }
+            .scroll-to-bottom-btn { right: 20px; bottom: 140px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app" style="display: contents;">
+        <!-- 系统侧边栏 -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-leaf"></i> 智能农政系统
+            </div>
+
+            <div class="user-info" v-if="currentUser">
+                <div style="font-weight: 600; font-size: 14px;">
+                    <i class="fas fa-user-circle"></i> {{ currentUser.name || currentUser.email }}
+                </div>
+                <span :class="['user-role', currentUser.role === 'admin' ? 'role-admin' : 'role-farmer']">
+                    {{ currentUser.role === 'admin' ? '管理员' : '种植农户' }}
+                </span>
+            </div>
+
+            <div class="nav-menu">
+                <a href="/home" class="nav-item"><i class="fas fa-chart-line"></i> 实时监控</a>
+                <a href="/detect" class="nav-item"><i class="fas fa-bug"></i> 病虫害识别</a>
+
+                <template v-if="currentUser && currentUser.role === 'admin'">
+                    <a href="/admin/comments" class="nav-item">
+                        <i class="fas fa-comments"></i> 评论审核
+                        <span class="badge" v-if="pendingComments > 0">{{ pendingComments }}</span>
+                    </a>
+                    <a href="/admin/users" class="nav-item"><i class="fas fa-users-cog"></i> 用户管理</a>
+                </template>
+
+                <template v-if="currentUser && currentUser.role === 'farmer'">
+                    <a href="/comments" class="nav-item"><i class="fas fa-comments"></i> 经验交流</a>
+                    <a href="/my-farm" class="nav-item"><i class="fas fa-tractor"></i> 我的农场</a>
+                </template>
+
+                <a href="/map" class="nav-item"><i class="fas fa-map-marked-alt"></i> 风险地图</a>
+                <a href="/chat" class="nav-item active"><i class="fas fa-robot"></i> AI问诊</a>
+                <a href="/knowledge" class="nav-item">
+                    <i class="fas fa-book-medical"></i> <span>知识库</span>
+                </a>
+                <a href="/farm-records" class="nav-item"><i class="fas fa-history"></i> 农事记录</a>
+                <a href="/set" class="nav-item"><i class="fas fa-cog"></i> 系统设置</a>
+            </div>
+        </div>
+
+        <!-- 主内容区域 -->
+        <div class="main-content">
+            <!-- 中断恢复对话框 -->
+            <div v-if="showInterruptDialog" class="interrupt-dialog-overlay" @click.self="dismissInterruptDialog">
+                <div class="interrupt-dialog">
+                    <h3><i class="fas fa-history" style="color: var(--primary-color);"></i> 上次回答已中断</h3>
+                    <p>
+                        检测到您咨询<strong>{{ interruptedInfo.pestName || '病虫害' }}</strong>时的回答被中断。
+                        <br><br>
+                        <span style="color: #666; font-size: 13px;">
+                            <i class="fas fa-info-circle"></i>
+                            您可以点击下方的"继续回答"来恢复生成，无需重新提问
+                        </span>
+                    </p>
+                    <div class="dialog-actions">
+                        <button class="dialog-btn secondary" @click="dismissInterruptDialog">
+                            暂不处理
+                        </button>
+                        <button class="dialog-btn primary" @click="continueInterruptedFromDialog">
+                            <i class="fas fa-play"></i> 继续回答
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 图片预览模态框 -->
+            <div v-if="previewImage" class="image-modal" @click="closeImagePreview">
+                <div class="image-modal-close"><i class="fas fa-times"></i></div>
+                <img :src="previewImage" alt="预览图片">
+            </div>
+
+            <!-- Toast提示 -->
+            <div v-if="toast.show" class="toast">
+                <i :class="toast.icon"></i>
+                <span>{{ toast.message }}</span>
+            </div>
+
+            <!-- 聊天历史侧边栏 -->
+            <div class="chat-sidebar">
+                <div class="chat-sidebar-header">
+                    <div class="new-chat" @click="createNewSession">
+                        <i class="fas fa-plus"></i> 新建咨询
+                    </div>
+                </div>
+                <div class="history-list">
+                    <div v-if="sessions.length === 0" class="empty-state">
+                        <i class="fas fa-comments" style="font-size: 32px; color: #bfbfbf; margin-bottom: 10px;"></i>
+                        <div style="font-size: 12px;">暂无对话记录</div>
+                    </div>
+                    <div v-for="session in sessions" :key="session.id"
+                         :class="['session-item', currentSessionId === session.id ? 'active' : '']"
+                         @click="loadSession(session.id)">
+                        <div class="session-title">
+                            <i v-if="session.is_interrupted" class="fas fa-exclamation-circle" style="color: #ff4d4f;" title="生成中断"></i>
+                            <i v-else-if="session.has_favorite" class="fas fa-star" style="color: var(--warning-color);" title="含有收藏内容"></i>
+                            {{ session.title }}
+                        </div>
+                        <div class="session-time">{{ formatTime(session.updated_at) }}</div>
+                        <button class="delete-btn" @click.stop="deleteSession(session.id)" title="删除对话">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="chat-sidebar-footer">共 {{ sessions.length }} 个对话</div>
+            </div>
+
+            <!-- 聊天主区域 -->
+            <div class="chat-main">
+                <div class="top-nav">
+                    <div class="nav-left">
+                        <span style="font-weight: bold; color: #333;">
+                            <i class="fas fa-robot" style="color: var(--primary-color);"></i>
+                            农业技术专家系统
+                        </span>
+                        <span :class="['save-status', saveStatus ? 'show' : '']">
+                            <i class="fas fa-check-circle"></i> {{ saveStatus }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- 快捷问题推荐 -->
+                <div v-if="messages.length <= 1 && !loading && !isGenerating" class="quick-questions">
+                    <div class="quick-tag" @click="handleSend('水稻稻瘟病的防治方法')">
+                        <i class="fas fa-seedling"></i> 稻瘟病防治
+                    </div>
+                    <div class="quick-tag" @click="handleSend('草地贪夜蛾如何识别')">
+                        <i class="fas fa-bug"></i> 贪夜蛾识别
+                    </div>
+                    <div class="quick-tag" @click="handleSend('小麦锈病用什么药')">
+                        <i class="fas fa-spray-can"></i> 小麦锈病用药
+                    </div>
+                    <div class="quick-tag" @click="handleSend('玉米螟的生物防治')">
+                        <i class="fas fa-leaf"></i> 玉米螟防治
+                    </div>
+                    <div class="quick-tag" @click="handleSend('农药安全使用规范')">
+                        <i class="fas fa-shield-alt"></i> 安全规范
+                    </div>
+                </div>
+
+                <!-- 消息区域 -->
+                <div class="messages-container" id="msgBox" @scroll="handleScroll">
+                    <div v-for="(msg, i) in messages" :key="msg.id || i" :class="['message', msg.role]">
+                        <div class="avatar">
+                            <i :class="msg.role=='ai'?'fas fa-robot':'fas fa-user'" style="color:white"></i>
+                        </div>
+
+                        <!-- 用户图文消息 -->
+                        <div v-if="msg.role === 'user' && msg.type === 'image'" class="user-image-content">
+                            <img :src="msg.image" alt="检测图片" @click="openImagePreview(msg.image)">
+                            <div>{{ msg.text }}</div>
+                            <div class="message-time">{{ formatMessageTime(msg.timestamp) }}</div>
+                        </div>
+
+                        <!-- 用户纯文本 -->
+                        <div v-else-if="msg.role === 'user'" class="user-text">
+                            {{ msg.text }}
+                            <div class="message-time">{{ formatMessageTime(msg.timestamp) }}</div>
+                        </div>
+
+                        <!-- AI消息 -->
+                        <div v-else-if="msg.role === 'ai'" class="ai-content-wrapper">
+                            <div v-if="msg.isInterrupted" class="interrupted-badge">
+                                <i class="fas fa-stop-circle"></i> 已停止
+                            </div>
+
+                            <!-- 思考过程 -->
+                            <div v-if="msg.thinking" class="thinking-section">
+                                <div class="thinking-header" @click="msg.showThinking = !msg.showThinking">
+                                    <i class="fas fa-chevron-right thinking-icon" :class="{expanded: msg.showThinking}"></i>
+                                    <i class="fas fa-brain" style="color: #999;"></i>
+                                    <span>思考过程 {{ msg.thinkingDone ? '(已完成)' : '' }}</span>
+                                </div>
+                                <div class="thinking-body" :class="{expanded: msg.showThinking}">
+                                    <pre style="margin: 0; white-space: pre-wrap; font-family: inherit;">{{ msg.thinking }}</pre>
+                                </div>
+                            </div>
+
+                            <!-- 正文 -->
+                            <div class="content-body" v-html="msg.displayContent || msg.content"></div>
+
+                            <!-- 消息操作栏 -->
+                            <div class="message-actions">
+                                <button class="action-btn" @click="copyMessage(msg)" title="复制内容">
+                                    <i class="fas fa-copy"></i> 复制
+                                </button>
+                                <button class="action-btn" @click="toggleFavorite(i)" title="收藏防治方案">
+                                    <i :class="msg.isFavorite ? 'fas fa-star favorited' : 'far fa-star'"></i>
+                                    {{ msg.isFavorite ? '已收藏' : '收藏' }}
+                                </button>
+                            </div>
+
+                            <!-- 中断后继续按钮 -->
+                            <div v-if="msg.isInterrupted" class="interrupt-hint">
+                                <i class="fas fa-info-circle"></i>
+                                <span>生成被中断，点击下方按钮继续</span>
+                                <button class="continue-btn" @click="continueInterruptedMessage(i)">
+                                    <i class="fas fa-play"></i> 继续回答
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 修复1：添加思考中/加载提示 (API调用期间) -->
+                    <div v-if="loading && !isStopping" class="message ai">
+                        <div class="avatar">
+                            <i class="fas fa-robot" style="color:white"></i>
+                        </div>
+                        <div class="typing-indicator">
+                            <div class="dot"></div>
+                            <div class="dot"></div>
+                            <div class="dot"></div>
+                        </div>
+                    </div>
+
+                    <!-- 正在停止提示 -->
+                    <div v-if="isStopping" class="message ai">
+                        <div class="avatar">
+                            <i class="fas fa-robot" style="color:white"></i>
+                        </div>
+                        <div class="stopping-indicator">
+                            <div class="stopping-icon"></div>
+                            <span>正在停止生成...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 回到底部按钮 -->
+                <div v-if="showScrollButton"
+                     :class="['scroll-to-bottom-btn', hasNewMessage ? 'has-new' : '']"
+                     @click="scrollToBottom(true)">
+                    <i class="fas fa-arrow-down"></i>
+                    <span>回到底部</span>
+                    <span v-if="newMessageCount > 0" class="new-count">{{ newMessageCount }}</span>
+                </div>
+
+                <!-- 输入区域 -->
+                <div class="input-wrapper">
+                    <div class="quick-questions" v-if="messages.length > 1 && !isGenerating && !loading">
+                        <div class="quick-tag" @click="handleSend('还有呢？')">
+                            <i class="fas fa-question-circle"></i> 继续追问
+                        </div>
+                        <div class="quick-tag" @click="handleSend('详细说明一下')">
+                            <i class="fas fa-align-left"></i> 详细说明
+                        </div>
+                        <div class="quick-tag" @click="handleSend('有没有替代方案？')">
+                            <i class="fas fa-exchange-alt"></i> 替代方案
+                        </div>
+                    </div>
+
+                    <div class="input-area">
+                        <div :class="['input-status-bar', (isGenerating || loading) ? 'show' : '']">
+                            <i :class="isGenerating ? 'fas fa-circle-notch fa-spin' : 'fas fa-brain'"></i>
+                            <span>{{ isGenerating ? 'AI 正在生成回答，您可以继续输入下一个问题' : 'AI 正在思考...' }}</span>
+                        </div>
+                        <input
+                            v-model="userInput"
+                            @keyup.enter="handleInputEnter"
+                            :placeholder="isGenerating ? 'AI正在生成，您可输入下一个问题...' : '描述症状或询问防治方法...'"
+                            :disabled="false"
+                            ref="inputRef"
+                        >
+                        <button
+                            :class="['send-btn', isGenerating ? 'stop-btn' : '']"
+                            @click="handleMainButtonClick"
+                            :disabled="!isGenerating && !userInput.trim()"
+                        >
+                            <i :class="isGenerating ? 'fas fa-stop' : 'fas fa-paper-plane'"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, onMounted, nextTick, computed, onBeforeUnmount, watch } = Vue;
+
+        createApp({
+            setup() {
+                const currentUser = ref(null);
+                const pendingComments = ref(0);
+                const sessions = ref([]);
+                const currentSessionId = ref(null);
+                const currentTitle = ref('');
+                const saveStatus = ref('');
+                const messages = ref([]);
+                const userInput = ref('');
+                const inputRef = ref(null);
+                const loading = ref(false);
+                const isTyping = ref(false);
+                const isGenerating = ref(false);
+                const isStopping = ref(false);
+                const abortController = ref(null);
+                const currentTypeWriter = ref(null);
+                const scrollThreshold = 100;
+                const isUserAtBottom = ref(true);
+                const hasNewMessage = ref(false);
+                const newMessageCount = ref(0);
+                const showInterruptDialog = ref(false);
+                const interruptedInfo = ref({});
+                const previewImage = ref(null);
+                const toast = ref({ show: false, message: '', icon: 'fas fa-check-circle' });
+
+                const imagePreview = ref(null);
+
+                // 为每条消息生成唯一ID
+                const generateMsgId = () => Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+
+                const showScrollButton = computed(() => {
+                    return !isUserAtBottom.value && messages.value.length > 3;
+                });
+
+                const showToast = (message, icon = 'fas fa-check-circle', duration = 2000) => {
+                    toast.value = { show: true, message, icon };
+                    setTimeout(() => { toast.value.show = false; }, duration);
+                };
+
+                const openImagePreview = (imageUrl) => { previewImage.value = imageUrl; };
+                const closeImagePreview = () => { previewImage.value = null; };
+
+                const fetchCurrentUser = async () => {
+                    try {
+                        const response = await fetch('/api/auth/me');
+                        if (response.ok) {
+                            currentUser.value = await response.json();
+                            if (currentUser.value.role === 'admin') fetchPendingComments();
+                        }
+                    } catch (error) { console.error('获取用户信息失败:', error); }
+                };
+
+                const fetchPendingComments = async () => {
+                    try {
+                        const response = await fetch('/api/comments?status=pending');
+                        if (response.ok) {
+                            const data = await response.json();
+                            pendingComments.value = data.stats?.pending || 0;
+                        }
+                    } catch (error) { console.error('获取评论统计失败:', error); }
+                };
+
+                const handleScroll = () => {
+                    const msgBox = document.getElementById('msgBox');
+                    if (!msgBox) return;
+                    const distanceToBottom = msgBox.scrollHeight - msgBox.scrollTop - msgBox.clientHeight;
+                    const wasAtBottom = isUserAtBottom.value;
+                    isUserAtBottom.value = distanceToBottom < scrollThreshold;
+
+                    // 如果用户手动滚动到底部，重置新消息标记
+                    if (isUserAtBottom.value && wasAtBottom !== isUserAtBottom.value) {
+                        hasNewMessage.value = false;
+                        newMessageCount.value = 0;
+                    }
+                };
+
+                const scrollToBottom = (force = false) => {
+                    nextTick(() => {
+                        const msgBox = document.getElementById('msgBox');
+                        if (!msgBox) return;
+                        if (force || isUserAtBottom.value) {
+                            msgBox.scrollTop = msgBox.scrollHeight;
+                            hasNewMessage.value = false;
+                            newMessageCount.value = 0;
+                        }
+                    });
+                };
+
+                // 修复2：优化打字机效果，正确处理中断状态
+                const typeWriter = async (msgIndex, text, speed = 20) => {
+                    return new Promise(async (resolve) => {
+                        isTyping.value = true;
+                        const msg = messages.value[msgIndex];
+                        msg.isTyping = true;
+                        msg.isInterrupted = false;
+
+                        // 解析markdown为纯文本进行打字
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = text;
+                        const plainText = tempDiv.textContent || tempDiv.innerText || text;
+
+                        let currentText = '';
+                        let lastScrollTime = Date.now();
+
+                        for (let i = 0; i < plainText.length; i++) {
+                            // 检查是否被停止 - 修复：同时检查 isGenerating 和 isStopping
+                            if (!isGenerating.value || isStopping.value) {
+                                msg.isInterrupted = true;
+                                msg.isTyping = false;
+                                // 保存原始内容和进度
+                                msg.rawContent = text;
+                                msg.interruptedContent = text;
+                                msg.interruptedIndex = i;
+                                // 显示已生成的内容 + 中断标记
+                                const displayedText = text.substring(0, currentText.length);
+                                msg.displayContent = marked.parse(displayedText + '<span style="color: #ff4d4f;"> [生成已停止]</span>');
+                                msg.content = displayedText; // 保存实际显示的内容
+                                isTyping.value = false;
+                                saveCurrentSession();
+                                resolve(false);
+                                return;
+                            }
+
+                            currentText += plainText[i];
+
+                            // 每3个字符更新一次显示
+                            if (i % 3 === 0 || i === plainText.length - 1) {
+                                msg.displayContent = marked.parse(text.substring(0, currentText.length));
+                            }
+
+                            // 每300ms滚动一次
+                            if (Date.now() - lastScrollTime > 300 && isUserAtBottom.value) {
+                                scrollToBottom();
+                                lastScrollTime = Date.now();
+                            }
+
+                            // 动态速度
+                            let currentSpeed = speed;
+                            if ('，,、'.includes(plainText[i])) currentSpeed = speed * 1.5;
+                            if ('。！？.!?'.includes(plainText[i])) currentSpeed = speed * 2;
+                            if (plainText[i] === ' ') currentSpeed = speed * 0.5;
+
+                            await new Promise(r => setTimeout(r, currentSpeed));
+                        }
+
+                        // 完成生成 - 修复：保存 rawContent
+                        msg.isTyping = false;
+                        msg.displayContent = marked.parse(text);
+                        msg.content = text; // 保存完整内容
+                        msg.rawContent = text; // 保存原始内容供后续恢复使用
+                        msg.interruptedContent = null;
+                        msg.interruptedIndex = null;
+                        msg.isInterrupted = false;
+                        isTyping.value = false;
+                        scrollToBottom(true);
+                        resolve(true);
+                    });
+                };
+
+                const copyMessage = async (msg) => {
+                    const textToCopy = msg.content ? msg.content.replace(/<[^>]*>/g, '') : '';
+                    try {
+                        await navigator.clipboard.writeText(textToCopy);
+                        showToast('已复制到剪贴板', 'fas fa-check-circle');
+                    } catch (err) {
+                        showToast('复制失败，请手动复制', 'fas fa-exclamation-circle');
+                    }
+                };
+
+                const toggleFavorite = async (msgIndex) => {
+                    const msg = messages.value[msgIndex];
+                    msg.isFavorite = !msg.isFavorite;
+
+                    // 立即保存到后端，而不是等待自动保存
+                    await saveCurrentSession();
+
+                    showToast(msg.isFavorite ? '已收藏到防治方案库' : '已取消收藏',
+                              msg.isFavorite ? 'fas fa-star' : 'fas fa-times-circle');
+                };
+
+                const formatMessageTime = (timestamp) => {
+                    if (!timestamp) return '';
+                    const date = new Date(timestamp);
+                    return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+                };
+
+                const fetchSessions = async () => {
+                    try {
+                        const res = await fetch('/api/chat/sessions');
+                        if (res.ok) {
+                            const data = await res.json();
+                            sessions.value = data.map(s => ({
+                                ...s,
+                                is_interrupted: s.is_interrupted || false,
+                                has_favorite: s.messages?.some(m => m.isFavorite) || false
+                            }));
+                        }
+                    } catch (e) { console.error('获取对话列表失败:', e); }
+                };
+
+                // 修复3：加载会话时正确恢复中断状态
+                const loadSession = async (id) => {
+                    try {
+                        // 重置所有生成状态
+                        isGenerating.value = false;
+                        isTyping.value = false;
+                        isStopping.value = false;
+                        loading.value = false;
+                        if (abortController.value) {
+                            abortController.value.abort();
+                            abortController.value = null;
+                        }
+
+                        const res = await fetch(`/api/chat/sessions/${id}`);
+                        if (res.ok) {
+                            const session = await res.json();
+                            currentSessionId.value = id;
+                            currentTitle.value = session.title;
+
+                            messages.value = (session.messages || []).map(m => {
+                                const isInterrupted = m.isInterrupted || m.is_interrupted || false;
+
+                                // 关键修复：正确处理中断状态的数据恢复
+                                let displayContent = m.displayContent || '';
+                                if (!displayContent && m.role === 'ai') {
+                                    if (isInterrupted && m.interruptedContent) {
+                                        // 如果是中断状态，显示已生成的内容 + 中断标记
+                                        displayContent = marked.parse(m.interruptedContent + '<span style="color: #ff4d4f;"> [生成已停止]</span>');
+                                    } else if (m.content) {
+                                        displayContent = marked.parse(m.content);
+                                    }
+                                }
+
+                                return {
+                                    ...m,
+                                    id: m.id || generateMsgId(),
+                                    displayContent: displayContent,
+                                    isInterrupted: isInterrupted,
+                                    isTyping: false,
+                                    timestamp: m.timestamp || new Date().toISOString(),
+                                    // 确保这些字段存在，否则继续生成会失败
+                                    rawContent: m.rawContent || m.content || m.text || '',
+                                    content: m.content || m.text || '',
+                                    interruptedContent: m.interruptedContent || null,
+                                    interruptedIndex: m.interruptedIndex || null,
+                                    isFavorite: m.isFavorite || false
+                                };
+                            });
+
+                            // 检查是否有中断的消息，如果有显示恢复提示
+                            const lastInterruptedMsg = [...messages.value]
+                                .reverse()
+                                .find(m => m.role === 'ai' && m.isInterrupted);
+
+                            if (lastInterruptedMsg) {
+                                showToast('检测到中断的回答，点击消息下方的"继续回答"可恢复生成', 'fas fa-info-circle', 5000);
+                            }
+
+                            isUserAtBottom.value = true;
+                            scrollToBottom(true);
+                        }
+                    } catch (e) {
+                        console.error('加载对话失败:', e);
+                        showToast('加载对话失败', 'fas fa-exclamation-circle');
+                    }
+                };
+
+                // 修复4：保存时包含中断相关字段
+                const saveCurrentSession = async () => {
+                    if (messages.value.length === 0) return;
+                    try {
+                        const firstUserMsg = messages.value.find(m => m.role === 'user');
+                        let title = currentTitle.value;
+                        if (!title && firstUserMsg) {
+                            title = firstUserMsg.text.substring(0, 20) + (firstUserMsg.text.length > 20 ? '...' : '');
+                            if (firstUserMsg.type === 'image') title = '图片咨询: ' + title;
+                            currentTitle.value = title;
+                        }
+                        const imageMsg = messages.value.find(m => m.type === 'image');
+                        const imageBase64 = imageMsg ? imageMsg.image : null;
+                        const pestMatch = title ? title.match(/([\u4e00-\u9fa5]+)/) : null;
+
+                        const res = await fetch('/api/chat/sessions', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                id: currentSessionId.value,
+                                title: title || '未命名对话',
+                                messages: messages.value.map(m => ({
+                                    role: m.role,
+                                    text: m.text,
+                                    content: m.content,
+                                    rawContent: m.rawContent,           // 新增：保存原始内容
+                                    thinking: m.thinking,
+                                    type: m.type,
+                                    image: m.image,
+                                    isInterrupted: m.isInterrupted || false,
+                                    isFavorite: m.isFavorite || false,
+                                    interruptedContent: m.interruptedContent,  // 新增：保存中断内容
+                                    interruptedIndex: m.interruptedIndex,      // 新增：保存中断位置
+                                    timestamp: m.timestamp
+                                })),
+                                pest_name: pestMatch ? pestMatch[1] : null,
+                                image_base64: imageBase64,
+                                has_favorite: messages.value.some(m => m.isFavorite),
+                                is_interrupted: messages.value.some(m => m.isInterrupted)
+                            })
+                        });
+
+                        if (res.ok) {
+                            const result = await res.json();
+                            if (result.success && !currentSessionId.value) currentSessionId.value = result.id;
+                            saveStatus.value = '已保存';
+                            setTimeout(() => saveStatus.value = '', 2000);
+                            fetchSessions();
+                        }
+                    } catch (e) { console.error('保存对话失败:', e); }
+                };
+
+                // 修复5：新建会话时彻底重置所有状态
+                const createNewSession = async () => {
+                    // 先保存当前会话
+                    if (messages.value.length > 0) await saveCurrentSession();
+
+                    // 重置所有状态
+                    currentSessionId.value = null;
+                    currentTitle.value = '';
+                    messages.value = [];
+                    userInput.value = '';
+                    isUserAtBottom.value = true;
+
+                    // 修复：彻底重置生成相关状态
+                    isGenerating.value = false;
+                    isTyping.value = false;
+                    isStopping.value = false;
+                    loading.value = false;
+
+                    if (abortController.value) {
+                        abortController.value.abort();
+                        abortController.value = null;
+                    }
+
+                    // 添加欢迎消息
+                    messages.value.push({
+                        id: generateMsgId(),
+                        role: 'ai',
+                        content: '您好！我是 <b>AI 农技专家</b>。我可以为您提供病虫害的生物、物理及化学防治建议。<br><br>您可以直接询问，或从左侧历史记录中选择对话。',
+                        displayContent: '您好！我是 <b>AI 农技专家</b>。我可以为您提供病虫害的生物、物理及化学防治建议。<br><br>您可以直接询问，或从左侧历史记录中选择对话。',
+                        timestamp: new Date().toISOString()
+                    });
+
+                    nextTick(() => {
+                        setTimeout(() => {
+                            if (inputRef.value) {
+                                inputRef.value.focus();
+                                inputRef.value.click(); // 移动端可能需要点击才能唤起键盘
+                            }
+                        }, 100);
+                    });
+                };
+
+                const deleteSession = async (id) => {
+                    if (!confirm('确定要删除这个对话吗？')) return;
+                    try {
+                        const res = await fetch(`/api/chat/sessions/${id}`, { method: 'DELETE' });
+                        if (res.ok) {
+                            if (currentSessionId.value === id) {
+                                currentSessionId.value = null;
+                                currentTitle.value = '';
+                                messages.value = [];
+                            }
+                            fetchSessions();
+                        }
+                    } catch (e) { console.error('删除对话失败:', e); }
+                };
+
+                const stopGeneration = () => {
+                    isStopping.value = true;
+                    isGenerating.value = false;
+
+                    setTimeout(() => {
+                        if (abortController.value) {
+                            abortController.value.abort();
+                            abortController.value = null;
+                        }
+
+                        // 找到正在生成的AI消息
+                        for (let i = messages.value.length - 1; i >= 0; i--) {
+                            const msg = messages.value[i];
+                            if (msg.role === 'ai' && (msg.isTyping || (!msg.displayContent && !msg.isInterrupted))) {
+                                msg.isInterrupted = true;
+                                msg.isTyping = false;
+
+                                if (!msg.displayContent || msg.displayContent === '' || msg.displayContent === '<p></p>') {
+                                    msg.displayContent = '<div style="color: #ff4d4f; font-style: italic; padding: 15px;"><i class="fas fa-stop-circle"></i> 已停止生成</div>';
+                                }
+
+                                // 保存中断内容
+                                if (!msg.interruptedContent) {
+                                    const sourceContent = msg.rawContent || msg.content || '';
+                                    const tempDiv = document.createElement('div');
+                                    tempDiv.innerHTML = sourceContent;
+                                    msg.interruptedContent = tempDiv.textContent || tempDiv.innerText || sourceContent;
+                                    msg.interruptedIndex = 0;
+                                }
+                                break;
+                            }
+                        }
+
+                        isStopping.value = false;
+                        saveCurrentSession();
+                    }, 300);
+                };
+
+                const handleSend = async (textOverride, skipAddUser = false) => {
+                    const text = typeof textOverride === 'string' ? textOverride : userInput.value;
+                    if ((!text || !text.trim()) && !skipAddUser) return;
+                    if (isGenerating.value) {
+                        showToast('请等待当前生成完成，或点击停止按钮', 'fas fa-info-circle');
+                        return;
+                    }
+
+                    if (!skipAddUser && text) {
+                        messages.value.push({
+                            id: generateMsgId(),
+                            role: 'user',
+                            text: text,
+                            timestamp: new Date().toISOString()
+                        });
+                        userInput.value = '';
+                        await saveCurrentSession();
+                    }
+
+                    isUserAtBottom.value = true;
+                    scrollToBottom(true);
+
+                    // ===== 新增：错误重试逻辑 =====
+                    let retries = 3;
+                    let lastError = null;
+
+                    while (retries > 0) {
+                        try {
+                            loading.value = true;
+                            isGenerating.value = true;
+                            isStopping.value = false;
+                            abortController.value = new AbortController();
+
+                            const res = await fetch('/api/ai/chat', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ message: text || messages.value.filter(m => m.role === 'user').pop()?.text }),
+                                signal: abortController.value.signal
+                            });
+
+                            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                            const data = await res.json();
+
+                            loading.value = false;
+
+                            const aiMsgIndex = messages.value.length;
+                            messages.value.push({
+                                id: generateMsgId(),
+                                role: 'ai',
+                                thinking: data.thinking,
+                                content: '',
+                                rawContent: data.content,
+                                displayContent: '',
+                                showThinking: false,
+                                thinkingDone: true,
+                                isTyping: true,
+                                isInterrupted: false,
+                                timestamp: new Date().toISOString()
+                            });
+
+                            const completed = await typeWriter(aiMsgIndex, data.content, 15);
+                            if (completed) {
+                                const msg = messages.value[aiMsgIndex];
+                                msg.isInterrupted = false;
+                                msg.interruptedContent = null;
+                                msg.interruptedIndex = null;
+                            }
+
+                            isGenerating.value = false;
+                            setTimeout(saveCurrentSession, 1000);
+
+                            // 成功则跳出重试循环
+                            break;
+
+                        } catch (error) {
+                            loading.value = false;
+                            isGenerating.value = false;
+
+                            // 用户主动中断时不重试
+                            if (error.name === 'AbortError') {
+                                console.log('生成被中断');
+                                break;
+                            }
+
+                            lastError = error;
+                            retries--;
+
+                            if (retries > 0) {
+                                // 显示重试提示
+                                showToast(`请求失败，${retries}秒后自动重试...`, 'fas fa-redo', 1500);
+                                await new Promise(r => setTimeout(r, 1000));
+                            } else {
+                                // 重试次数用完，显示最终错误
+                                messages.value.push({
+                                    id: generateMsgId(),
+                                    role: 'ai',
+                                    content: `<div style="color: #ff4d4f;"><i class="fas fa-exclamation-circle"></i> <b>请求失败</b><br>${error.message}<br><small style="color:#999">已重试3次，请检查网络连接或稍后重试</small></div>`,
+                                    displayContent: `<div style="color: #ff4d4f;"><i class="fas fa-exclamation-circle"></i> <b>请求失败</b><br>${error.message}<br><small style="color:#999">已重试3次，请检查网络连接或稍后重试</small></div>`,
+                                    isInterrupted: false,
+                                    timestamp: new Date().toISOString()
+                                });
+                                scrollToBottom();
+                            }
+                        }
+                    }
+
+                    // 清理
+                    abortController.value = null;
+                };
+
+                const handleInputEnter = () => {
+                    if (isGenerating.value) return;
+                    if (userInput.value.trim()) {
+                        handleSend();
+                    }
+                };
+
+                const handleImageUpload = async (event) => {
+                    const file = event.target.files[0];
+                    if (!file) return;
+
+                    const formData = new FormData();
+                    formData.append('file', file);
+
+                    try {
+                        const res = await fetch('/api/upload', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            imagePreview.value = data.url; // 使用后端返回的永久 URL /static/uploads/xxx.jpg
+                        }
+                    } catch (e) {
+                        showToast('图片上传失败', 'error');
+                    }
+                };
+
+                const handleMainButtonClick = () => {
+                    if (isGenerating.value) {
+                        stopGeneration();
+                    } else if (userInput.value.trim()) {
+                        handleSend();
+                    }
+                };
+
+                // 修复6：优化继续生成逻辑，确保能从 rawContent 重建
+                const continueInterruptedMessage = async (msgIndex) => {
+                    const msg = messages.value[msgIndex];
+                    if (!msg) return;
+
+                    // 修复：确保 interruptedContent 存在，如果不存在则从 rawContent 重建
+                    if (!msg.interruptedContent) {
+                        const sourceContent = msg.rawContent || msg.content || '';
+                        if (!sourceContent) {
+                            showToast('无法继续生成：未找到原始内容', 'fas fa-exclamation-circle');
+                            return;
+                        }
+
+                        // 重建中断状态
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = sourceContent;
+                        msg.interruptedContent = tempDiv.textContent || tempDiv.innerText || sourceContent;
+                        msg.interruptedIndex = msg.interruptedIndex || 0;
+                    }
+
+                    // 确保当前没有在生成其他内容
+                    if (isGenerating.value) {
+                        showToast('请等待当前生成完成', 'fas fa-info-circle');
+                        return;
+                    }
+
+                    isGenerating.value = true;
+                    isStopping.value = false;
+                    msg.isInterrupted = false;
+                    msg.isTyping = true;
+                    abortController.value = new AbortController();
+
+                    const fullText = msg.interruptedContent;
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = fullText;
+                    const plainText = tempDiv.textContent || tempDiv.innerText || fullText;
+                    const startIndex = msg.interruptedIndex || 0;
+
+                    let currentText = plainText.substring(0, startIndex);
+                    isTyping.value = true;
+                    let lastScrollTime = Date.now();
+
+                    for (let i = startIndex; i < plainText.length; i++) {
+                        if (!isGenerating.value && isStopping.value) {
+                            msg.isInterrupted = true;
+                            msg.isTyping = false;
+                            msg.displayContent = marked.parse(fullText.substring(0, currentText.length) + '<span style="color: #ff4d4f;">...</span>');
+                            msg.interruptedIndex = i;
+                            isTyping.value = false;
+                            saveCurrentSession();
+                            return;
+                        }
+
+                        currentText += plainText[i];
+                        if (i % 3 === 0 || i === plainText.length - 1) {
+                            msg.displayContent = marked.parse(fullText.substring(0, currentText.length));
+                        }
+
+                        if (Date.now() - lastScrollTime > 300 && isUserAtBottom.value) {
+                            scrollToBottom();
+                            lastScrollTime = Date.now();
+                        }
+
+                        let currentSpeed = 15;
+                        if ('，,、'.includes(plainText[i])) currentSpeed = 22;
+                        if ('。！？.!?'.includes(plainText[i])) currentSpeed = 30;
+                        if (plainText[i] === ' ') currentSpeed = 8;
+
+                        await new Promise(r => setTimeout(r, currentSpeed));
+                    }
+
+                    // 完成继续生成
+                    msg.isTyping = false;
+                    msg.displayContent = marked.parse(fullText);
+                    msg.content = fullText;
+                    msg.interruptedContent = null;
+                    msg.interruptedIndex = null;
+                    msg.isInterrupted = false;
+                    isTyping.value = false;
+                    isGenerating.value = false;
+                    scrollToBottom(true);
+                    saveCurrentSession();
+                    showToast('继续生成完成', 'fas fa-check-circle');
+                };
+
+                const continueInterruptedFromDialog = async () => {
+                    showInterruptDialog.value = false;
+
+                    if (interruptedInfo.value.sessionId && interruptedInfo.value.sessionId !== currentSessionId.value) {
+                        await loadSession(interruptedInfo.value.sessionId);
+                    }
+
+                    // 找到中断的消息并继续
+                    for (let i = messages.value.length - 1; i >= 0; i--) {
+                        if (messages.value[i].role === 'ai' && messages.value[i].isInterrupted) {
+                            await continueInterruptedMessage(i);
+                            return;
+                        }
+                    }
+
+                    // 如果没有找到中断消息，但有用户消息，重新生成
+                    const lastUserMsg = messages.value.filter(m => m.role === 'user').pop();
+                    if (lastUserMsg) {
+                        await handleSend(lastUserMsg.text, true);
+                    }
+                };
+
+                const dismissInterruptDialog = () => {
+                    showInterruptDialog.value = false;
+                };
+
+                const formatTime = (timeStr) => {
+                    if (!timeStr) return '';
+                    const date = new Date(timeStr);
+                    const now = new Date();
+                    const diff = Math.floor((now - date) / 1000);
+                    if (diff < 60) return '刚刚';
+                    if (diff < 3600) return Math.floor(diff/60) + '分钟前';
+                    if (diff < 86400) return Math.floor(diff/3600) + '小时前';
+                    return date.toLocaleDateString();
+                };
+
+                // 监听消息变化
+                watch(() => messages.value.length, (newVal, oldVal) => {
+                    if (newVal > oldVal && !isUserAtBottom.value) {
+                        hasNewMessage.value = true;
+                        newMessageCount.value++;
+                    }
+                });
+
+                onMounted(async () => {
+                    await fetchCurrentUser();
+                    await fetchSessions();
+
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const sessionId = urlParams.get('session');
+                    const pest = urlParams.get('pest');
+                    const savedImage = sessionStorage.getItem('detected_pest_image');
+                    const savedPests = sessionStorage.getItem('detected_pest_names');
+
+                    if (sessionId) {
+                        await loadSession(parseInt(sessionId));
+                    } else {
+                        // 检查是否有中断的会话
+                        const res = await fetch('/api/chat/sessions/interrupted/latest');
+                        const data = await res.json();
+                        if (data.has_interrupted) {
+                            showInterruptDialog.value = true;
+                            interruptedInfo.value = {
+                                sessionId: data.session_id,
+                                title: data.title
+                            };
+                        }
+                    }
+
+
+                    if (pest || savedImage) {
+                        const pestName = pest || savedPests || '未知病虫害';
+                        const welcomeText = `我检测到了${pestName}，请提供专业的防治建议。`;
+                        messages.value.push({
+                            id: generateMsgId(),
+                            role: 'user',
+                            type: savedImage ? 'image' : 'text',
+                            text: welcomeText,
+                            image: savedImage || null,
+                            timestamp: new Date().toISOString()
+                        });
+                        currentTitle.value = `咨询: ${pestName}`;
+                        isUserAtBottom.value = true;
+                        handleSend(welcomeText, true);
+                        sessionStorage.removeItem('detected_pest_image');
+                        sessionStorage.removeItem('detected_pest_names');
+                    } else {
+                        messages.value.push({
+                            id: generateMsgId(),
+                            role: 'ai',
+                            content: '您好！我是 <b>AI 农技专家</b>。我可以为您提供病虫害的生物、物理及化学防治建议。<br><br>您可以直接询问，或从左侧历史记录中选择对话。',
+                            displayContent: '您好！我是 <b>AI 农技专家</b>。我可以为您提供病虫害的生物、物理及化学防治建议。<br><br>您可以直接询问，或从左侧历史记录中选择对话。',
+                            timestamp: new Date().toISOString()
+                        });
+                        scrollToBottom(true);
+                    }
+
+                    nextTick(() => {
+                        if (inputRef.value) inputRef.value.focus();
+                    });
+                });
+
+                return {
+                    currentUser,
+                    pendingComments,
+                    sessions,
+                    currentSessionId,
+                    saveStatus,
+                    messages,
+                    userInput,
+                    inputRef,
+                    loading,
+                    isTyping,
+                    isGenerating,
+                    isStopping,
+                    showScrollButton,
+                    hasNewMessage,
+                    newMessageCount,
+                    showInterruptDialog,
+                    interruptedInfo,
+                    previewImage,
+                    toast,
+                    fetchSessions,
+                    loadSession,
+                    createNewSession,
+                    deleteSession,
+                    handleSend,
+                    handleInputEnter,
+                    handleMainButtonClick,
+                    formatTime,
+                    formatMessageTime,
+                    scrollToBottom,
+                    stopGeneration,
+                    continueInterruptedMessage,
+                    continueInterruptedFromDialog,
+                    dismissInterruptDialog,
+                    handleScroll,
+                    copyMessage,
+                    toggleFavorite,
+                    openImagePreview,
+                    closeImagePreview
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

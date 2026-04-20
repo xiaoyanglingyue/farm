@@ -1,0 +1,31 @@
+2026-04-09 09:15:33,611 [INFO] app.py:58 - 系统启动成功
+2026-04-09 13:39:44,038 [INFO] app.py:58 - 系统启动成功
+2026-04-09 13:41:12,387 [INFO] app.py:58 - 系统启动成功
+2026-04-09 13:44:29,643 [INFO] app.py:58 - 系统启动成功
+2026-04-09 14:04:15,872 [INFO] app.py:58 - 系统启动成功
+2026-04-09 14:06:00,217 [INFO] _base_client.py:1094 - Retrying request to /chat/completions in 0.473045 seconds
+2026-04-09 14:06:04,806 [INFO] _base_client.py:1094 - Retrying request to /chat/completions in 0.797960 seconds
+2026-04-09 14:14:40,338 [INFO] app.py:72 - 系统启动成功
+2026-04-09 14:19:43,742 [INFO] _base_client.py:1094 - Retrying request to /chat/completions in 0.453743 seconds
+2026-04-09 14:19:48,254 [INFO] _base_client.py:1094 - Retrying request to /chat/completions in 0.830276 seconds
+2026-04-09 14:19:57,163 [INFO] _base_client.py:1094 - Retrying request to /chat/completions in 0.399819 seconds
+2026-04-09 14:20:01,602 [INFO] _base_client.py:1094 - Retrying request to /chat/completions in 0.920093 seconds
+2026-04-09 14:20:10,628 [INFO] _base_client.py:1094 - Retrying request to /chat/completions in 0.406411 seconds
+2026-04-09 14:20:15,114 [INFO] _base_client.py:1094 - Retrying request to /chat/completions in 0.874707 seconds
+2026-04-09 14:20:24,111 [INFO] _base_client.py:1094 - Retrying request to /chat/completions in 0.478544 seconds
+2026-04-09 14:20:28,650 [INFO] _base_client.py:1094 - Retrying request to /chat/completions in 0.870915 seconds
+2026-04-09 14:20:37,692 [INFO] _base_client.py:1094 - Retrying request to /chat/completions in 0.394450 seconds
+2026-04-09 14:20:42,186 [INFO] _base_client.py:1094 - Retrying request to /chat/completions in 0.943870 seconds
+2026-04-09 14:39:10,273 [INFO] app.py:72 - 系统启动成功
+2026-04-09 14:39:45,235 [INFO] _client.py:1025 - HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-09 14:40:00,643 [INFO] _client.py:1025 - HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-09 14:44:42,751 [INFO] _client.py:1025 - HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-09 14:54:14,771 [INFO] app.py:78 - 系统启动成功
+2026-04-09 14:55:02,843 [INFO] _client.py:1025 - HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-09 14:55:41,020 [INFO] _client.py:1025 - HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-09 14:56:05,766 [INFO] _client.py:1025 - HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-09 15:04:24,356 [INFO] app.py:78 - 系统启动成功
+2026-04-09 15:05:01,248 [INFO] _client.py:1025 - HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-09 15:53:28,353 [INFO] app.py:78 - 系统启动成功
+2026-04-09 15:54:04,459 [INFO] _client.py:1025 - HTTP Request: POST http://localhost:11434/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-09 17:26:52,442 [INFO] app.py:78 - 系统启动成功
