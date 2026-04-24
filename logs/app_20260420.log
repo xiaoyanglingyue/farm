@@ -1,0 +1,90 @@
+2026-04-20 16:21:07,978 [INFO] app.py:240 - 系统启动成功
+2026-04-20 16:21:08,594 [WARNING] logger.py:268 - DEPRECATED FEATURE: flwr.server.start_server() is deprecated.
+	Instead, use the `flower-superlink` CLI command to start a SuperLink as shown below:
+
+		$ flower-superlink --insecure
+
+	To view usage and all available options, run:
+
+		$ flower-superlink --help
+
+	Using `start_server()` is deprecated.
+
+            This is a deprecated feature. It will be removed
+            entirely in future versions of Flower.
+        
+2026-04-20 16:21:08,595 [INFO] app.py:135 - Starting Flower server, config: num_rounds=10, no round_timeout
+2026-04-20 16:21:08,615 [INFO] app.py:148 - Flower ECE: gRPC server running (10 rounds), SSL is disabled
+2026-04-20 16:26:13,554 [INFO] app.py:240 - 系统启动成功
+2026-04-20 16:35:55,142 [INFO] app.py:240 - 系统启动成功
+2026-04-20 16:41:57,570 [INFO] app.py:240 - 系统启动成功
+2026-04-20 16:46:00,728 [INFO] app.py:240 - 系统启动成功
+2026-04-20 16:46:01,071 [WARNING] logger.py:268 - DEPRECATED FEATURE: flwr.server.start_server() is deprecated.
+	Instead, use the `flower-superlink` CLI command to start a SuperLink as shown below:
+
+		$ flower-superlink --insecure
+
+	To view usage and all available options, run:
+
+		$ flower-superlink --help
+
+	Using `start_server()` is deprecated.
+
+            This is a deprecated feature. It will be removed
+            entirely in future versions of Flower.
+        
+2026-04-20 16:46:01,072 [INFO] app.py:135 - Starting Flower server, config: num_rounds=10, no round_timeout
+2026-04-20 16:46:01,081 [INFO] app.py:148 - Flower ECE: gRPC server running (10 rounds), SSL is disabled
+2026-04-20 16:46:01,081 [INFO] server.py:91 - [INIT]
+2026-04-20 16:46:01,081 [INFO] server.py:276 - Requesting initial parameters from one random client
+2026-04-20 17:09:59,323 [INFO] app.py:240 - 系统启动成功
+2026-04-20 17:09:59,773 [WARNING] logger.py:268 - DEPRECATED FEATURE: flwr.server.start_server() is deprecated.
+	Instead, use the `flower-superlink` CLI command to start a SuperLink as shown below:
+
+		$ flower-superlink --insecure
+
+	To view usage and all available options, run:
+
+		$ flower-superlink --help
+
+	Using `start_server()` is deprecated.
+
+            This is a deprecated feature. It will be removed
+            entirely in future versions of Flower.
+        
+2026-04-20 17:09:59,774 [INFO] app.py:135 - Starting Flower server, config: num_rounds=10, no round_timeout
+2026-04-20 17:09:59,794 [INFO] app.py:148 - Flower ECE: gRPC server running (10 rounds), SSL is disabled
+2026-04-20 17:09:59,794 [INFO] server.py:91 - [INIT]
+2026-04-20 17:09:59,794 [INFO] server.py:276 - Requesting initial parameters from one random client
+2026-04-20 17:26:33,428 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-20 17:29:45,653 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-20 17:29:57,352 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-20 17:30:05,781 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-20 17:30:09,553 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-20 17:32:36,123 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-20 17:35:10,861 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-20 17:40:10,611 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-20 17:40:31,946 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-20 17:41:44,763 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-20 17:41:47,767 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-20 17:44:25,204 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-20 17:44:37,064 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-20 17:44:38,914 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-20 17:44:54,103 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-20 17:44:55,100 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-20 17:44:57,396 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-20 17:44:59,438 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-20 17:45:01,673 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-20 17:53:04,026 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-20 17:54:27,290 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-20 17:54:37,382 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-20 18:04:41,950 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-20 18:04:43,394 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-20 18:09:42,880 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-20 18:14:42,825 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-20 18:19:42,846 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-20 18:24:43,034 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-20 18:32:08,390 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-20 18:32:22,618 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-20 18:37:18,181 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-20 18:37:35,124 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"

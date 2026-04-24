@@ -1022,61 +1022,9 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
-
-        /* 时间轴日期刻度 */
-        .timeline-dates {
-            display: flex;
-            justify-content: space-between;
-            width: 300px;  /* 与 timeline-slider 同宽 */
-            margin-top: 6px;
-            position: relative;
-        }
-
-        .timeline-date-label {
-            flex: 1;
-            text-align: center;
-            font-size: 11px;
-            color: #8c8c8c;
-            position: relative;
-            transition: all 0.3s;
-            cursor: default;
-        }
-
-        .timeline-date-label.active {
-            color: var(--primary-color);
-            font-weight: 600;
-            transform: scale(1.05);
-        }
-
-        .timeline-date-label.today {
-            color: var(--primary-color);
-            font-weight: 700;
-        }
-
-        /* 今天标记竖线 */
-        .timeline-date-label.today::before {
-            content: '';
-            position: absolute;
-            top: -18px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 2px;
-            height: 10px;
-            background: var(--primary-color);
-            border-radius: 1px;
-        }
-
-        /* 移动端适配 */
-        @media (max-width: 768px) {
-            .timeline-dates {
-                width: 100%;
-            }
-            .timeline-date-label {
-                font-size: 10px;
-            }
-        }
     </style>
     <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div id="app" style="display: contents;">
@@ -1509,14 +1457,6 @@
                         </div>
                     </div>
 
-                    <!-- 日期刻度标签 -->
-                    <div class="timeline-dates">
-                        <div v-for="(d, idx) in timelineDates" :key="d.dateStr"
-                             :class="['timeline-date-label', { active: d.dateStr === displayDate, today: d.isToday }]">
-                            {{ d.label }}
-                        </div>
-                    </div>
-
                     <button style="border:none; background:none; cursor:pointer; color:#8c8c8c;"
                             @click="nextDay" :disabled="isLastDay">
                         <i class="fas fa-chevron-right"></i>
@@ -1663,27 +1603,24 @@
                     return texts[status] || status;
                 };
 
-                // ✅ 修复：包成独立函数
                 const formatDisplayDate = (dateStr) => {
-                    const date = new Date(dateStr);
+                    const date = new Date(dateStr + 'T00:00:00');
                     const m = date.getMonth() + 1;
                     const d = date.getDate();
-                    return `${m}月${d}日`;
-                };
+                    const base = `${m}月${d}日`;
 
-                const getRelativeDate = (dateStr) => {
                     const today = new Date();
                     today.setHours(0,0,0,0);
-                    const date = new Date(dateStr);
-                    date.setHours(0,0,0,0);
-                    const diffDays = Math.round((date - today) / (1000 * 60 * 60 * 24));
+                    const target = new Date(dateStr + 'T00:00:00');
+                    target.setHours(0,0,0,0);
+                    const diff = Math.round((target - today) / (1000 * 60 * 60 * 24));
 
-                    if (diffDays === 0) return '今天';
-                    if (diffDays === 1) return '明天';
-                    if (diffDays === -1) return '昨天';
-                    if (diffDays > 1) return `${diffDays}天后`;
-                    if (diffDays < -1) return `${Math.abs(diffDays)}天前`;
-                    return dateStr;
+                    if (diff === 0) return `${base}（今天）`;
+                    if (diff === -1) return `${base}（昨天）`;
+                    if (diff === 1) return `${base}（明天）`;
+                    if (diff < -1) return `${base}（${Math.abs(diff)}天前）`;
+                    if (diff > 1) return `${base}（${diff}天后）`;
+                    return base;
                 };
 
                 const getTodayPosition = () => {
@@ -1829,7 +1766,7 @@
 
                     const circle = new AMap.Circle({
                         center: [risk.lng, risk.lat],
-                        radius: 500,
+                        radius: 120,
                         fillColor: color,
                         fillOpacity: 0.2,
                         strokeColor: color,
@@ -2005,8 +1942,7 @@
                 };
 
                 const updateStats = () => {
-                    stats.value.high = risks.value.filter(r => r.risk_level === 'high').length;
-                    stats.value.medium = risks.value.filter(r => r.risk_level === 'medium').length;
+                    // 高风险/中风险已由当前时间轴日期控制，此处只更新设备统计
                     stats.value.online = devices.value.filter(d => d.status === 'online').length;
                     stats.value.total = devices.value.length;
                     stats.value.totalArea = 128 + (risks.value.length * 12.5);
@@ -2383,73 +2319,94 @@
                 const fetchTimelineData = async () => {
                     loading.value = true;
                     try {
-                        // 获取过去5天的真实检测数据
-                        const historyRes = await window.apiRequest(`/api/map/heatmap-timeline?days=5`);
-                        // 获取未来3天的蔓延预测数据
-                        const predRes = await window.apiRequest(`/api/map/spread-prediction?days=3`);
+                        const [historyRes, predRes] = await Promise.all([
+                            window.apiRequest(`/api/map/heatmap-timeline?days=5`),
+                            window.apiRequest(`/api/map/spread-prediction?days=3`)
+                        ]);
 
                         const historyData = (historyRes && historyRes.code === 200) ? (historyRes.data || []) : [];
                         const predData = (predRes && predRes.code === 200) ? (predRes.data || []) : [];
 
-                        const merged = [];
+                        // 【关键修复】生成连续9天日期（前5天 + 今天 + 后3天），确保播放不跳过
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        const allDates = [];
+                        for (let i = -5; i <= 3; i++) {
+                            const d = new Date(today);
+                            d.setDate(d.getDate() + i);
+                            allDates.push(d.toISOString().split('T')[0]);
+                        }
 
-                        // 1) 历史数据
+                        // 历史数据按日期映射
+                        const historyByDate = {};
                         historyData.forEach(day => {
-                            merged.push({
-                                date: day.date,
-                                points: day.points || [],
-                                count: day.count || 0,
-                                type: 'history'
-                            });
+                            if (day.date) historyByDate[day.date] = day;
                         });
 
-                        // 2) 预测数据按日期分组
+                        // 预测数据按日期分组
                         const predByDate = {};
                         predData.forEach(p => {
-                            if (!predByDate[p.date]) predByDate[p.date] = [];
-                            predByDate[p.date].push(p);
-                        });
-
-                        Object.keys(predByDate).sort().forEach(date => {
-                            merged.push({
-                                date: date,
-                                predictions: predByDate[date],
-                                points: predByDate[date].map(p => ({
-                                    lat: p.lat,
-                                    lng: p.lng,
-                                    count: Math.round((p.probability || 0.5) * 100),
-                                    confidence: Math.round((p.probability || 0.5) * 100),
-                                    pest_name: p.pest_name,
-                                    risk_level: p.risk_level,
-                                    is_prediction: true
-                                })),
-                                count: predByDate[date].length,
-                                type: 'prediction'
-                            });
-                        });
-
-                        // 按日期排序
-                        timelineData.value = merged.sort((a, b) => a.date.localeCompare(b.date));
-
-                        if (timelineData.value.length > 0) {
-                            // 默认定位到今天（或最接近的今天）
-                            const todayStr = new Date().toISOString().split('T')[0];
-                            let todayIndex = timelineData.value.findIndex(d => d.date === todayStr);
-                            if (todayIndex === -1) {
-                                const historyIndices = timelineData.value
-                                    .map((d, i) => d.type === 'history' ? i : -1)
-                                    .filter(i => i !== -1);
-                                todayIndex = historyIndices.length > 0
-                                    ? historyIndices[historyIndices.length - 1]
-                                    : 0;
+                            if (p.date) {
+                                if (!predByDate[p.date]) predByDate[p.date] = [];
+                                predByDate[p.date].push(p);
                             }
+                        });
 
-                            currentTimelineIndex.value = todayIndex;
-                            const currentDay = timelineData.value[todayIndex];
-                            displayDate.value = currentDay.date;
-                            updateProgressFromDate(currentDay.date);
-                            renderTimelineHeatmap(currentDay);
-                        }
+                        // 构建连续时间轴，无数据的天用空数组占位
+                        timelineData.value = allDates.map(dateStr => {
+                            if (historyByDate[dateStr]) {
+                                const day = historyByDate[dateStr];
+                                return {
+                                    date: dateStr,
+                                    points: (day.points || []).map(p => ({
+                                        lat: p.lat, lng: p.lng,
+                                        count: p.count || 50,
+                                        confidence: p.confidence || 50,
+                                        pest_name: p.pest_name || '未知',
+                                        risk_level: (p.count || 50) >= 75 ? 'high' : (p.count || 50) >= 50 ? 'medium' : 'low'
+                                    })),
+                                    count: day.count || (day.points || []).length,
+                                    type: 'history'
+                                };
+                            } else if (predByDate[dateStr]) {
+                                const group = predByDate[dateStr];
+                                return {
+                                    date: dateStr,
+                                    predictions: group,
+                                    points: group.map(p => ({
+                                        lat: p.lat, lng: p.lng,
+                                        count: Math.round((p.probability || 0.5) * 100),
+                                        confidence: Math.round((p.probability || 0.5) * 100),
+                                        pest_name: p.pest_name,
+                                        risk_level: p.risk_level,
+                                        is_prediction: true
+                                    })),
+                                    count: group.length,
+                                    type: 'prediction'
+                                };
+                            } else {
+                                // 【关键】无数据天也占位，保证时间轴连续
+                                return {
+                                    date: dateStr,
+                                    points: [],
+                                    predictions: [],
+                                    count: 0,
+                                    type: 'empty'
+                                };
+                            }
+                        });
+
+                        // 默认定位到今天（索引5：0-4前5天，5今天，6-8后3天）
+                        const todayStr = today.toISOString().split('T')[0];
+                        let todayIndex = timelineData.value.findIndex(d => d.date === todayStr);
+                        if (todayIndex === -1) todayIndex = 5;
+
+                        currentTimelineIndex.value = todayIndex;
+                        const currentDay = timelineData.value[todayIndex];
+                        displayDate.value = currentDay.date;
+                        updateProgressFromDate(currentDay.date);
+                        renderTimelineHeatmap(currentDay);
+
                     } catch (e) {
                         console.error('加载时间轴数据失败:', e);
                         showNotification('时间轴加载失败', e.message, 'error');
@@ -2559,9 +2516,63 @@
                     }
                 };
 
+                const updateStatsFromDayData = (dayData) => {
+                    if (!dayData) {
+                        stats.value.high = 0;
+                        stats.value.medium = 0;
+                        stats.value.todayDetects = 0;
+                        return;
+                    }
+
+                    // 合并检测点和预测点（逻辑与渲染保持一致）
+                    const points = dayData.points || [];
+                    const predictions = dayData.predictions || [];
+                    let allPoints = [...points];
+
+                    if (dayData.type === 'prediction' && predictions.length > 0) {
+                        predictions.forEach(p => {
+                            allPoints.push({
+                                confidence: Math.round((p.probability || 0.5) * 100),
+                                pest_name: p.pest_name,
+                                risk_level: p.risk_level,
+                                is_prediction: true
+                            });
+                        });
+                    }
+
+                    if (allPoints.length === 0) {
+                        stats.value.high = 0;
+                        stats.value.medium = 0;
+                        stats.value.todayDetects = dayData.count || 0;
+                        return;
+                    }
+
+                    // 按病虫害名称分组，计算平均置信度
+                    const pestGroups = {};
+                    allPoints.forEach(p => {
+                        const pest = p.pest_name || '未知虫害';
+                        if (!pestGroups[pest]) pestGroups[pest] = [];
+                        pestGroups[pest].push(p);
+                    });
+
+                    let highCount = 0, mediumCount = 0;
+                    Object.keys(pestGroups).forEach(pestName => {
+                        const group = pestGroups[pestName];
+                        const avgConf = group.reduce((sum, p) => sum + (p.confidence || p.count || 50), 0) / group.length;
+                        if (avgConf >= 75) highCount++;
+                        else if (avgConf >= 50) mediumCount++;
+                    });
+
+                    stats.value.high = highCount;
+                    stats.value.medium = mediumCount;
+                    stats.value.todayDetects = dayData.count || 0;
+                };
+
                 // 【修复】正确清理旧热力图再渲染新的，避免内存泄漏和叠加
                 const renderTimelineHeatmap = (dayData) => {
                     if (!map.value) return;
+
+                    updateStatsFromDayData(dayData);
 
                     // 清理旧热力图
                     if (heatmapLayer.value) {
@@ -2637,9 +2648,8 @@
                                 const isPred = group[0].is_prediction || isPredictionDay;
                                 const riskLevel = avgConf >= 75 ? 'high' : avgConf >= 50 ? 'medium' : 'low';
                                 const color = riskLevel === 'high' ? '#ff4d4f' : riskLevel === 'medium' ? '#faad14' : '#52c41a';
-                                const radius = isPred ? 600 : 250;        // 预测圈更大
-                                const fillOpacity = isPred ? 0.22 : 0.25; // 预测更显眼
-                                const strokeWeight = isPred ? 3 : 2;    // 预测边框更粗
+                                const radius = isPred ? 180 : 100;
+                                const fillOpacity = isPred ? 0.15 : 0.25;
                                 const strokeStyle = isPred ? 'dashed' : 'solid';
 
                                 // 风险圆圈
@@ -2649,7 +2659,6 @@
                                     fillColor: color,
                                     fillOpacity: fillOpacity,
                                     strokeColor: color,
-                                    strokeWeight: strokeWeight,
                                     strokeWeight: 2,
                                     strokeOpacity: 0.8,
                                     strokeStyle: strokeStyle,
@@ -2699,24 +2708,7 @@
                                 riskOverlays.value.push(circle, marker);
                             });
                         }
-
-                        // 更新统计
-                        let highCount = 0, mediumCount = 0, lowCount = 0;
-                        Object.keys(pestGroups).forEach(pestName => {
-                            const group = pestGroups[pestName];
-                            const avgConf = group.reduce((sum, p) => sum + (p.confidence || p.count || 50), 0) / group.length;
-                            if (avgConf >= 75) highCount++;
-                            else if (avgConf >= 50) mediumCount++;
-                            else lowCount++;
-                        });
-
-                        stats.value.high = highCount;
-                        stats.value.medium = mediumCount;
-                        stats.value.totalArea = Math.round(128 + (highCount + mediumCount + lowCount) * 12.5);
-                        stats.value.todayDetects = dayData.count || 0;
                     }
-
-                    stats.value.todayDetects = dayData.count || 0;
                 };
 
                 const togglePrediction = async () => {
@@ -2853,24 +2845,6 @@
                 };
 
                 const isSpreadLoading = ref(false);
-
-                // 生成时间轴刻度日期（固定9天：前5天 + 今天 + 后3天）
-                const timelineDates = computed(() => {
-                    const dates = [];
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    for (let i = -5; i <= 3; i++) {
-                        const d = new Date(today);
-                        d.setDate(d.getDate() + i);
-                        const dateStr = d.toISOString().split('T')[0];
-                        dates.push({
-                            dateStr: dateStr,
-                            label: `${d.getMonth() + 1}月${d.getDate()}日`,
-                            isToday: i === 0
-                        });
-                    }
-                    return dates;
-                });
 
                 // ================= 生命周期 =================
                 onMounted(() => {
