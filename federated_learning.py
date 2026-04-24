@@ -3,6 +3,7 @@ import torch
 from ultralytics import YOLO
 from collections import OrderedDict
 import numpy as np
+import signal
 
 # ==================== 联邦学习配置 ====================
 FED_CONFIG = {
@@ -33,23 +34,27 @@ class YOLOClient(fl.client.NumPyClient):
         self.model.model.load_state_dict(state_dict, strict=True)
 
     def fit(self, parameters, config):
-        """本地训练（使用农户本地数据）"""
+        """本地训练"""
         self.set_parameters(parameters)
 
-        # 本地微调（不共享原始图像，只上传梯度）
         results = self.model.train(
             data=self.data_path,
-            epochs=1,  # 本地只训练1轮
+            epochs=1,
             batch=8,
             imgsz=640,
             verbose=False
         )
 
-        # 计算梯度差异（用于贡献度评估）
         updated_params = self.get_parameters(config)
         gradients = [(new - old) for new, old in zip(updated_params, parameters)]
 
-        return updated_params, len(self.data_path), {
+        # 【修复】获取真实样本数，失败时默认 100
+        try:
+            dataset_size = results.results.get('train_samples', 100) if hasattr(results, 'results') else 100
+        except Exception:
+            dataset_size = 100
+
+        return updated_params, dataset_size, {
             "user_id": self.user_id,
             "contribution": float(np.mean([np.abs(g).mean() for g in gradients]))
         }
@@ -66,18 +71,27 @@ class YOLOClient(fl.client.NumPyClient):
 
 def start_federated_server():
     """启动联邦学习服务器（云端）"""
+    _original_signal = signal.signal
+
+    def _safe_signal(signum, handler):
+        try:
+            return _original_signal(signum, handler)
+        except ValueError:
+            return None
+
+    signal.signal = _safe_signal
+
+    # 【新增】定义聚合策略（使用 FedAvg，并接入你已有的评估指标聚合函数）
     strategy = fl.server.strategy.FedAvg(
-        fraction_fit=FED_CONFIG["fraction_fit"],
-        min_fit_clients=3,
-        min_available_clients=FED_CONFIG["min_available_clients"],
-        evaluate_metrics_aggregation_fn=weighted_average,
-        fit_metrics_aggregation_fn=aggregate_contributions,
+        min_available_clients=FED_CONFIG.get("min_available_clients", 5),
+        fraction_fit=FED_CONFIG.get("fraction_fit", 0.8),
+        evaluate_metrics_aggregation_fn=weighted_average,  # 你文件里已写的函数
     )
 
     fl.server.start_server(
         server_address="0.0.0.0:8080",
         config=fl.server.ServerConfig(num_rounds=FED_CONFIG["num_rounds"]),
-        strategy=strategy,
+        strategy=strategy,  # 现在 strategy 已定义
     )
 
 
@@ -95,37 +109,3 @@ def aggregate_contributions(metrics):
         user_id = m.get("user_id", "unknown")
         contributions[user_id] = m.get("contribution", 0.0)
     return {"contributions": contributions}
-
-
-# ==================== API集成（添加到app.py） ====================
-@app.post("/api/federated/join")
-async def join_federation(request: Request, user=Depends(get_current_user_dep)):
-    """农户端申请加入联邦学习"""
-    # 检查节点资格
-    user_stats = get_user_activity_stats(user['id'])
-    if user_stats['detections'] < 10:
-        return JSONResponse(status_code=400, content={"error": "需要至少10次检测记录才能参与联邦"})
-
-    # 启动本地客户端（后台线程）
-    import threading
-    client = YOLOClient(user['id'], f"data/user_{user['id']}/dataset.yaml")
-
-    def run_client():
-        fl.client.start_numpy_client(server_address="localhost:8080", client=client)
-
-    threading.Thread(target=run_client, daemon=True).start()
-
-    return {"code": 200, "message": "已加入联邦学习网络", "node_id": user['id']}
-
-
-@app.get("/api/federated/status")
-async def get_federation_status(admin=Depends(require_admin)):
-    """获取联邦学习状态（管理员）"""
-    # 查询参与节点、贡献度、全局模型版本
-    return {
-        "active_nodes": 12,
-        "total_contributions": 15420,
-        "global_model_version": "v2.3",
-        "last_round": 8,
-        "accuracy_improvement": "+3.2%"
-    }

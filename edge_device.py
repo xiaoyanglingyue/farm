@@ -157,27 +157,3 @@ class EdgeDeviceController:
         """本地语音播报（树莓派）"""
         os.system(f"espeak -vzh '{message}'")  # 需要安装espeak
 
-
-# ==================== 定时任务（添加到app.py） ====================
-@app.post("/api/device/{device_id}/check")
-async def device_health_check(device_id: int, request: Request):
-    """设备健康检查（脏污+电量+存储）"""
-    # 接收树莓派上报的状态
-    data = await request.json()
-
-    alerts = []
-
-    # 脏污检测
-    if data.get('brightness', 255) < 120:
-        alerts.append({"type": "dirt", "message": "镜头可能脏污", "severity": "warning"})
-
-    # 存储检查
-    if data.get('storage_free', 1000) < 1024:  # <1GB
-        alerts.append({"type": "storage", "message": "存储空间不足", "severity": "critical"})
-
-    # 电量检查（如接UPS）
-    if data.get('battery', 100) < 20:
-        alerts.append({"type": "battery", "message": "电量低，将启动省电模式", "severity": "warning"})
-
-    return {"code": 200, "alerts": alerts,
-            "action": "enter_power_save" if any(a['type'] == 'battery' for a in alerts) else "normal"}

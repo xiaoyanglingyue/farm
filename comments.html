@@ -1261,8 +1261,15 @@
                 <template v-if="currentUser && currentUser.role === 'admin'">
                     <a href="/admin/comments" class="nav-item">
                         <i class="fas fa-comments"></i> 评论审核
+                        <span class="badge" v-if="pendingComments > 0">{{ pendingComments }}</span>
                     </a>
                     <a href="/admin/users" class="nav-item"><i class="fas fa-users-cog"></i> 用户管理</a>
+                    <a href="/admin/federated" class="nav-item">
+                        <i class="fas fa-network-wired"></i> 联邦学习
+                    </a>
+                    <a href="/admin/model" class="nav-item">
+                        <i class="fas fa-brain"></i> 模型优化
+                    </a>
                 </template>
 
                 <template v-if="currentUser && currentUser.role === 'farmer'">
@@ -2095,10 +2102,17 @@
                     loading.value = true;
                     try {
                         let url = '/api/comments';
-                        if (tab === 'pending') url += '?status=pending';
+                        if (tab === 'all' || tab === 'hot') {
+                            url += '?status=approved';
+                        } else if (tab === 'pending') {
+                            url += '?status=pending';
+                        }
+                        // mine 标签不带参数，后端根据当前登录用户返回其个人发布
+
                         const response = await fetch(url, {
                             credentials: 'same-origin'
                         });
+
                         if (response.ok) {
                             const data = await response.json();
                             comments.value = data.comments.map(c => ({

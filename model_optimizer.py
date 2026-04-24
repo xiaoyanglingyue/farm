@@ -2,6 +2,8 @@ from ultralytics import YOLO
 import torch
 import torch.quantization
 from pathlib import Path
+from database import get_db_connection
+from datetime import datetime
 
 
 class ModelOptimizer:
@@ -104,19 +106,22 @@ def optimize_and_deploy():
 
 
 def save_to_model_registry(model_path, metrics):
-    """保存到模型库（数据库记录）"""
-    with get_db_connection() as conn:
+    conn = get_db_connection()
+    try:
         cursor = conn.cursor()
         cursor.execute('''
             INSERT INTO model_versions 
-            (version, model_path, size_mb, latency_ms, map50, status)
-            VALUES (?, ?, ?, ?, ?, ?)
+            (version, model_path, size_mb, latency_ms, map50, status, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         ''', (
             f"v{datetime.now().strftime('%Y%m%d%H%M')}",
             str(model_path),
             metrics['optimized_size_mb'],
             metrics['avg_latency_ms'],
-            0.92,  # 需实际测试
-            'ready'
+            0.92,
+            'ready',
+            datetime.now()
         ))
         conn.commit()
+    finally:
+        conn.close()

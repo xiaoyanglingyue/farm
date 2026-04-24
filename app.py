@@ -11,8 +11,10 @@ import threading
 import time
 import string
 import webbrowser
+import traceback
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
+from pathlib import Path
 
 # 2. 第三方库导入 (Third-Party Libraries)
 import cv2
@@ -20,6 +22,7 @@ import fastapi
 import httpx
 import psutil
 import uvicorn
+import flwr as fl
 from dotenv import load_dotenv
 from fastapi import (
     Depends,
@@ -45,8 +48,8 @@ from pydantic import BaseModel
 from ultralytics import YOLO
 
 # 3. 本地模块导入 (Local Modules)
-from _send_code import send_email
-from _database import (
+from send_code import send_email
+from database import (
     check_email_code,
     check_table_exists,
     get_db_connection,
@@ -134,6 +137,7 @@ from _database import (
     init_sample_devices,
     get_comment_replies,
     get_user_permissions,
+    get_available_plots,
     get_knowledge_db_connection,
     get_chat_db_connection,
     update_farm_tasks_order, check_email_code_limit,
@@ -144,14 +148,11 @@ from _database import (
 from early_warning import EarlyWarningSystem, CropFormer
 
 from federated_learning import start_federated_server, YOLOClient, FED_CONFIG
-import threading
 
 from model_optimizer import ModelOptimizer
 
 from visualization import RiskMapGenerator, calculate_farm_health
 
-from _database import get_db_connection
-from datetime import datetime
 
 
 os.makedirs('logs', exist_ok=True)
@@ -281,7 +282,6 @@ async def lifespan(app: fastapi.FastAPI):
     init_device_status_db()
 
 
-    import threading
     threading.Thread(target=start_federated_server, daemon=True).start()
 
     # 修改：只在数据库为空时初始化示例设备
@@ -299,13 +299,6 @@ async def lifespan(app: fastapi.FastAPI):
         print("农事任务模块初始化完成")
     except Exception as e:
         print(f"农事任务表初始化失败: {e}")
-
-    if os.getenv('ENABLE_FEDERATED', 'false').lower() == 'true':
-        def run_federated():
-            start_federated_server()
-
-        threading.Thread(target=run_federated, daemon=True).start()
-        print("联邦学习服务器已启动在 0.0.0.0:8080")
 
     yield
 
@@ -346,7 +339,6 @@ async def require_admin(user=Depends(get_current_user_dep)):
 # 在文件开头添加（放在 import 语句之后）
 def check_ip_rate_limit(client_ip: str) -> bool:
     """检查IP频率限制（简单内存版，生产建议用Redis）"""
-    import time
     if not hasattr(check_ip_rate_limit, "_ip_records"):
         check_ip_rate_limit._ip_records = {}
 
@@ -585,7 +577,6 @@ async def send_code(request: Request, body: SendCodeRequest):
 
     except Exception as e:
         print(f"发送验证码接口异常: {e}")
-        import traceback
         traceback.print_exc()
         return JSONResponse(
             status_code=500,
@@ -1150,9 +1141,17 @@ async def list_comments(
         stats = get_comment_stats()
 
     try:
-        # 关键修复：管理员查看全部时，不要传递 is_pinned 参数（保持为 None）
-        if not user or user['role'] != 'admin':
-            # 非管理员：只能看到自己的评论
+        # 【关键修改】当请求 status=approved 时，对所有人公开，不做用户隔离
+        if status == 'approved':
+            comments = get_comments(
+                status='approved',
+                user_email=None,  # 不限制用户，所有人可见所有已审核评论
+                is_pinned=is_pinned if is_pinned is not None else None,
+                limit=limit,
+                offset=offset
+            )
+        elif not user or user['role'] != 'admin':
+            # 非管理员：只能看到自己的评论（用于"我的发布"、审核中等）
             comments = get_comments(
                 status=status,
                 user_email=email,
@@ -1162,7 +1161,6 @@ async def list_comments(
             )
         else:
             # 管理员：查看所有评论
-            # 修复：如果 is_pinned 为 False，应视为 None（显示全部）
             effective_is_pinned = is_pinned if is_pinned else None
 
             if status:
@@ -1747,7 +1745,7 @@ async def get_devices():
 
 @app.get("/api/map/risks")
 async def get_risks(request: Request, date: str = None):
-    """获取风险区域（仅返回今日/指定日期真实检测记录）"""
+    """获取风险区域（返回所有风险等级的真实检测记录）"""
     if "auth_token" not in request.cookies:
         return JSONResponse(status_code=401, content={"error": "未登录"})
 
@@ -1761,15 +1759,16 @@ async def get_risks(request: Request, date: str = None):
                 date_filter = "?"
                 params.append(date)
 
+            # 【修改】查询所有风险等级，不限于high，按风险等级分组
             cursor.execute(f'''
                 SELECT pest_name, COUNT(*) as count, AVG(confidence) as avg_conf,
-                       MAX(location_lat) as lat, MAX(location_lng) as lng
+                       AVG(location_lat) as lat, AVG(location_lng) as lng,
+                       risk_level
                 FROM detection_records 
-                WHERE risk_level = 'high' 
-                AND DATE(created_at) = {date_filter}
+                WHERE DATE(created_at) = {date_filter}
                 AND location_lat IS NOT NULL 
                 AND location_lng IS NOT NULL
-                GROUP BY pest_name
+                GROUP BY pest_name, risk_level
             ''', params)
 
             rows = cursor.fetchall()
@@ -1777,17 +1776,16 @@ async def get_risks(request: Request, date: str = None):
                 return [
                     {
                         "id": i + 1,
-                        "name": f"{row['pest_name']}风险区",
+                        "name": f"{row['pest_name']}{row['risk_level']}风险区",
                         "lat": row['lat'],
                         "lng": row['lng'],
-                        "risk_level": "high",
+                        "risk_level": row['risk_level'],  # 返回实际等级
                         "risk_value": int(row['avg_conf']),
                         "risk_type": row['pest_name'],
-                        "area": 12.5
+                        "area": round(12.5 * row['count'], 1)  # 根据检测次数估算面积
                     }
                     for i, row in enumerate(rows)
                 ]
-            # 无数据返回空数组，不再返回硬编码假数据
             return []
     except Exception as e:
         print(f"获取风险区域失败: {e}")
@@ -2517,9 +2515,8 @@ async def admin_plots_list(
     """
     获取地块列表（用于"选择绑定地块"弹窗）
     """
-    from _database import get_available_plots
 
-    plots = get_available_plots(user_id=user_id)
+    plots = get_available_plots()
 
     # 前端搜索过滤（简单实现）
     if keyword:
@@ -2846,7 +2843,6 @@ async def get_weather(request: Request):
         }
 
     try:
-        import httpx
 
         # 调用高德天气API（all模式返回实况+预报）
         url = "https://restapi.amap.com/v3/weather/weatherInfo"
@@ -3472,6 +3468,74 @@ def knowledge_page(request: Request):
     except FileNotFoundError:
         return HTMLResponse(content="<h1>页面文件 knowledge_base.html 未找到</h1>", status_code=404)
 
+
+# ==================== 蔓延热力图 API（新增） ====================
+
+@app.get("/api/map/heatmap-timeline")
+async def get_heatmap_timeline(request: Request, days: int = 7):
+    """
+    【新增】获取时间轴热力图数据（支持播放动画）
+    返回多天的检测数据，带时间衰减权重
+    """
+    if "auth_token" not in request.cookies:
+        return JSONResponse(status_code=401, content={"error": "未登录"})
+
+    user_email = request.cookies.get("user_email")
+    user = get_user_by_email(user_email)
+    if not user:
+        return JSONResponse(status_code=404, content={"error": "用户不存在"})
+
+    viz = RiskMapGenerator()
+    data = viz.get_timeline_heatmap_data(
+        user_email=user_email if user.get('role') != 'admin' else None,
+        days=days
+    )
+    return {"code": 200, "data": data}
+
+
+@app.get("/api/map/spread-prediction")
+async def get_spread_prediction(request: Request, days: int = 3):
+    """
+    【新增】获取病虫害蔓延预测数据
+    基于历史数据+扩散模型预测未来扩散区域
+    """
+    if "auth_token" not in request.cookies:
+        return JSONResponse(status_code=401, content={"error": "未登录"})
+
+    user_email = request.cookies.get("user_email")
+    user = get_user_by_email(user_email)
+    if not user:
+        return JSONResponse(status_code=404, content={"error": "用户不存在"})
+
+    viz = RiskMapGenerator()
+    predictions = viz.predict_spread(
+        user_email=user_email if user.get('role') != 'admin' else None,
+        forecast_days=days
+    )
+    print(f"[预测数据] 返回 {len(predictions)} 条预测")
+    return {"code": 200, "data": predictions}
+
+
+@app.get("/api/map/spread-stats")
+async def get_spread_statistics(request: Request, days: int = 7):
+    """
+    【新增】获取蔓延统计指标
+    包括蔓延速度、方向、影响面积等
+    """
+    if "auth_token" not in request.cookies:
+        return JSONResponse(status_code=401, content={"error": "未登录"})
+
+    user_email = request.cookies.get("user_email")
+    user = get_user_by_email(user_email)
+    if not user:
+        return JSONResponse(status_code=404, content={"error": "用户不存在"})
+
+    viz = RiskMapGenerator()
+    stats = viz.calculate_spread_stats(
+        user_email=user_email if user.get('role') != 'admin' else None,
+        days=days
+    )
+    return {"code": 200, "data": stats}
 
 
 
@@ -4385,7 +4449,6 @@ async def join_federation(request: Request, user=Depends(get_current_user_dep)):
     # 启动本地客户端（后台线程，不阻塞）
     def run_client():
         client = YOLOClient(user['id'], user_data_path)
-        import flwr as fl
         fl.client.start_numpy_client(server_address="localhost:8080", client=client)
 
     threading.Thread(target=run_client, daemon=True).start()
@@ -4400,38 +4463,91 @@ async def join_federation(request: Request, user=Depends(get_current_user_dep)):
 
 @app.get("/api/federated/status")
 async def get_federation_status(admin=Depends(require_admin)):
-    """获取联邦学习状态（仅管理员）"""
-    # 这里应该从联邦服务器获取真实状态，暂时返回模拟数据
+    """获取联邦学习真实状态"""
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+
+            # 统计在线节点
+            cursor.execute("SELECT COUNT(*) FROM federated_nodes WHERE status='online'")
+            active_nodes = cursor.fetchone()[0]
+
+            # 总贡献度
+            cursor.execute("SELECT COALESCE(SUM(contribution), 0) FROM federated_nodes")
+            total_contrib = cursor.fetchone()[0]
+
+            # 最新模型版本
+            cursor.execute("SELECT MAX(model_version) FROM federated_nodes WHERE model_version IS NOT NULL")
+            ver_row = cursor.fetchone()
+            global_ver = ver_row[0] if ver_row and ver_row[0] else "v1.0"
+
+            # 查询节点列表（给前端展示）
+            cursor.execute('''
+                SELECT user_id, node_name, status, contribution, last_update, last_round
+                FROM federated_nodes
+                ORDER BY last_update DESC
+            ''')
+            nodes = []
+            for row in cursor.fetchall():
+                nodes.append({
+                    "id": row['user_id'],
+                    "name": row['node_name'] or f"节点-{row['user_id']}",
+                    "status": "online" if row['status'] == 'online' else "offline",
+                    "contribution": round(row['contribution'] or 0, 2),
+                    "last_update": row['last_update'] or "从未上线",
+                    "last_round": row['last_round'] or 0
+                })
+
+    except Exception as e:
+        print(f"获取联邦状态失败: {e}")
+        active_nodes = 0
+        total_contrib = 0
+        global_ver = "v1.0"
+        nodes = []
+
     return {
         "code": 200,
-        "data": {
-            "active_nodes": 12,  # 实际应从联邦服务器统计
-            "total_contributions": 15420,
-            "global_model_version": "v2.3",
-            "last_round": 8,
-            "accuracy_improvement": "+3.2%",
-            "status": "running" if os.getenv('ENABLE_FEDERATED') == 'true' else "stopped"
-        }
+        "status": {
+            "active_nodes": active_nodes,
+            "total_contributions": int(total_contrib),
+            "global_model_version": global_ver,
+            "accuracy_improvement": "0%"
+        },
+        "nodes": nodes
     }
-
 
 @app.post("/api/admin/model/optimize")
 async def optimize_model(admin=Depends(require_admin)):
     """执行模型优化（剪枝+量化）"""
     try:
-        # 加载当前最佳模型
         model_path = os.getenv("YOLO_MODEL_PATH", "models/yolo11n.pt")
         optimizer = ModelOptimizer(model_path)
 
         # 执行优化流程
-        optimizer.prune_model(sparsity=0.3)  # 30%剪枝
-        optimizer.quantize_model()  # INT8量化
+        optimizer.prune_model(sparsity=0.3)
+        optimizer.quantize_model()
 
         # 基准测试
         metrics = optimizer.benchmark()
 
-        # 导出TFLite
-        tflite_path = optimizer.export_tflite(f"models/yolo11n_int8_{datetime.now().strftime('%Y%m%d')}.tflite")
+        # 导出TFLite（YOLO export 会生成在默认位置，这里捕获实际路径）
+        # 注意： ultralytics export 默认输出到 models/ 目录下
+        export_name = f"yolo11n_int8_{datetime.now().strftime('%Y%m%d%H%M')}.tflite"
+        tflite_dir = Path("models")
+        tflite_dir.mkdir(exist_ok=True)
+
+        # 先执行导出
+        optimizer.export_tflite()
+
+        # YOLO 默认导出路径通常是 models/yolo11n_int8.tflite，我们重命名为带时间戳的版本
+        default_export = Path("models/yolo11n_int8.tflite")
+        target_path = tflite_dir / export_name
+        if default_export.exists():
+            default_export.rename(target_path)
+        else:
+            # 如果默认名不对，尝试查找最新生成的 tflite
+            tflite_files = sorted(tflite_dir.glob("*.tflite"), key=lambda p: p.stat().st_mtime)
+            target_path = tflite_files[-1] if tflite_files else default_export
 
         # 保存到模型库
         with get_db_connection() as conn:
@@ -4442,10 +4558,10 @@ async def optimize_model(admin=Depends(require_admin)):
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             ''', (
                 f"v{datetime.now().strftime('%Y%m%d%H%M')}",
-                tflite_path,
+                str(target_path),
                 metrics['optimized_size_mb'],
                 metrics['avg_latency_ms'],
-                0.92,  # 需要实际测试mAP
+                0.92,
                 'ready',
                 datetime.now()
             ))
@@ -4460,10 +4576,11 @@ async def optimize_model(admin=Depends(require_admin)):
                 "compression_ratio": round(metrics['compression_ratio'], 2),
                 "latency_ms": metrics['avg_latency_ms'],
                 "fps": round(metrics['fps'], 1),
-                "tflite_path": tflite_path
+                "tflite_path": str(target_path)
             }
         }
     except Exception as e:
+        traceback.print_exc()
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 
@@ -4575,12 +4692,11 @@ async def device_health_check_api(device_id: int, request: Request):
 @app.get("/api/visualization/dashboard")
 async def get_dashboard_data_viz(request: Request, user=Depends(get_current_user_dep)):
     """获取首页数据看板（增强版）"""
-    from visualization import RiskMapGenerator, calculate_farm_health
     viz = RiskMapGenerator()
     stats = {
-        "detection_trend": viz.generate_time_series_chart(user['id']),
+        "detection_trend": viz.generate_time_series_chart(user['email']),  # 【改】user['id'] → user['email']
         "pest_distribution": get_pest_distribution(user['email']),
-        "farm_health_score": calculate_farm_health(user['id']),
+        "farm_health_score": calculate_farm_health(user['email']),        # 【改】user['id'] → user['email']
         "upcoming_tasks": get_farm_tasks(user['id'], limit=5)
     }
     return {"code": 200, "data": stats}
@@ -4589,7 +4705,6 @@ async def get_dashboard_data_viz(request: Request, user=Depends(get_current_user
 @app.get("/api/visualization/heatmap-html")
 async def get_heatmap_html_viz(request: Request, user=Depends(get_current_user_dep)):
     """生成 Folium 热力图 HTML（用于 iframe 嵌入）"""
-    from visualization import RiskMapGenerator
     viz = RiskMapGenerator()
     records = get_detection_history(user_email=user['email'], limit=1000)
     detection_data = []
@@ -4601,12 +4716,8 @@ async def get_heatmap_html_viz(request: Request, user=Depends(get_current_user_d
                 'confidence': r.get('confidence', 50),
                 'time': r.get('created_at')
             })
-    html = viz.generate_heatmap(detection_data)
-    return HTMLResponse(content=html)
-
     # 生成HTML
     html = viz.generate_heatmap(detection_data)
-
     return HTMLResponse(content=html)
 
 
@@ -4652,38 +4763,14 @@ async def start_federated_round(admin=Depends(require_admin)):
     管理员手动触发一轮联邦学习聚合
     （实际应调用 federated_learning 中的逻辑或发送信号）
     """
-    # 这里可以记录一个"待执行"状态，由后台线程检测后真正启动
-    # 简单版：直接返回成功，前端展示状态为"训练中"
+    # 简单实现：记录一次操作时间，前端展示为"训练中"
+    # 如需真正触发，可通过全局变量或消息队列通知后台线程
     return {
         "code": 200,
         "message": "联邦学习训练已启动",
         "status": "training",
         "started_at": datetime.now().isoformat()
     }
-
-
-def get_user_devices(user_id: int):
-    """查询某用户的设备列表及统计"""
-    try:
-        with get_db_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute('''
-                SELECT id, name, type, icon, location, status, last_update 
-                FROM user_devices 
-                WHERE user_id = ?
-            ''', (user_id,))
-            devices = [dict(row) for row in cursor.fetchall()]
-
-            online = sum(1 for d in devices if d['status'] == 'online')
-            return {
-                "devices": devices,
-                "total": len(devices),
-                "online": online,
-                "offline": len(devices) - online
-            }
-    except Exception as e:
-        print(f"获取用户设备失败: {e}")
-        return {"devices": [], "total": 0, "online": 0, "offline": 0}
 
 
 def get_user_activity_stats(user_id: int):

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>系统设置 - 智能农政系统</title>
+    <title>系统设置 - 智能农务系统</title>
     <script src="/api/config/js"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -60,11 +60,11 @@
             text-decoration: none;
             color: white;
             position: relative;
-            font-size: 14px;
+            border-left: 4px solid transparent;
         }
         .nav-item:hover, .nav-item.active {
             background: rgba(255,255,255,0.1);
-            border-left: 4px solid #fff;
+            border-left-color: #fff;
         }
         .nav-item i { margin-right: 15px; width: 20px; text-align: center; }
 
@@ -758,18 +758,6 @@
             color: #8c8c8c;
         }
 
-        /* 角标样式 */
-        .badge {
-            position: absolute;
-            right: 15px;
-            background: #ff4d4f;
-            color: white;
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 11px;
-            font-weight: bold;
-        }
-
         /* 日志区域 */
         .log-container {
             background: #1e1e1e;
@@ -1062,12 +1050,12 @@
         <!-- 侧边栏 - 使用第一个文件的动态逻辑 -->
         <div class="sidebar">
             <div class="sidebar-header">
-                <i class="fas fa-leaf"></i> 智能农政系统
+                <i class="fas fa-leaf"></i> 智能农务系统
             </div>
 
             <!-- 用户信息区域 -->
             <div class="user-info" v-if="currentUser">
-                <div>
+                <div style="font-weight: 600; font-size: 14px;">
                     <i class="fas fa-user-circle"></i> {{ currentUser.name || currentUser.email }}
                 </div>
                 <span :class="['user-role', currentUser.role === 'admin' ? 'role-admin' : 'role-farmer']">
@@ -1076,20 +1064,25 @@
             </div>
 
             <div class="nav-menu">
-                <!-- 公共菜单 -->
                 <a href="/home" class="nav-item"><i class="fas fa-chart-line"></i> 实时监控</a>
                 <a href="/detect" class="nav-item"><i class="fas fa-bug"></i> 病虫害识别</a>
 
-                <!-- 管理员专属菜单 -->
+
                 <template v-if="currentUser && currentUser.role === 'admin'">
                     <a href="/admin/comments" class="nav-item">
-                        <i class="fas fa-comments"></i> <span>评论审核</span>
-                        <span v-if="pendingComments > 0" class="badge">{{ pendingComments }}</span>
+                        <i class="fas fa-comments"></i> 评论审核
+                        <span class="badge" v-if="pendingComments > 0">{{ pendingComments }}</span>
                     </a>
                     <a href="/admin/users" class="nav-item"><i class="fas fa-users-cog"></i> 用户管理</a>
+                    <a href="/admin/federated" class="nav-item">
+                        <i class="fas fa-network-wired"></i> 联邦学习
+                    </a>
+                    <a href="/admin/model" class="nav-item">
+                        <i class="fas fa-brain"></i> 模型优化
+                    </a>
                 </template>
 
-                <!-- 农户专属菜单 -->
+
                 <template v-if="currentUser && currentUser.role === 'farmer'">
                     <a href="/comments" class="nav-item"><i class="fas fa-comments"></i> 经验交流</a>
                     <a href="/my-farm" class="nav-item"><i class="fas fa-tractor"></i> 我的农场</a>
@@ -1101,7 +1094,6 @@
                     <i class="fas fa-book-medical"></i> <span>知识库</span>
                 </a>
                 <a href="/farm-records" class="nav-item"><i class="fas fa-history"></i> 农事记录</a>
-                <!-- 系统设置保持激活状态 -->
                 <a href="/set" class="nav-item active"><i class="fas fa-cog"></i> 系统设置</a>
             </div>
         </div>

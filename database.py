@@ -798,7 +798,7 @@ def init_farm_records_db():
         conn.commit()
 
 
-# 在 _database.py 中添加农事记录操作函数
+# 在 database.py 中添加农事记录操作函数
 def add_farm_record(user_id, record_data):
     """添加农事记录"""
     init_farm_records_db()
@@ -2573,7 +2573,7 @@ def add_farm_activity(user_id, activity_type, content, plot_name=None):
     return {"success": True}
 
 
-# 在 _database.py 中确认这些函数已实现
+# 在 database.py 中确认这些函数已实现
 
 def get_user_farm_stats_fixed(user_id, user_email=None):
     """修复版：获取用户农场统计"""
@@ -4220,24 +4220,6 @@ def reset_user_password(email, new_password):
     except Exception as e:
         print(f"重置密码失败: {e}")
         return False
-
-def init_federated_db():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS federated_nodes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
-            node_status TEXT DEFAULT 'active',  -- active/inactive/banned
-            last_contribution TIMESTAMP,
-            contribution_score REAL DEFAULT 0,
-            gradient_checksum TEXT,  -- 梯度哈希（防篡改）
-            model_version TEXT,
-            ip_address TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-    conn.commit()
 
 def init_model_registry():
     """初始化模型版本库"""

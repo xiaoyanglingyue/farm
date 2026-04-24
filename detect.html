@@ -828,7 +828,7 @@
     <!-- 侧边栏 -->
     <div class="sidebar">
         <div class="sidebar-header">
-            <i class="fas fa-leaf"></i> 智能农政系统
+            <i class="fas fa-leaf"></i> 智能农务系统
         </div>
         <div class="user-info" v-if="currentUser">
             <div style="font-weight: 600; font-size: 14px;">
@@ -842,12 +842,19 @@
             <a href="/home" class="nav-item"><i class="fas fa-chart-line"></i> 实时监控</a>
             <a href="/detect" class="nav-item active"><i class="fas fa-bug"></i> 病虫害识别</a>
             <template v-if="currentUser && currentUser.role === 'admin'">
-                <a href="/admin/comments" class="nav-item" style="position: relative;">
+                <a href="/admin/comments" class="nav-item">
                     <i class="fas fa-comments"></i> 评论审核
-                    <span v-if="pendingComments > 0" class="badge">{{ pendingComments }}</span>
+                    <span class="badge" v-if="pendingComments > 0">{{ pendingComments }}</span>
                 </a>
                 <a href="/admin/users" class="nav-item"><i class="fas fa-users-cog"></i> 用户管理</a>
+                <a href="/admin/federated" class="nav-item">
+                    <i class="fas fa-network-wired"></i> 联邦学习
+                </a>
+                <a href="/admin/model" class="nav-item">
+                    <i class="fas fa-brain"></i> 模型优化
+                </a>
             </template>
+
             <template v-if="currentUser && currentUser.role === 'farmer'">
                 <a href="/comments" class="nav-item"><i class="fas fa-comments"></i> 经验交流</a>
                 <a href="/my-farm" class="nav-item"><i class="fas fa-tractor"></i> 我的农场</a>
@@ -1250,7 +1257,7 @@
                         </div>
                     </div>
                     <div style="text-align: center; margin-top: 20px; font-size: 11px; color: #999; border-top: 1px solid #eee; padding-top: 15px;">
-                        本报告由智能农政系统自动生成，仅供参考。如需确诊，请联系当地农技推广站。
+                        本报告由智能农务系统自动生成，仅供参考。如需确诊，请联系当地农技推广站。
                     </div>
                 </div>
                 <div style="display: flex; gap: 10px; margin-top: 15px;">

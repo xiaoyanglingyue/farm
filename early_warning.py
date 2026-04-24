@@ -128,29 +128,3 @@ class EarlyWarningSystem:
             'high': "⚠️ 高风险预警！建议立即：1)全面喷药防治 2)开启所有监测设备 3)通知周边农户联防"
         }
         return advice_map.get(risk_level, "请保持监测")
-
-
-# ==================== API集成（添加到app.py） ====================
-
-
-@app.get("/api/warning/heatmap")
-async def get_risk_heatmap(request: Request, days: int = 7):
-    """获取区域风险热力图（像素级风险分区）"""
-    # 查询所有设备最近检测数据
-    devices = get_all_devices()
-    heatmap_data = []
-
-    for device in devices:
-        # 获取该设备历史检测
-        records = get_detection_history(limit=100)
-
-        for record in records:
-            if record.get('location_lat') and record.get('risk_level') == 'high':
-                heatmap_data.append({
-                    "lat": record['location_lat'],
-                    "lng": record['location_lng'],
-                    "count": record['confidence'],
-                    "risk_type": record['pest_name']
-                })
-
-    return {"code": 200, "data": heatmap_data}

@@ -2,7 +2,7 @@ import os
 import random
 import time
 import dotenv
-from _database import insert_email_code, check_email_code_limit
+from database import insert_email_code, check_email_code_limit
 import logging
 import smtplib
 from email.mime.text import MIMEText

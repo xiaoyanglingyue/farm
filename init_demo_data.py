@@ -1,5 +1,5 @@
 """
-智能农政系统 - 完整示例数据初始化脚本（全字段修复版）
+智能农务系统 - 完整示例数据初始化脚本（字段补全版）
 运行方式: python init_demo_data.py
 """
 
@@ -19,7 +19,7 @@ DB_PATHS = {
     'knowledge': 'data/knowledge_base.db'
 }
 
-# ==================== 七个真实用户数据 ====================
+# ==================== 七个真实用户数据（补全安全字段） ====================
 DEMO_USERS = [
     {
         'id': 1, 'phone': '13800138001', 'email': 'admin@farm.com',
@@ -29,7 +29,9 @@ DEMO_USERS = [
         'created_at': (datetime.now() - timedelta(days=90)).isoformat(),
         'updated_at': datetime.now().isoformat(),
         'password_hash': 'admin123',
-        'has_password': 1
+        'has_password': 1,
+        'failed_login_attempts': 0,
+        'locked_until': 0
     },
     {
         'id': 2, 'phone': '13812345678', 'email': 'farmer1@farm.com',
@@ -39,7 +41,9 @@ DEMO_USERS = [
         'created_at': (datetime.now() - timedelta(days=60)).isoformat(),
         'updated_at': datetime.now().isoformat(),
         'password_hash': 'farmer123',
-        'has_password': 1
+        'has_password': 1,
+        'failed_login_attempts': 0,
+        'locked_until': 0
     },
     {
         'id': 3, 'phone': '13987654321', 'email': 'farmer2@farm.com',
@@ -49,7 +53,9 @@ DEMO_USERS = [
         'created_at': (datetime.now() - timedelta(days=45)).isoformat(),
         'updated_at': (datetime.now() - timedelta(hours=2)).isoformat(),
         'password_hash': 'farmer123',
-        'has_password': 1
+        'has_password': 1,
+        'failed_login_attempts': 0,
+        'locked_until': 0
     },
     {
         'id': 4, 'phone': '13700137001', 'email': 'farmer3@farm.com',
@@ -59,7 +65,9 @@ DEMO_USERS = [
         'created_at': (datetime.now() - timedelta(days=1)).isoformat(),
         'updated_at': None,
         'password_hash': None,
-        'has_password': 0
+        'has_password': 0,
+        'failed_login_attempts': 0,
+        'locked_until': 0
     },
     {
         'id': 5, 'phone': '13600136001', 'email': 'farmer4@farm.com',
@@ -69,7 +77,9 @@ DEMO_USERS = [
         'created_at': (datetime.now() - timedelta(days=30)).isoformat(),
         'updated_at': (datetime.now() - timedelta(days=2)).isoformat(),
         'password_hash': 'farmer123',
-        'has_password': 1
+        'has_password': 1,
+        'failed_login_attempts': 0,
+        'locked_until': 0
     },
     {
         'id': 6, 'phone': '13500135001', 'email': 'farmer5@farm.com',
@@ -79,7 +89,9 @@ DEMO_USERS = [
         'created_at': (datetime.now() - timedelta(days=20)).isoformat(),
         'updated_at': (datetime.now() - timedelta(hours=5)).isoformat(),
         'password_hash': 'farmer123',
-        'has_password': 1
+        'has_password': 1,
+        'failed_login_attempts': 0,
+        'locked_until': 0
     },
     {
         'id': 7, 'phone': '13400134001', 'email': 'banned@farm.com',
@@ -89,7 +101,9 @@ DEMO_USERS = [
         'created_at': (datetime.now() - timedelta(days=25)).isoformat(),
         'updated_at': (datetime.now() - timedelta(days=15)).isoformat(),
         'password_hash': 'banned123',
-        'has_password': 1
+        'has_password': 1,
+        'failed_login_attempts': 5,
+        'locked_until': int((datetime.now() - timedelta(days=10)).timestamp())
     },
 ]
 
@@ -392,7 +406,6 @@ DEMO_FARM_RECORDS = [
         'created_at': (datetime.now() - timedelta(hours=6)).isoformat(),
         'updated_at': (datetime.now() - timedelta(hours=6)).isoformat()
     },
-    # ===== 以下是新增的数据（可按需添加更多） =====
     {
         'id': 6, 'user_id': 2, 'type': 'irrigation', 'field': '增城03区-番茄大棚',
         'date': (datetime.now() - timedelta(days=5)).strftime('%Y-%m-%d'),
@@ -532,7 +545,7 @@ DEMO_FARM_CROPS = [
 DEMO_USER_DEVICES = [
     {'id': 1, 'user_id': 2, 'name': '智能摄像头-01', 'type': 'camera',
      'icon': 'fas fa-video', 'location': '增城01区', 'status': 'online',
-     'last_online': datetime.now().isoformat()},           # 【改这里】
+     'last_online': datetime.now().isoformat()},
     {'id': 2, 'user_id': 2, 'name': '土壤传感器-02', 'type': 'sensor',
      'icon': 'fas fa-thermometer-half', 'location': '大棚B', 'status': 'online',
      'last_online': (datetime.now() - timedelta(minutes=30)).isoformat()},
@@ -619,6 +632,7 @@ DEMO_FARM_ACTIVITIES = [
     },
 ]
 
+# ==================== 农事任务（补全 sort_order 字段） ====================
 DEMO_FARM_TASKS = [
     {
         'id': 1, 'user_id': 2, 'title': '试验田A灌溉作业', 'type': 'irrigation',
@@ -626,6 +640,7 @@ DEMO_FARM_TASKS = [
         'scheduled_time': (datetime.now() + timedelta(hours=2)).isoformat(),
         'priority': 'high', 'completed': 0, 'completed_at': None,
         'notes': '预计持续2小时，土壤湿度需达到60%', 'reminder_sent': 0,
+        'sort_order': 0,
         'created_at': datetime.now().isoformat(), 'updated_at': datetime.now().isoformat()
     },
     {
@@ -634,6 +649,7 @@ DEMO_FARM_TASKS = [
         'scheduled_time': (datetime.now() + timedelta(hours=6)).isoformat(),
         'priority': 'medium', 'completed': 0, 'completed_at': None,
         'notes': '采用沟施方式，避免烧苗，每亩15kg', 'reminder_sent': 0,
+        'sort_order': 1,
         'created_at': datetime.now().isoformat(), 'updated_at': datetime.now().isoformat()
     },
     {
@@ -643,6 +659,7 @@ DEMO_FARM_TASKS = [
         'priority': 'high', 'completed': 1,
         'completed_at': (datetime.now() - timedelta(hours=1)).isoformat(),
         'notes': '已确认叶斑病，已安排防治', 'reminder_sent': 1,
+        'sort_order': 2,
         'created_at': datetime.now().isoformat(), 'updated_at': (datetime.now() - timedelta(hours=1)).isoformat()
     },
     {
@@ -651,6 +668,7 @@ DEMO_FARM_TASKS = [
         'scheduled_time': (datetime.now() + timedelta(hours=8)).isoformat(),
         'priority': 'low', 'completed': 0, 'completed_at': None,
         'notes': '检查摄像头和传感器状态，清洁镜头', 'reminder_sent': 0,
+        'sort_order': 3,
         'created_at': datetime.now().isoformat(), 'updated_at': datetime.now().isoformat()
     },
     {
@@ -659,6 +677,7 @@ DEMO_FARM_TASKS = [
         'scheduled_time': (datetime.now() + timedelta(hours=1)).isoformat(),
         'priority': 'high', 'completed': 0, 'completed_at': None,
         'notes': '湿度88%，需要立即通风，防止病害', 'reminder_sent': 0,
+        'sort_order': 0,
         'created_at': datetime.now().isoformat(), 'updated_at': datetime.now().isoformat()
     },
     {
@@ -667,6 +686,7 @@ DEMO_FARM_TASKS = [
         'scheduled_time': (datetime.now() + timedelta(hours=4)).isoformat(),
         'priority': 'medium', 'completed': 0, 'completed_at': None,
         'notes': '人工除草，清理行间杂草', 'reminder_sent': 0,
+        'sort_order': 4,
         'created_at': datetime.now().isoformat(), 'updated_at': datetime.now().isoformat()
     },
     {
@@ -675,6 +695,7 @@ DEMO_FARM_TASKS = [
         'scheduled_time': (datetime.now() + timedelta(hours=3)).isoformat(),
         'priority': 'high', 'completed': 0, 'completed_at': None,
         'notes': '防治蚜虫，使用生物农药', 'reminder_sent': 0,
+        'sort_order': 0,
         'created_at': datetime.now().isoformat(), 'updated_at': datetime.now().isoformat()
     },
     {
@@ -684,6 +705,7 @@ DEMO_FARM_TASKS = [
         'priority': 'medium', 'completed': 1,
         'completed_at': (datetime.now() - timedelta(hours=2)).isoformat(),
         'notes': '已完成枯枝修剪，促进新梢生长', 'reminder_sent': 1,
+        'sort_order': 5,
         'created_at': datetime.now().isoformat(), 'updated_at': (datetime.now() - timedelta(hours=2)).isoformat()
     },
     {
@@ -692,6 +714,7 @@ DEMO_FARM_TASKS = [
         'scheduled_time': (datetime.now() + timedelta(hours=5)).isoformat(),
         'priority': 'low', 'completed': 0, 'completed_at': None,
         'notes': '检查滴灌带是否堵塞', 'reminder_sent': 0,
+        'sort_order': 0,
         'created_at': datetime.now().isoformat(), 'updated_at': datetime.now().isoformat()
     },
     {
@@ -700,6 +723,7 @@ DEMO_FARM_TASKS = [
         'scheduled_time': (datetime.now() + timedelta(hours=2)).isoformat(),
         'priority': 'high', 'completed': 0, 'completed_at': None,
         'notes': '采收成熟黄瓜，预计产量200kg', 'reminder_sent': 0,
+        'sort_order': 1,
         'created_at': datetime.now().isoformat(), 'updated_at': datetime.now().isoformat()
     },
 ]
@@ -1092,6 +1116,23 @@ DEMO_AI_SOLUTIONS = [
     },
 ]
 
+# ==================== 模型版本示例数据（新增） ====================
+DEMO_MODEL_VERSIONS = [
+    {'id': 1, 'version': 'yolov8n-v1.0', 'model_path': '/models/yolov8n_v1.pt', 'size_mb': 6.2, 'latency_ms': 45.5, 'map50': 0.89, 'status': 'ready'},
+    {'id': 2, 'version': 'yolov8s-v1.1', 'model_path': '/models/yolov8s_v1_1.pt', 'size_mb': 22.4, 'latency_ms': 78.3, 'map50': 0.92, 'status': 'ready'},
+    {'id': 3, 'version': 'yolov8m-v2.0', 'model_path': '/models/yolov8m_v2.pt', 'size_mb': 52.1, 'latency_ms': 125.6, 'map50': 0.94, 'status': 'testing'},
+    {'id': 4, 'version': 'yolov8l-v3.0-beta', 'model_path': '/models/yolov8l_v3b.pt', 'size_mb': 87.3, 'latency_ms': 210.4, 'map50': 0.96, 'status': 'deprecated'},
+]
+
+DEMO_KNOWLEDGE_COLLECTIONS = [
+    {'user_email': 'farmer1@farm.com', 'pest_id': 1, 'collection_type': 'pest', 'notes': '水稻田重点关注，已发生两次'},
+    {'user_email': 'farmer1@farm.com', 'pest_id': 3, 'collection_type': 'pest', 'notes': '玉米地主要威胁'},
+    {'user_email': 'farmer2@farm.com', 'pest_id': 2, 'collection_type': 'pest', 'notes': '大棚番茄也要注意二化螟'},
+    {'user_email': 'farmer2@farm.com', 'pest_id': 8, 'collection_type': 'pest', 'notes': '番茄灰霉病防治参考'},
+    {'user_email': 'farmer4@farm.com', 'pest_id': 5, 'collection_type': 'pest', 'notes': '小麦锈病防治方案很好'},
+    {'user_email': 'farmer5@farm.com', 'pest_id': 6, 'collection_type': 'pest', 'notes': '玉米螟防治备用'},
+]
+
 
 def init_ai_solutions():
     """补充 AI 防治方案示例数据"""
@@ -1137,16 +1178,6 @@ def init_ai_solutions():
     print(f"[✓] 已补充 {len(DEMO_AI_SOLUTIONS)} 条 AI 防治方案")
 
 
-DEMO_KNOWLEDGE_COLLECTIONS = [
-    {'user_email': 'farmer1@farm.com', 'pest_id': 1, 'collection_type': 'pest', 'notes': '水稻田重点关注，已发生两次'},
-    {'user_email': 'farmer1@farm.com', 'pest_id': 3, 'collection_type': 'pest', 'notes': '玉米地主要威胁'},
-    {'user_email': 'farmer2@farm.com', 'pest_id': 2, 'collection_type': 'pest', 'notes': '大棚番茄也要注意二化螟'},
-    {'user_email': 'farmer2@farm.com', 'pest_id': 8, 'collection_type': 'pest', 'notes': '番茄灰霉病防治参考'},
-    {'user_email': 'farmer4@farm.com', 'pest_id': 5, 'collection_type': 'pest', 'notes': '小麦锈病防治方案很好'},
-    {'user_email': 'farmer5@farm.com', 'pest_id': 6, 'collection_type': 'pest', 'notes': '玉米螟防治备用'},
-]
-
-
 def init_knowledge_collections():
     """补充用户知识收藏示例数据"""
     conn = sqlite3.connect(DB_PATHS['knowledge'])
@@ -1172,7 +1203,7 @@ def init_email_db():
     conn = sqlite3.connect(DB_PATHS['email'])
     cursor = conn.cursor()
 
-    # 创建用户表（完整字段 - 与_database.py完全一致，包含has_password）
+    # 创建用户表（完整字段 - 与 database.py 完全一致，包含安全字段）
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY,
@@ -1189,6 +1220,8 @@ def init_email_db():
             is_online INTEGER DEFAULT 0,
             login_count INTEGER DEFAULT 0,
             has_password INTEGER DEFAULT 0,
+            failed_login_attempts INTEGER DEFAULT 0,
+            locked_until INTEGER DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP
         )
@@ -1236,7 +1269,7 @@ def init_email_db():
         )
     """)
 
-    # 创建农事记录表 - 【关键修复】添加user_id和remark字段，与_database.py完全一致
+    # 创建农事记录表
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS farm_records (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -1308,8 +1341,8 @@ def init_email_db():
             icon TEXT DEFAULT 'fas fa-video',
             location TEXT,
             status TEXT DEFAULT 'offline',
-            last_online TIMESTAMP,                 -- 【改为 last_online】
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- 【新增】
+            last_online TIMESTAMP,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         )
     """)
@@ -1327,7 +1360,7 @@ def init_email_db():
         )
     """)
 
-    # 农事任务表 - 添加notes, reminder_sent, updated_at字段
+    # 农事任务表 - 添加notes, reminder_sent, sort_order, updated_at字段
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS farm_tasks (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -1363,30 +1396,47 @@ def init_email_db():
         )
     """)
 
+    # 创建模型版本表（新增）
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS model_versions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            version TEXT NOT NULL,
+            model_path TEXT,
+            size_mb REAL,
+            latency_ms REAL,
+            map50 REAL,
+            status TEXT DEFAULT 'ready',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
     # 清空旧数据
     tables = ['users', 'plots', 'user_plots', 'devices', 'farm_records', 'email_code',
-              'farm_plots', 'farm_crops', 'user_devices', 'farm_activities', 'farm_tasks', 'user_permissions']
+              'farm_plots', 'farm_crops', 'user_devices', 'farm_activities', 'farm_tasks',
+              'user_permissions', 'model_versions']
     for table in tables:
         cursor.execute(f'DELETE FROM {table}')
 
-    # 【关键修复】插入用户数据时对明文密码进行 bcrypt 哈希处理，并包含has_password字段
+    # 【关键修复】插入用户数据时对明文密码进行 bcrypt 哈希处理，并包含安全字段
     for user in DEMO_USERS:
         plain_pwd = user.get('password_hash')
         if plain_pwd:
-            # 使用 bcrypt 生成哈希，与 _database.py 中的 hash_password 函数一致
+            # 使用 bcrypt 生成哈希，与 database.py 中的 hash_password 函数一致
             hashed_pwd = bcrypt.hashpw(plain_pwd.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         else:
             hashed_pwd = None
 
         cursor.execute("""
             INSERT INTO users (id, phone, email, name, role, status, avatar, max_plots, 
-                             last_login_ip, last_login_at, is_online, login_count, has_password, created_at, updated_at, password_hash)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                             last_login_ip, last_login_at, is_online, login_count, has_password, 
+                             failed_login_attempts, locked_until, created_at, updated_at, password_hash)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             user['id'], user['phone'], user['email'], user['name'], user['role'],
             user['status'], user['avatar'], user['max_plots'], user['last_login_ip'],
             user['last_login_at'], user['is_online'], user['login_count'], user['has_password'],
-            user['created_at'], user.get('updated_at'), hashed_pwd  # 使用哈希后的密码
+            user.get('failed_login_attempts', 0), user.get('locked_until', 0),
+            user['created_at'], user.get('updated_at'), hashed_pwd
         ))
 
     # 插入地块数据 - 包含status和created_at
@@ -1414,7 +1464,7 @@ def init_email_db():
         """, (device['id'], device['name'], device['lat'], device['lng'],
               device['status'], device['last_update']))
 
-    # 【关键修复】插入农事记录 - 包含user_id, remark, updated_at
+    # 插入农事记录 - 包含user_id, remark, updated_at
     for record in DEMO_FARM_RECORDS:
         cursor.execute("""
             INSERT INTO farm_records (id, user_id, type, field, date, operator, content, materials, remark, status, created_at, updated_at)
@@ -1453,8 +1503,8 @@ def init_email_db():
         """, (
             device['id'], device['user_id'], device['name'], device['type'],
             device['icon'], device['location'], device['status'],
-            device['last_online'],  # ← 改为 last_online（与DEMO_USER_DEVICES字典一致）
-            datetime.now().isoformat()  # ← 补充 created_at 字段值
+            device['last_online'],
+            datetime.now().isoformat()
         ))
 
     # 插入农场活动
@@ -1467,16 +1517,17 @@ def init_email_db():
             activity['content'], activity['plot_name'], activity['created_at']
         ))
 
-    # 插入农事任务 - 包含notes, reminder_sent, updated_at
+    # 插入农事任务 - 包含notes, reminder_sent, sort_order, updated_at
     for task in DEMO_FARM_TASKS:
         cursor.execute("""
             INSERT INTO farm_tasks (id, user_id, title, type, plot_name, plot_id, scheduled_time, 
-                                   priority, completed, completed_at, notes, reminder_sent, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                   priority, completed, completed_at, notes, reminder_sent, sort_order, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             task['id'], task['user_id'], task['title'], task['type'], task['plot_name'],
             task['plot_id'], task['scheduled_time'], task['priority'], task['completed'],
             task.get('completed_at'), task['notes'], task.get('reminder_sent', 0),
+            task.get('sort_order', 0),
             task['created_at'], task['updated_at']
         ))
 
@@ -1496,9 +1547,19 @@ def init_email_db():
         VALUES (?, ?, ?, ?, ?)
     """, default_perms)
 
+    # 插入模型版本示例数据（新增）
+    for model in DEMO_MODEL_VERSIONS:
+        cursor.execute("""
+            INSERT INTO model_versions (id, version, model_path, size_mb, latency_ms, map50, status, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+        """, (
+            model['id'], model['version'], model['model_path'],
+            model['size_mb'], model['latency_ms'], model['map50'], model['status']
+        ))
+
     conn.commit()
     conn.close()
-    print(f"[✓] email.db 初始化完成（{len(DEMO_USERS)}个用户，{len(DEMO_PLOTS)}个地块）- 密码已自动哈希，所有字段已补全")
+    print(f"[✓] email.db 初始化完成（{len(DEMO_USERS)}个用户，{len(DEMO_PLOTS)}个地块，{len(DEMO_MODEL_VERSIONS)}个模型版本）- 密码已自动哈希，所有字段已补全")
     return len(DEMO_USERS), len(DEMO_PLOTS), len(DEMO_DEVICES)
 
 
@@ -1576,7 +1637,7 @@ def init_detection_db():
             record['image_base64'], record['original_image_base64'], record['device_id'],
             record['location_lat'], record['location_lng'], record['risk_level'],
             record['status'], record['notes'], record.get('crop_type'),
-            record.get('user_email'),  # 【新增】
+            record.get('user_email'),
             record['created_at'], record['updated_at']
         ))
 
@@ -1970,7 +2031,7 @@ def init_personal_knowledge():
         '我家水稻的特殊叶斑病', '水稻', '病害',
         '叶片出现不规则黄斑，边缘褐色',
         '试用枯草芽孢杆菌防治',
-        'farmer1@farm.com',  # owner_email
+        'farmer1@farm.com',
         'farmer1@farm.com'
     ))
 
@@ -2004,8 +2065,6 @@ def init_comments_supplement():
         (8, None, 6, 'farmer5@farm.com', '刘师傅', '建议使用戊唑醇或丙环唑，现在抗性小，效果更好。', '陈大姐', 5),
         (10, None, 3, 'farmer2@farm.com', '王婶', '可以尝试高温闷棚，晴天上午闭棚升温到35-38℃维持2小时，然后通风降温，连续2-3天效果挺好。', '李大叔', 8),
     ]
-
-
 
     # 获取刚插入的评论ID（实际应该使用cursor.lastrowid，这里简化处理）
     cursor.execute("SELECT MAX(id) FROM comments")
@@ -2064,7 +2123,7 @@ def init_cost_supplement():
         ''', (
             data['user_id'], data['category'], data['item_name'],
             data['amount'], data['record_date'],
-            data.get('related_record_id'),  # 新增：允许None
+            data.get('related_record_id'),
             data['notes']
         ))
         inserted += 1
@@ -2129,13 +2188,13 @@ def init_today_data_supplement():
             cursor.execute('''
                 INSERT INTO farm_tasks 
                 (user_id, title, type, plot_name, plot_id, scheduled_time, 
-                 priority, completed, completed_at, notes, reminder_sent, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 priority, completed, completed_at, notes, reminder_sent, sort_order, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 task['user_id'], task['title'], task['type'], task['plot_name'],
                 task['plot_id'], task['scheduled_time'], task['priority'],
                 task['completed'], task['completed_at'], task['notes'],
-                task['reminder_sent'], task['created_at'], task['updated_at']
+                task['reminder_sent'], task.get('sort_order', 0), task['created_at'], task['updated_at']
             ))
             inserted_tasks += 1
 
@@ -2161,7 +2220,7 @@ def init_today_data_supplement():
 def print_summary():
     """打印初始化完成后的统计摘要"""
     print("\n" + "=" * 70)
-    print("🌱 智能农政系统 - 示例数据初始化完成报告")
+    print("🌱 智能农务系统 - 示例数据初始化完成报告")
     print("=" * 70)
 
     # 用户统计
@@ -2190,7 +2249,10 @@ def print_summary():
         status_icon = "✓" if user['status'] == 'active' else "⏳" if user['status'] == 'pending' else "✗"
         role_icon = "👑" if user['role'] == 'admin' else "🌾"
         pwd_status = "🔐" if user.get('password_hash') else "⚠️无密码"
-        print(f"   {status_icon} {role_icon} {user['name']} ({user['email']}) - {pwd_status}")
+        lock_info = ""
+        if user.get('failed_login_attempts', 0) >= 5:
+            lock_info = f" [已锁定,失败{user['failed_login_attempts']}次]"
+        print(f"   {status_icon} {role_icon} {user['name']} ({user['email']}) - {pwd_status}{lock_info}")
 
     cursor.execute("SELECT COUNT(*) FROM plots")
     total_plots = cursor.fetchone()[0]
@@ -2270,6 +2332,18 @@ def print_summary():
     print(f"\n🌡️ 环境监测数据:")
     print(f"   传感器记录: {total_env} 条")
 
+    # 模型版本统计（新增）
+    cursor.execute("SELECT COUNT(*) FROM model_versions")
+    total_models = cursor.fetchone()[0]
+    cursor.execute("SELECT status, COUNT(*) FROM model_versions GROUP BY status")
+    model_status = dict(cursor.fetchall())
+    print(f"\n🤖 模型版本管理:")
+    print(f"   总版本数: {total_models} 个")
+    if model_status:
+        print(f"   状态分布: ", end="")
+        m_map = {'ready': '就绪', 'testing': '测试中', 'deprecated': '已弃用'}
+        print(", ".join([f"{m_map.get(k, k)} {v}个" for k, v in model_status.items()]))
+
     conn.close()
 
     # 检测记录统计
@@ -2337,6 +2411,9 @@ def print_summary():
     print("\n" + "-" * 70)
     print("✅ 所有示例数据已成功插入！包括：")
     print("   • 基础数据（7用户、8地块、16设备等）- 所有用户密码已自动哈希")
+    print("   • 安全字段（failed_login_attempts、locked_until）- 违规用户已模拟锁定")
+    print("   • 任务排序（sort_order）- 支持拖拽排序功能")
+    print("   • 模型版本（4个YOLO版本）- 支持模型管理功能")
     print("   • 补充知识库（11条新增病虫害知识）")
     print("   • 补充评论（5条新讨论 + 回复）")
     print("   • 补充成本记录（19条成本数据）")
@@ -2348,7 +2425,7 @@ def print_summary():
     print("   👩‍🔬 农户3: farmer4@farm.com (密码: farmer123)")
     print("   👨‍🔧 农户4: farmer5@farm.com (密码: farmer123)")
     print("   ⏳ 待审核: farmer3@farm.com (无密码，需管理员设置)")
-    print("   🚫 已禁用: banned@farm.com (密码: banned123，已禁用)")
+    print("   🚫 已禁用: banned@farm.com (密码: banned123，已禁用，模拟锁定状态)")
     print("\n🚀 启动命令: python app.py")
     print("🌐 访问地址: http://localhost:8001")
     print("=" * 70)
@@ -2364,7 +2441,7 @@ def check_databases():
 
 def main():
     """主函数：执行所有初始化"""
-    print("🌱 智能农政系统 - 示例数据初始化工具（全字段修复版）")
+    print("🌱 智能农务系统 - 示例数据初始化工具（字段补全版）")
     print("=" * 70)
 
     # 检查路径
@@ -2382,10 +2459,10 @@ def main():
         k_inserted, k_skipped = init_knowledge_supplement()
         print(f"   ✓ 新增 {k_inserted} 条病虫害知识，跳过 {k_skipped} 条重复数据")
 
-        print("\n🤖 正在补充 AI 防治方案...")  # 【新增】
-        init_ai_solutions()  # 【新增】
+        print("\n🤖 正在补充 AI 防治方案...")
+        init_ai_solutions()
 
-        print("\n⭐ 正在补充用户知识收藏...")  # 【新增】
+        print("\n⭐ 正在补充用户知识收藏...")
         init_knowledge_collections()
 
         print("\n💬 正在补充评论互动数据...")
@@ -2421,9 +2498,10 @@ SUPPLEMENT_TODAY_TASKS = [
     {
         'user_id': 2, 'title': '水稻田追肥作业', 'type': 'fertilize',
         'plot_name': '增城01区-水稻主田', 'plot_id': 1,
-        'scheduled_time': (datetime.now() + timedelta(hours=2)).isoformat(),  # 今日待办
+        'scheduled_time': (datetime.now() + timedelta(hours=2)).isoformat(),
         'priority': 'high', 'completed': 0, 'completed_at': None,
         'notes': '每亩施用尿素15kg，注意均匀撒施', 'reminder_sent': 0,
+        'sort_order': 10,
         'created_at': datetime.now().isoformat(), 'updated_at': datetime.now().isoformat()
     },
     {
@@ -2432,6 +2510,7 @@ SUPPLEMENT_TODAY_TASKS = [
         'scheduled_time': (datetime.now() + timedelta(hours=4)).isoformat(),
         'priority': 'medium', 'completed': 0, 'completed_at': None,
         'notes': '检查通风情况，确保湿度低于80%', 'reminder_sent': 0,
+        'sort_order': 11,
         'created_at': datetime.now().isoformat(), 'updated_at': datetime.now().isoformat()
     },
     {
@@ -2440,6 +2519,7 @@ SUPPLEMENT_TODAY_TASKS = [
         'scheduled_time': (datetime.now() + timedelta(hours=6)).isoformat(),
         'priority': 'medium', 'completed': 0, 'completed_at': None,
         'notes': '滴灌2小时，土壤湿度目标65%', 'reminder_sent': 0,
+        'sort_order': 12,
         'created_at': datetime.now().isoformat(), 'updated_at': datetime.now().isoformat()
     },
 ]

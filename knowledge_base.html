@@ -75,20 +75,43 @@
         }
 
         .nav-item {
-            padding: 15px 25px;
+            padding: 15px 45px 15px 25px;  /* 【改】右边距加大，给 badge 留空间 */
             cursor: pointer;
             display: flex;
             align-items: center;
             transition: 0.3s;
             text-decoration: none;
             color: white;
-            position: relative;
+            position: relative;           /* 【确保有】 */
         }
         .nav-item:hover, .nav-item.active {
             background: rgba(255,255,255,0.1);
             border-left: 4px solid #fff;
         }
-        .nav-item i { margin-right: 15px; width: 20px; text-align: center; }
+        .nav-item i {
+            margin-right: 15px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .badge {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #ff4d4f;
+            color: white;
+            min-width: 20px;
+            height: 20px;
+            padding: 0 4px;
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+        }
 
         /* 主内容区 */
         .main-content {
@@ -747,7 +770,7 @@
         <!-- 侧边栏 -->
         <div class="sidebar">
             <div class="sidebar-header">
-                <i class="fas fa-leaf"></i> <span>智能农政系统</span>
+                <i class="fas fa-leaf"></i> <span>智能农务系统</span>
             </div>
 
             <div class="user-info" v-if="currentUser">
@@ -760,27 +783,33 @@
             </div>
 
             <div class="nav-menu">
-                <a href="/home" class="nav-item"><i class="fas fa-chart-line"></i> <span>实时监控</span></a>
-                <a href="/detect" class="nav-item"><i class="fas fa-bug"></i> <span>病虫害识别</span></a>
+                <a href="/home" class="nav-item"><i class="fas fa-chart-line"></i> 实时监控</a>
+                <a href="/detect" class="nav-item"><i class="fas fa-bug"></i> 病虫害识别</a>
 
                 <template v-if="currentUser && currentUser.role === 'admin'">
-                    <a href="/admin/comments" class="nav-item" style="position: relative;">
-                        <i class="fas fa-comments"></i> <span>评论审核</span>
-                        <span v-if="pendingComments > 0" class="badge">{{ pendingComments }}</span>
+                    <a href="/admin/comments" class="nav-item">
+                        <i class="fas fa-comments"></i> 评论审核&nbsp;
+                        <span class="badge" v-if="pendingComments > 0">{{ pendingComments }}</span>
                     </a>
-                    <a href="/admin/users" class="nav-item"><i class="fas fa-users-cog"></i> <span>用户管理</span></a>
+                    <a href="/admin/users" class="nav-item"><i class="fas fa-users-cog"></i> 用户管理</a>
+                    <a href="/admin/federated" class="nav-item">
+                        <i class="fas fa-network-wired"></i> 联邦学习
+                    </a>
+                    <a href="/admin/model" class="nav-item">
+                        <i class="fas fa-brain"></i> 模型优化
+                    </a>
                 </template>
 
                 <template v-if="currentUser && currentUser.role === 'farmer'">
-                    <a href="/comments" class="nav-item"><i class="fas fa-comments"></i> <span>经验交流</span></a>
-                    <a href="/my-farm" class="nav-item"><i class="fas fa-tractor"></i> <span>我的农场</span></a>
+                    <a href="/comments" class="nav-item"><i class="fas fa-comments"></i> 经验交流</a>
+                    <a href="/my-farm" class="nav-item"><i class="fas fa-tractor"></i> 我的农场</a>
                 </template>
 
-                <a href="/map" class="nav-item"><i class="fas fa-map-marked-alt"></i> <span>风险地图</span></a>
-                <a href="/chat" class="nav-item"><i class="fas fa-robot"></i> <span>AI问诊</span></a>
-                <a href="/knowledge" class="nav-item active"><i class="fas fa-book-medical"></i> <span>知识库</span></a>
-                <a href="/farm-records" class="nav-item"><i class="fas fa-history"></i> <span>农事记录</span></a>
-                <a href="/set" class="nav-item"><i class="fas fa-cog"></i> <span>系统设置</span></a>
+                <a href="/map" class="nav-item"><i class="fas fa-map-marked-alt"></i> 风险地图</a>
+                <a href="/chat" class="nav-item"><i class="fas fa-robot"></i> AI问诊</a>
+                <a href="/knowledge" class="nav-item active"><i class="fas fa-book-medical"></i> 知识库</a>
+                <a href="/farm-records" class="nav-item"><i class="fas fa-history"></i> 农事记录</a>
+                <a href="/set" class="nav-item"><i class="fas fa-cog"></i> 系统设置</a>
             </div>
         </div>
 

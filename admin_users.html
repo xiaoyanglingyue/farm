@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>用户管理 - 智能农政系统</title>
+    <title>用户管理 - 智能农务系统</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -76,7 +76,7 @@
         }
 
         .nav-item {
-            padding: 15px 25px;
+            padding: 15px 45px 15px 25px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -84,7 +84,6 @@
             text-decoration: none;
             color: white;
             position: relative;
-            border-left: 4px solid transparent;
         }
 
         .nav-item:hover, .nav-item.active {
@@ -1114,6 +1113,16 @@
         .sidebar-overlay.active {
             display: block;
         }
+        .badge {
+           position: absolute;
+           right: 15px;
+           background: #ff4d4f;
+           color: white;
+           padding: 2px 6px;
+           border-radius: 10px;
+           font-size: 11px;
+           font-weight: bold;
+       }
     </style>
 <base target="_blank">
 <base target="_blank">
@@ -1129,7 +1138,7 @@
         <!-- 左侧导航栏 -->
         <aside class="sidebar" :class="{ open: sidebarOpen }">
             <div class="sidebar-header">
-                <i class="fas fa-leaf"></i> 智能农政系统
+                <i class="fas fa-leaf"></i> 智能农务系统
             </div>
 
             <div class="user-info-sidebar" v-if="currentUser">
@@ -1150,12 +1159,18 @@
                 </a>
 
                 <template v-if="currentUser && currentUser.role === 'admin'">
-                    <a href="/admin/comments" class="nav-item" style="position: relative;">
-                        <i class="fas fa-comments"></i> 评论审核
-                        <span class="nav-badge" v-if="pendingComments > 0">{{ pendingComments }}</span>
+                    <a href="/admin/comments" class="nav-item">
+                        <i class="fas fa-comments"></i> 评论审核&nbsp;
+                        <span class="badge" v-if="pendingComments > 0">{{ pendingComments }}</span>
                     </a>
                     <a href="/admin/users" class="nav-item active">
                         <i class="fas fa-users-cog"></i> 用户管理
+                    </a>
+                    <a href="/admin/federated" class="nav-item">
+                        <i class="fas fa-network-wired"></i> 联邦学习
+                    </a>
+                    <a href="/admin/model" class="nav-item">
+                        <i class="fas fa-brain"></i> 模型优化
                     </a>
                 </template>
 
