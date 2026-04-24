@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据统计 - 智能农务系统</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2d5a27;
+            --primary-light: #3d7a35;
+            --bg-color: #f0f2f5;
+            --sidebar-width: 240px;
+            --danger-color: #ff4d4f;
+            --warning-color: #faad14;
+            --success-color: #52c41a;
+            --info-color: #1890ff;
+            --card-bg: white;
+            --text-primary: #262626;
+            --text-secondary: #595959;
+            --border-color: #e8e8e8;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            display: flex;
+        }
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--primary-color);
+            height: 100vh;
+            color: white;
+            position: fixed;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+        .sidebar-header {
+            padding: 30px 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .user-info-sidebar {
+            padding: 15px 20px;
+            background: rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 14px;
+        }
+        .user-role-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            margin-top: 4px;
+            font-weight: bold;
+        }
+        .role-admin { background: #ff4d4f; }
+        .role-farmer { background: #52c41a; }
+        .nav-menu {
+            flex: 1;
+            padding: 20px 0;
+            overflow-y: auto;
+            list-style: none;
+        }
+        .nav-item {
+            padding: 15px 25px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: 0.3s;
+            text-decoration: none;
+            color: white;
+            position: relative;
+        }
+        .nav-item:hover, .nav-item.active {
+            background: rgba(255,255,255,0.1);
+            border-left: 4px solid #fff;
+        }
+        .nav-item i { margin-right: 15px; width: 20px; text-align: center; }
+        .nav-badge {
+            position: absolute;
+            right: 15px;
+            background: #ff4d4f;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 24px;
+            max-width: calc(100% - var(--sidebar-width));
+            overflow-y: auto;
+            height: 100vh;
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        .page-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+        .page-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: transform 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        .stat-icon.blue { background: #e6f7ff; color: var(--info-color); }
+        .stat-icon.green { background: #f6ffed; color: var(--success-color); }
+        .stat-icon.orange { background: #fff7e6; color: var(--warning-color); }
+        .stat-icon.red { background: #fff1f0; color: var(--danger-color); }
+        .stat-icon.purple { background: #f9f0ff; color: #722ed1; }
+        .stat-content { flex: 1; }
+        .stat-label { color: var(--text-secondary); font-size: 14px; margin-bottom: 4px; }
+        .stat-value { font-size: 28px; font-weight: bold; color: var(--text-primary); }
+        .stat-unit { font-size: 14px; margin-left: 4px; color: var(--text-secondary); }
+        .stat-trend { font-size: 12px; color: var(--success-color); margin-top: 4px; }
+        .health-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            padding: 20px;
+        }
+        .health-score {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .score-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            background: conic-gradient(var(--success-color) var(--score-deg), #f0f0f0 var(--score-deg));
+            position: relative;
+        }
+        .score-circle::before {
+            content: '';
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+        }
+        .score-text {
+            position: relative;
+            font-size: 28px;
+            font-weight: bold;
+            z-index: 1;
+        }
+        .score-label { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+        .health-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        .health-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 14px;
+            background: #fafafa;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+        .health-item span:first-child { color: var(--text-secondary); }
+        .health-item span:last-child { font-weight: 600; }
+        .health-bar {
+            height: 6px;
+            background: #f0f0f0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+        .health-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        .quick-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+        .quick-card:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(45, 90, 39, 0.1);
+            transform: translateY(-2px);
+        }
+        .quick-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        .quick-info h4 { margin: 0 0 4px 0; font-size: 15px; }
+        .quick-info p { margin: 0; font-size: 12px; color: var(--text-secondary); }
+        .logs-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            padding: 20px;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .card-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-title i { color: var(--primary-color); }
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+        }
+        .filter-tab {
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            background: white;
+            transition: all 0.3s;
+        }
+        .filter-tab.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        .logs-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .logs-table th {
+            text-align: left;
+            padding: 10px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .logs-table td {
+            padding: 10px;
+            border-bottom: 1px solid #f0f0f0;
+            vertical-align: top;
+        }
+        .logs-table tr:hover { background: #fafafa; }
+        .log-level {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .level-error { background: #fff1f0; color: #ff4d4f; }
+        .level-warning { background: #fff7e6; color: #faad14; }
+        .level-info { background: #e6f7ff; color: var(--info-color); }
+        .log-time { color: #8c8c8c; font-size: 12px; white-space: nowrap; }
+        .log-message { color: var(--text-primary); line-height: 1.4; }
+        .log-source { color: #8c8c8c; font-size: 12px; }
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #8c8c8c;
+        }
+        .empty-state i { font-size: 48px; margin-bottom: 12px; opacity: 0.3; }
+        .loading-skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 4px;
+        }
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        @media (max-width: 1400px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 1024px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .health-details { grid-template-columns: 1fr; }
+            .quick-actions { grid-template-columns: 1fr; }
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <div id="app" style="display: contents;">
+        <div class="sidebar">
+            <div class="sidebar-header"><i class="fas fa-leaf"></i> 智能农务系统</div>
+            <div class="user-info-sidebar" v-if="currentUser">
+                <div style="font-weight: 600; font-size: 14px;"><i class="fas fa-user-circle"></i> {{ currentUser.name || currentUser.email }}</div>
+                <span :class="['user-role-tag', currentUser.role === 'admin' ? 'role-admin' : 'role-farmer']">{{ currentUser.role === 'admin' ? '管理员' : '种植农户' }}</span>
+            </div>
+            <div class="nav-menu">
+                <a href="/home" class="nav-item"><i class="fas fa-chart-line"></i> 实时监控</a>
+                <a href="/detect" class="nav-item"><i class="fas fa-bug"></i> 病虫害识别</a>
+
+                <template v-if="currentUser && currentUser.role === 'admin'">
+                    <a href="/admin/stats" class="nav-item active"><i class="fas fa-chart-bar"></i> 数据统计</a>
+                    <a href="/admin/comments" class="nav-item"><i class="fas fa-comments"></i> 评论审核 <span class="nav-badge" v-if="pendingComments > 0">{{ pendingComments }}</span></a>
+                    <a href="/admin/users" class="nav-item"><i class="fas fa-users-cog"></i> 用户管理</a>
+                    <a href="/admin/devices" class="nav-item"><i class="fas fa-server"></i> 设备管理</a>
+                    <a href="/admin/federated" class="nav-item"><i class="fas fa-network-wired"></i> 联邦学习</a>
+                    <a href="/admin/model" class="nav-item"><i class="fas fa-brain"></i> 模型优化</a>
+                </template>
+
+                <template v-if="currentUser && currentUser.role === 'farmer'">
+                    <a href="/comments" class="nav-item"><i class="fas fa-comments"></i> 经验交流</a>
+                    <a href="/my-farm" class="nav-item"><i class="fas fa-tractor"></i> 我的农场</a>
+                </template>
+
+                <a href="/map" class="nav-item"><i class="fas fa-map-marked-alt"></i> 风险地图</a>
+                <a href="/chat" class="nav-item"><i class="fas fa-robot"></i> AI问诊</a>
+                <a href="/knowledge" class="nav-item"><i class="fas fa-book-medical"></i> 知识库</a>
+                <a href="/farm-records" class="nav-item"><i class="fas fa-history"></i> 农事记录</a>
+                <a href="/set" class="nav-item"><i class="fas fa-cog"></i> 系统设置</a>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="page-header">
+                <div>
+                    <div class="page-title"><i class="fas fa-chart-bar" style="color: var(--primary-color); margin-right: 10px;"></i>数据统计中心</div>
+                    <div class="page-subtitle">系统运行数据与存储概况</div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button style="padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px;" @click="refreshAll">
+                        <i class="fas fa-sync-alt" :class="{'fa-spin': loading}"></i> 刷新数据
+                    </button>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon blue"><i class="fas fa-search"></i></div>
+                    <div class="stat-content">
+                        <div class="stat-label">检测记录</div>
+                        <div class="stat-value" v-if="!dataLoading">{{ dataStats.detection_records || 0 }}<span class="stat-unit">条</span></div>
+                        <div class="stat-value loading-skeleton" style="width:80px;height:32px;" v-else></div>
+                        <div class="stat-trend">累计识别数据</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green"><i class="fas fa-comments"></i></div>
+                    <div class="stat-content">
+                        <div class="stat-label">对话记录</div>
+                        <div class="stat-value" v-if="!dataLoading">{{ dataStats.chat_records || 0 }}<span class="stat-unit">条</span></div>
+                        <div class="stat-value loading-skeleton" style="width:80px;height:32px;" v-else></div>
+                        <div class="stat-trend">AI问诊交互</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon orange"><i class="fas fa-clipboard-list"></i></div>
+                    <div class="stat-content">
+                        <div class="stat-label">农事记录</div>
+                        <div class="stat-value" v-if="!dataLoading">{{ dataStats.farm_records || 0 }}<span class="stat-unit">条</span></div>
+                        <div class="stat-value loading-skeleton" style="width:80px;height:32px;" v-else></div>
+                        <div class="stat-trend">种植管理数据</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon purple"><i class="fas fa-images"></i></div>
+                    <div class="stat-content">
+                        <div class="stat-label">图片存储</div>
+                        <div class="stat-value" v-if="!dataLoading">{{ formatMB(dataStats.image_storage_mb) }}<span class="stat-unit">MB</span></div>
+                        <div class="stat-value loading-skeleton" style="width:80px;height:32px;" v-else></div>
+                        <div class="stat-trend">检测图片占用</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 24px;">
+                <div class="health-card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="fas fa-heartbeat"></i> 系统健康度</div>
+                        <span style="font-size: 13px; color: #8c8c8c;">上次更新: {{ formatTime(systemMetrics.last_updated) }}</span>
+                    </div>
+                    <div style="display: flex; gap: 20px;">
+                        <div class="health-score">
+                            <div class="score-circle" :style="{'--score-deg': (systemMetrics.health_score || 0) * 3.6 + 'deg'}">
+                                <div class="score-text">{{ systemMetrics.health_score || 0 }}</div>
+                                <div class="score-label">健康分</div>
+                            </div>
+                        </div>
+                        <div style="flex: 1;">
+                            <div class="health-details">
+                                <div class="health-item"><span><i class="fas fa-hdd" style="margin-right: 6px;"></i>存储使用</span><span>{{ formatGB(systemMetrics.storage_used_gb) }} GB</span></div>
+                                <div class="health-item" style="grid-column: span 2;">
+                                    <div style="width: 100%;">
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                            <span>存储容量</span>
+                                            <span style="font-size: 12px; color: #8c8c8c;">{{ Math.round((systemMetrics.storage_used_gb || 0) / (systemMetrics.storage_total_gb || 1) * 100) }}%</span>
+                                        </div>
+                                        <div class="health-bar">
+                                            <div class="health-fill" :style="{width: Math.min((systemMetrics.storage_used_gb || 0) / (systemMetrics.storage_total_gb || 1) * 100, 100) + '%', background: ((systemMetrics.storage_used_gb || 0) / (systemMetrics.storage_total_gb || 1) > 0.8 ? '#ff4d4f' : '#52c41a')}"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="health-item"><span><i class="fas fa-clock" style="margin-right: 6px;"></i>运行天数</span><span>{{ systemMetrics.uptime_days || 0 }} 天</span></div>
+                                <div class="health-item"><span><i class="fas fa-database" style="margin-right: 6px;"></i>上次备份</span><span>{{ dataStats.last_backup || '暂无' }}</span></div>
+                                <div class="health-item"><span><i class="fas fa-microchip" style="margin-right: 6px;"></i>CPU 负载</span><span :style="{color: (systemMetrics.cpu_percent || 0) > 80 ? '#ff4d4f' : '#52c41a'}">{{ systemMetrics.cpu_percent || 0 }}%</span></div>
+                                <div class="health-item"><span><i class="fas fa-memory" style="margin-right: 6px;"></i>内存使用</span><span :style="{color: (systemMetrics.memory_percent || 0) > 80 ? '#ff4d4f' : '#52c41a'}">{{ systemMetrics.memory_percent || 0 }}%</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="health-card">
+                    <div class="card-header"><div class="card-title"><i class="fas fa-bolt"></i> 快捷入口</div></div>
+                    <div class="quick-actions">
+                        <a href="/admin/users" class="quick-card">
+                            <div class="quick-icon" style="background: #e6f7ff; color: #1890ff;"><i class="fas fa-users"></i></div>
+                            <div class="quick-info"><h4>用户管理</h4><p>查看与编辑用户</p></div>
+                        </a>
+                        <a href="/admin/devices" class="quick-card">
+                            <div class="quick-icon" style="background: #f6ffed; color: #52c41a;"><i class="fas fa-server"></i></div>
+                            <div class="quick-info"><h4>设备管理</h4><p>管理监测设备</p></div>
+                        </a>
+                        <a href="/admin/comments" class="quick-card">
+                            <div class="quick-icon" style="background: #fff7e6; color: #faad14;"><i class="fas fa-check-double"></i></div>
+                            <div class="quick-info"><h4>评论审核</h4><p>待审 {{ pendingComments }} 条</p></div>
+                        </a>
+                        <a href="/admin/model" class="quick-card">
+                            <div class="quick-icon" style="background: #f9f0ff; color: #722ed1;"><i class="fas fa-brain"></i></div>
+                            <div class="quick-info"><h4>模型优化</h4><p>部署与训练模型</p></div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="logs-card">
+                <div class="card-header">
+                    <div class="card-title"><i class="fas fa-file-alt"></i> 系统日志</div>
+                    <div class="filter-tabs">
+                        <span :class="['filter-tab', logFilter === 'all' ? 'active' : '']" @click="changeLogFilter('all')">全部</span>
+                        <span :class="['filter-tab', logFilter === 'error' ? 'active' : '']" @click="changeLogFilter('error')">错误</span>
+                        <span :class="['filter-tab', logFilter === 'warning' ? 'active' : '']" @click="changeLogFilter('warning')">警告</span>
+                        <span :class="['filter-tab', logFilter === 'info' ? 'active' : '']" @click="changeLogFilter('info')">信息</span>
+                    </div>
+                </div>
+                <div v-if="logsLoading" class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>加载日志中...</p></div>
+                <div v-else-if="logs.length > 0" style="overflow-x: auto;">
+                    <table class="logs-table">
+                        <thead><tr><th style="width: 80px;">级别</th><th style="width: 160px;">时间</th><th>消息</th><th style="width: 120px;">来源</th></tr></thead>
+                        <tbody>
+                            <tr v-for="(log, idx) in logs" :key="idx">
+                                <td>
+                                    <span :class="['log-level', 'level-' + log.level]">
+                                        <i :class="log.level === 'error' ? 'fas fa-times-circle' : log.level === 'warning' ? 'fas fa-exclamation-triangle' : 'fas fa-info-circle'" style="margin-right: 4px;"></i>
+                                        {{ log.level === 'error' ? '错误' : log.level === 'warning' ? '警告' : '信息' }}
+                                    </span>
+                                </td>
+                                <td class="log-time">{{ formatDateTime(log.timestamp) }}</td>
+                                <td class="log-message">{{ log.message }}</td>
+                                <td class="log-source">{{ log.source }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div v-else class="empty-state"><i class="fas fa-inbox"></i><p>暂无日志记录</p></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, onMounted } = Vue;
+        createApp({
+            setup() {
+                const currentUser = ref(null);
+                const pendingComments = ref(0);
+                const loading = ref(false);
+                const dataLoading = ref(false);
+                const logsLoading = ref(false);
+                const dataStats = ref({ detection_records: 0, chat_records: 0, farm_records: 0, image_storage_mb: 0, last_backup: '-' });
+                const systemMetrics = ref({ health_score: 0, storage_used_gb: 0, storage_total_gb: 100, uptime_days: 0, cpu_percent: 0, memory_percent: 0, last_updated: null });
+                const logs = ref([]);
+                const logFilter = ref('all');
+
+                const fetchCurrentUser = async () => {
+                    try {
+                        const res = await fetch('/api/auth/me', { credentials: 'same-origin' });
+                        if (res.ok) currentUser.value = await res.json();
+                    } catch (e) { console.error(e); }
+                };
+                const fetchPendingComments = async () => {
+                    try {
+                        const res = await fetch('/api/comments?status=pending', { credentials: 'same-origin' });
+                        if (res.ok) {
+                            const data = await res.json();
+                            pendingComments.value = data.stats?.pending || 0;
+                        }
+                    } catch (e) { console.error(e); }
+                };
+                const fetchDataStats = async () => {
+                    dataLoading.value = true;
+                    try {
+                        const res = await fetch('/api/admin/data-stats', { credentials: 'same-origin' });
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data.code === 200) dataStats.value = data.data || dataStats.value;
+                        }
+                    } catch (error) { console.error('获取数据统计失败:', error); }
+                    finally { dataLoading.value = false; }
+                };
+                const fetchSystemMetrics = async () => {
+                    try {
+                        const res = await fetch('/api/admin/system-metrics', { credentials: 'same-origin' });
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data.code === 200) systemMetrics.value = { ...systemMetrics.value, ...data.data };
+                        }
+                    } catch (error) { console.error('获取系统指标失败:', error); }
+                };
+                const fetchLogs = async () => {
+                    logsLoading.value = true;
+                    try {
+                        const res = await fetch(`/api/admin/logs?level=${logFilter.value}&limit=50`, { credentials: 'same-origin' });
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data.code === 200) logs.value = data.data || [];
+                        }
+                    } catch (error) { console.error('获取日志失败:', error); }
+                    finally { logsLoading.value = false; }
+                };
+                const changeLogFilter = (filter) => { logFilter.value = filter; fetchLogs(); };
+                const refreshAll = () => {
+                    loading.value = true;
+                    Promise.all([fetchDataStats(), fetchSystemMetrics(), fetchLogs()]).finally(() => { loading.value = false; });
+                };
+                const formatMB = (mb) => { if (!mb) return 0; return mb >= 1024 ? (mb / 1024).toFixed(2) : Math.round(mb); };
+                const formatGB = (gb) => { return gb ? gb.toFixed(2) : '0.00'; };
+                const formatTime = (ts) => { if (!ts) return '-'; return new Date(ts).toLocaleString('zh-CN'); };
+                const formatDateTime = (ts) => {
+                    if (!ts) return '-';
+                    const d = new Date(ts);
+                    return d.toLocaleDateString('zh-CN') + ' ' + d.toLocaleTimeString('zh-CN', {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+                };
+
+                onMounted(() => {
+                    fetchCurrentUser();
+                    fetchPendingComments();
+                    fetchDataStats();
+                    fetchSystemMetrics();
+                    fetchLogs();
+                });
+
+                return {
+                    currentUser, pendingComments, loading, dataLoading, logsLoading,
+                    dataStats, systemMetrics, logs, logFilter,
+                    refreshAll, changeLogFilter, formatMB, formatGB, formatTime, formatDateTime
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

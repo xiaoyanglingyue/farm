@@ -565,6 +565,7 @@
         }
     </style>
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div id="app" style="display: contents;">
@@ -588,11 +589,15 @@
                 <a href="/detect" class="nav-item"><i class="fas fa-bug"></i> 病虫害识别</a>
 
                 <template v-if="currentUser && currentUser.role === 'admin'">
+                    <a href="/admin/stats" class="nav-item">
+                        <i class="fas fa-chart-bar"></i> 数据统计
+                    </a>
                     <a href="/admin/comments" class="nav-item">
                         <i class="fas fa-comments"></i> 评论审核
                         <span class="badge" v-if="pendingComments > 0">{{ pendingComments }}</span>
                     </a>
                     <a href="/admin/users" class="nav-item"><i class="fas fa-users-cog"></i> 用户管理</a>
+                    <a href="/admin/devices" class="nav-item"><i class="fas fa-server"></i> 设备管理</a>
                     <a href="/admin/federated" class="nav-item">
                         <i class="fas fa-network-wired"></i> 联邦学习
                     </a>
@@ -622,11 +627,17 @@
             <div v-if="currentUser && currentUser.role === 'admin'" class="admin-panel">
                 <h3><i class="fas fa-shield-alt"></i> 管理员控制台</h3>
                 <div class="admin-actions">
+                    <a href="/admin/stats" class="admin-btn">
+                        <i class="fas fa-chart-bar"></i> 数据统计
+                    </a>
                     <a href="/admin/comments" class="admin-btn">
                         <i class="fas fa-check-double"></i> 评论审核 ({{ pendingComments }})
                     </a>
                     <a href="/admin/users" class="admin-btn">
                         <i class="fas fa-user-shield"></i> 权限管理
+                    </a>
+                    <a href="/admin/devices" class="admin-btn">
+                        <i class="fas fa-server"></i> 设备管理
                     </a>
                 </div>
             </div>
@@ -1209,15 +1220,13 @@
                 // 获取风险数据
                 const fetchRisks = async () => {
                     try {
-                        // 使用后端专用的今日统计接口，或确保日期格式正确
-                        const today = new Date().toISOString().split('T')[0];
-                        const response = await fetch(`/api/history?date=${today}`, {
+                        // 获取今日高风险记录
+                        const response = await fetch('/api/history?risk_level=high', {
                             credentials: 'same-origin'
                         });
                         if (response.ok) {
                             const data = await response.json();
-                            // 过滤今日高风险记录
-                            risks.value = data.filter(r => r.risk_level === 'high').slice(0, 3);
+                            risks.value = data.slice(0, 3);
                         }
                     } catch (error) {
                         console.error('获取风险数据失败:', error);
@@ -1261,7 +1270,7 @@
                     cropsLoading.value = true;
                     try {
                         const response = await fetch('/api/farm/crops', {
-                            credentials: 'same-origin'  
+                            credentials: 'same-origin'
                         });
                         if (response.ok) {
                             const data = await response.json();
@@ -1285,7 +1294,7 @@
                     activitiesLoading.value = true;
                     try {
                         const response = await fetch('/api/farm/activities', {
-                            credentials: 'same-origin'  
+                            credentials: 'same-origin'
                         });
                         if (response.ok) {
                             const data = await response.json();
@@ -1352,7 +1361,7 @@
                         const response = await fetch(`/api/farm/tasks/${todo.id}/toggle`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            credentials: 'same-origin'  
+                            credentials: 'same-origin'
                         });
                         if (response.ok) {
                             todo.completed = !todo.completed;
@@ -1389,6 +1398,7 @@
                         const res = await fetch('/api/warning/predict', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
+                            credentials: 'same-origin',
                             body: JSON.stringify({ crop_type: 'rice' })
                         });
                         const data = await res.json();
@@ -1405,7 +1415,7 @@
                     // 加载 ECharts
                     await loadScript('https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js');
 
-                    const res = await fetch('/api/visualization/dashboard');
+                    const res = await fetch('/api/visualization/dashboard', { credentials: 'same-origin' });
                     const data = await res.json();
 
                     if (data.code === 200) {
@@ -1442,6 +1452,10 @@
                                     value: p.count
                                 }))
                             }]
+                        });
+                        window.addEventListener('resize', () => {
+                            trendChart && trendChart.resize();
+                            pestChart && pestChart.resize();
                         });
                     }
                 };
@@ -1480,6 +1494,7 @@
 
                 onMounted(() => {
                     fetchData();
+                    fetchSpreadStats();
                     // 每5分钟刷新一次数据
                     setInterval(fetchData, 300000);
                     checkWarning();

@@ -1115,8 +1115,26 @@ def admin_users_page(request: Request):
 @app.get("/admin/stats")
 def admin_stats_page(request: Request):
     """数据统计页面"""
-    # 同上权限检查
-    return HTMLResponse(content="<h1>数据统计页面（开发中）</h1>")
+    is_admin, resp = check_admin_page(request)
+    if not is_admin:
+        return resp
+    try:
+        with open("admin_stats.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(content="<h1>admin_stats.html 未找到</h1>", status_code=404)
+
+@app.get("/admin/devices")
+def admin_devices_page(request: Request):
+    """设备管理页面"""
+    is_admin, resp = check_admin_page(request)
+    if not is_admin:
+        return resp
+    try:
+        with open("admin_devices.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(content="<h1>admin_devices.html 未找到</h1>", status_code=404)
 
 
 @app.get("/api/comments")
@@ -3239,8 +3257,6 @@ allowed_origins = [
     "http://127.0.0.1:8001",
     "http://localhost:3000",  # 前端开发服务器
     "http://127.0.0.1:3000",
-    "https://servicewechat.com",          # 小程序开发者工具
-    "http://192.168.1.100:8001",
 ]
 
 app.add_middleware(
@@ -4010,7 +4026,7 @@ def calculate_next_run(period: str, time_str: str):
 
 
 @app.get("/api/admin/data-stats")
-async def get_data_stats(request: Request):
+async def get_data_stats(request: Request, admin=Depends(require_admin)):
     """获取数据管理统计（检测/对话/农事记录数、存储占用）"""
     if "auth_token" not in request.cookies:
         return JSONResponse(status_code=401, content={"error": "未登录"})
@@ -4048,7 +4064,7 @@ async def get_data_stats(request: Request):
 
 
 @app.get("/api/admin/system-metrics")
-async def get_system_metrics(request: Request):
+async def get_system_metrics(request: Request, admin=Depends(require_admin)):
     """获取系统性能指标"""
     if "auth_token" not in request.cookies:
         return JSONResponse(status_code=401, content={"error": "未登录"})
@@ -4075,7 +4091,7 @@ async def get_system_metrics(request: Request):
 
 
 @app.get("/api/admin/logs")
-async def get_system_logs(request: Request, level: str = "all", limit: int = 100):
+async def get_system_logs(request: Request, level: str = "all", limit: int = 100, admin=Depends(require_admin)):
     """读取后端日志文件"""
     if "auth_token" not in request.cookies:
         return JSONResponse(status_code=401, content={"error": "未登录"})

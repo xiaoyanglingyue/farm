@@ -110,7 +110,7 @@ def create_yaml():
         path: {path}
         train: images/train
         val: images/val
-        
+
         nc: 10
         names:
           0: rice_leaf_roller        # 稻纵卷叶螟

@@ -1238,6 +1238,7 @@
     </style>
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div id="app" style="display: contents;">
@@ -1259,11 +1260,17 @@
                 <a href="/detect" class="nav-item"><i class="fas fa-bug"></i> 病虫害识别</a>
 
                 <template v-if="currentUser && currentUser.role === 'admin'">
+                    <a href="/admin/stats" class="nav-item">
+                        <i class="fas fa-chart-bar"></i> 数据统计
+                    </a>
                     <a href="/admin/comments" class="nav-item">
                         <i class="fas fa-comments"></i> 评论审核
                         <span class="badge" v-if="pendingComments > 0">{{ pendingComments }}</span>
                     </a>
                     <a href="/admin/users" class="nav-item"><i class="fas fa-users-cog"></i> 用户管理</a>
+                    <a href="/admin/devices" class="nav-item">
+                        <i class="fas fa-server"></i> 设备管理
+                    </a>
                     <a href="/admin/federated" class="nav-item">
                         <i class="fas fa-network-wired"></i> 联邦学习
                     </a>

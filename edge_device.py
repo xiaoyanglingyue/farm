@@ -156,4 +156,3 @@ class EdgeDeviceController:
     def _play_voice_alert(self, message):
         """本地语音播报（树莓派）"""
         os.system(f"espeak -vzh '{message}'")  # 需要安装espeak
-

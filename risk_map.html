@@ -1025,6 +1025,7 @@
     </style>
     <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div id="app" style="display: contents;">
@@ -1661,6 +1662,53 @@
                         console.error('地图初始化失败:', e);
                         configError.value = true;
                     }
+                };
+
+                // 在地图初始化后调用
+                const initTimeline = async () => {
+                    const res = await fetch('/api/map/heatmap-timeline?days=7', {credentials: 'same-origin'});
+                    const result = await res.json();
+                    if (result.code !== 200) return;
+
+                    // 创建一个覆盖在地图底部的滑块控件
+                    const timelineDiv = document.createElement('div');
+                    timelineDiv.style.cssText = 'position:absolute;bottom:30px;left:50%;transform:translateX(-50%);z-index:1000;background:white;padding:10px 20px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.15);display:flex;align-items:center;gap:12px;';
+                    timelineDiv.innerHTML = `
+                        <button id="playBtn" style="border:none;background:var(--primary-color);color:white;width:32px;height:32px;border-radius:50%;cursor:pointer;"><i class="fas fa-play"></i></button>
+                        <input type="range" id="daySlider" min="0" max="6" value="6" style="width:300px;">
+                        <span id="dayLabel" style="font-size:13px;color:var(--text-secondary);white-space:nowrap;">今天</span>
+                    `;
+                    document.getElementById('map-container').appendChild(timelineDiv);
+
+                    const days = result.data;
+                    let playing = false;
+                    let playInterval;
+
+                    const updateHeatmap = (idx) => {
+                        const day = days[idx];
+                        document.getElementById('dayLabel').textContent = day.date;
+                        // 清除旧热力图层，添加新的
+                        if (window.heatLayer) map.removeLayer(window.heatLayer);
+                        window.heatLayer = L.heatLayer(day.points, {radius: 25, blur: 15, maxZoom: 10}).addTo(map);
+                    };
+
+                    document.getElementById('daySlider').addEventListener('input', (e) => updateHeatmap(parseInt(e.target.value)));
+                    document.getElementById('playBtn').addEventListener('click', () => {
+                        playing = !playing;
+                        document.getElementById('playBtn').innerHTML = playing ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+                        if (playing) {
+                            let idx = parseInt(document.getElementById('daySlider').value);
+                            playInterval = setInterval(() => {
+                                idx = (idx + 1) % days.length;
+                                document.getElementById('daySlider').value = idx;
+                                updateHeatmap(idx);
+                            }, 1000);
+                        } else {
+                            clearInterval(playInterval);
+                        }
+                    });
+
+                    updateHeatmap(6); // 默认显示最新一天
                 };
 
                 const handleDrawComplete = (e) => {
@@ -2845,6 +2893,40 @@
                 };
 
                 const isSpreadLoading = ref(false);
+
+                // 1. 时间轴热力图（近7天回溯播放）
+                const loadTimeline = async () => {
+                    const res = await fetch('/api/map/heatmap-timeline?days=7', {credentials: 'same-origin'});
+                    const {data} = await res.json();
+                    // 用底部滑块控制日期，切换热力图图层
+                };
+
+                // 2. 蔓延预测图层（未来3天扩散区域）
+                const loadPrediction = async () => {
+                    const res = await fetch('/api/map/spread-prediction?days=3', {credentials: 'same-origin'});
+                    const result = await res.json();
+                    if (result.code !== 200 || !result.data) return;
+
+                    // 用虚线圆圈表示预测扩散区域
+                    result.data.forEach((pred, i) => {
+                        if (!pred.center || !pred.radius) return;
+                        L.circle(pred.center, {
+                            radius: pred.radius,
+                            color: '#ff4d4f',
+                            weight: 2,
+                            fillColor: '#ff4d4f',
+                            fillOpacity: 0.1 - i * 0.03,
+                            dashArray: '5, 10'
+                        }).addTo(map).bindPopup(`预测 ${i+1} 天后: 扩散半径 ${Math.round(pred.radius)}米`);
+                    });
+                };
+
+                // 3. 蔓延统计（点击"蔓延趋势"卡片时弹窗展示）
+                const loadSpreadStats = async () => {
+                    const res = await fetch('/api/map/spread-stats?days=7', {credentials: 'same-origin'});
+                    const {data} = await res.json();
+                    // 展示 growth_rate, spread_direction, affected_area
+                };
 
                 // ================= 生命周期 =================
                 onMounted(() => {

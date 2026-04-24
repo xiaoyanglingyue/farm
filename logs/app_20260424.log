@@ -159,3 +159,146 @@
 2026-04-24 13:42:44,142 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
 2026-04-24 13:47:44,820 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
 2026-04-24 13:52:44,851 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-24 14:35:38,769 [INFO] app.py:240 - 系统启动成功
+2026-04-24 14:35:39,377 [WARNING] logger.py:268 - DEPRECATED FEATURE: flwr.server.start_server() is deprecated.
+	Instead, use the `flower-superlink` CLI command to start a SuperLink as shown below:
+
+		$ flower-superlink --insecure
+
+	To view usage and all available options, run:
+
+		$ flower-superlink --help
+
+	Using `start_server()` is deprecated.
+
+            This is a deprecated feature. It will be removed
+            entirely in future versions of Flower.
+        
+2026-04-24 14:35:39,378 [INFO] app.py:135 - Starting Flower server, config: num_rounds=10, no round_timeout
+2026-04-24 14:35:39,424 [INFO] app.py:148 - Flower ECE: gRPC server running (10 rounds), SSL is disabled
+2026-04-24 14:35:39,424 [INFO] server.py:91 - [INIT]
+2026-04-24 14:35:39,425 [INFO] server.py:276 - Requesting initial parameters from one random client
+2026-04-24 14:35:46,794 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-24 14:35:53,137 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-24 14:35:53,603 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-24 14:35:55,623 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-24 14:37:21,878 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-24 14:37:30,486 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-24 14:40:55,908 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-24 14:41:36,218 [INFO] app.py:240 - 系统启动成功
+2026-04-24 14:41:36,629 [WARNING] logger.py:268 - DEPRECATED FEATURE: flwr.server.start_server() is deprecated.
+	Instead, use the `flower-superlink` CLI command to start a SuperLink as shown below:
+
+		$ flower-superlink --insecure
+
+	To view usage and all available options, run:
+
+		$ flower-superlink --help
+
+	Using `start_server()` is deprecated.
+
+            This is a deprecated feature. It will be removed
+            entirely in future versions of Flower.
+        
+2026-04-24 14:41:36,630 [INFO] app.py:135 - Starting Flower server, config: num_rounds=10, no round_timeout
+2026-04-24 14:41:36,655 [INFO] app.py:148 - Flower ECE: gRPC server running (10 rounds), SSL is disabled
+2026-04-24 14:41:36,655 [INFO] server.py:91 - [INIT]
+2026-04-24 14:41:36,655 [INFO] server.py:276 - Requesting initial parameters from one random client
+2026-04-24 14:41:44,628 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-24 14:41:54,204 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-24 14:42:08,755 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-24 14:44:00,254 [INFO] app.py:240 - 系统启动成功
+2026-04-24 14:44:00,703 [WARNING] logger.py:268 - DEPRECATED FEATURE: flwr.server.start_server() is deprecated.
+	Instead, use the `flower-superlink` CLI command to start a SuperLink as shown below:
+
+		$ flower-superlink --insecure
+
+	To view usage and all available options, run:
+
+		$ flower-superlink --help
+
+	Using `start_server()` is deprecated.
+
+            This is a deprecated feature. It will be removed
+            entirely in future versions of Flower.
+        
+2026-04-24 14:44:00,705 [INFO] app.py:135 - Starting Flower server, config: num_rounds=10, no round_timeout
+2026-04-24 14:44:00,716 [INFO] app.py:148 - Flower ECE: gRPC server running (10 rounds), SSL is disabled
+2026-04-24 14:44:00,716 [INFO] server.py:91 - [INIT]
+2026-04-24 14:44:00,716 [INFO] server.py:276 - Requesting initial parameters from one random client
+2026-04-24 14:44:06,732 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-24 14:49:06,862 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-24 14:50:12,183 [INFO] app.py:240 - 系统启动成功
+2026-04-24 14:50:12,534 [WARNING] logger.py:268 - DEPRECATED FEATURE: flwr.server.start_server() is deprecated.
+	Instead, use the `flower-superlink` CLI command to start a SuperLink as shown below:
+
+		$ flower-superlink --insecure
+
+	To view usage and all available options, run:
+
+		$ flower-superlink --help
+
+	Using `start_server()` is deprecated.
+
+            This is a deprecated feature. It will be removed
+            entirely in future versions of Flower.
+        
+2026-04-24 14:50:12,536 [INFO] app.py:135 - Starting Flower server, config: num_rounds=10, no round_timeout
+2026-04-24 14:50:12,550 [INFO] app.py:148 - Flower ECE: gRPC server running (10 rounds), SSL is disabled
+2026-04-24 14:50:12,550 [INFO] server.py:91 - [INIT]
+2026-04-24 14:50:12,550 [INFO] server.py:276 - Requesting initial parameters from one random client
+2026-04-24 14:50:19,650 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-24 14:50:42,133 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-24 14:55:19,864 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-24 14:58:29,669 [INFO] app.py:240 - 系统启动成功
+2026-04-24 14:58:30,098 [WARNING] logger.py:268 - DEPRECATED FEATURE: flwr.server.start_server() is deprecated.
+	Instead, use the `flower-superlink` CLI command to start a SuperLink as shown below:
+
+		$ flower-superlink --insecure
+
+	To view usage and all available options, run:
+
+		$ flower-superlink --help
+
+	Using `start_server()` is deprecated.
+
+            This is a deprecated feature. It will be removed
+            entirely in future versions of Flower.
+        
+2026-04-24 14:58:30,100 [INFO] app.py:135 - Starting Flower server, config: num_rounds=10, no round_timeout
+2026-04-24 14:58:30,122 [INFO] app.py:148 - Flower ECE: gRPC server running (10 rounds), SSL is disabled
+2026-04-24 14:58:30,122 [INFO] server.py:91 - [INIT]
+2026-04-24 14:58:30,122 [INFO] server.py:276 - Requesting initial parameters from one random client
+2026-04-24 15:47:18,282 [INFO] app.py:240 - 系统启动成功
+2026-04-24 15:47:18,860 [WARNING] logger.py:268 - DEPRECATED FEATURE: flwr.server.start_server() is deprecated.
+	Instead, use the `flower-superlink` CLI command to start a SuperLink as shown below:
+
+		$ flower-superlink --insecure
+
+	To view usage and all available options, run:
+
+		$ flower-superlink --help
+
+	Using `start_server()` is deprecated.
+
+            This is a deprecated feature. It will be removed
+            entirely in future versions of Flower.
+        
+2026-04-24 15:47:18,861 [INFO] app.py:135 - Starting Flower server, config: num_rounds=10, no round_timeout
+2026-04-24 15:47:18,905 [INFO] app.py:148 - Flower ECE: gRPC server running (10 rounds), SSL is disabled
+2026-04-24 15:47:18,905 [INFO] server.py:91 - [INIT]
+2026-04-24 15:47:18,905 [INFO] server.py:276 - Requesting initial parameters from one random client
+2026-04-24 15:47:26,892 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-24 15:48:03,970 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-24 15:48:22,900 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-24 15:48:50,457 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-24 15:52:27,847 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-24 15:53:51,117 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-24 15:57:27,863 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-24 15:58:50,818 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-24 16:02:27,848 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-24 16:03:50,522 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-24 16:07:27,512 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-24 16:08:50,850 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-24 16:12:27,833 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"
+2026-04-24 16:13:50,515 [INFO] _client.py:1740 - HTTP Request: GET https://restapi.amap.com/v3/weather/weatherInfo?key=8d298e1345105c050ae25ad3f294c9bc&city=440100&extensions=all&output=JSON "HTTP/1.1 200 OK"

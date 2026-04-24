@@ -1126,6 +1126,7 @@
     </style>
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <div id="app" style="display: contents;">
@@ -1159,6 +1160,9 @@
                 </a>
 
                 <template v-if="currentUser && currentUser.role === 'admin'">
+                    <a href="/admin/stats" class="nav-item">
+                        <i class="fas fa-chart-bar"></i> 数据统计
+                    </a>
                     <a href="/admin/comments" class="nav-item">
                         <i class="fas fa-comments"></i> 评论审核&nbsp;
                         <span class="badge" v-if="pendingComments > 0">{{ pendingComments }}</span>
@@ -1166,20 +1170,14 @@
                     <a href="/admin/users" class="nav-item active">
                         <i class="fas fa-users-cog"></i> 用户管理
                     </a>
+                    <a href="/admin/devices" class="nav-item">
+                        <i class="fas fa-server"></i> 设备管理
+                    </a>
                     <a href="/admin/federated" class="nav-item">
                         <i class="fas fa-network-wired"></i> 联邦学习
                     </a>
                     <a href="/admin/model" class="nav-item">
                         <i class="fas fa-brain"></i> 模型优化
-                    </a>
-                </template>
-
-                <template v-if="currentUser && currentUser.role === 'farmer'">
-                    <a href="/comments" class="nav-item">
-                        <i class="fas fa-comments"></i> 经验交流
-                    </a>
-                    <a href="/my-farm" class="nav-item">
-                        <i class="fas fa-tractor"></i> 我的农场
                     </a>
                 </template>
 
@@ -1911,7 +1909,7 @@
                 const fetchPendingComments = async () => {
                     try {
                         const response = await fetch('/api/comments?status=pending', {
-                            credentials: 'same-origin'  
+                            credentials: 'same-origin'
                         });
                         if (response.ok) {
                             const data = await response.json();
@@ -1925,7 +1923,7 @@
                 const fetchStats = async () => {
                     try {
                         const res = await fetch('/api/admin/users/stats', {
-                            credentials: 'same-origin'  
+                            credentials: 'same-origin'
                         });
                         if (res.ok) {
                             stats.value = await res.json();
@@ -1949,7 +1947,7 @@
                         });
 
                         const res = await fetch(`/api/admin/users?${params}`, {
-                            credentials: 'same-origin'  
+                            credentials: 'same-origin'
                         });
                         if (res.ok) {
                             const data = await res.json();
@@ -1974,7 +1972,7 @@
                 const fetchPlots = async () => {
                     try {
                         const res = await fetch('/api/admin/plots', {
-                            credentials: 'same-origin'  
+                            credentials: 'same-origin'
                         });
                         if (res.ok) {
                             const data = await res.json();
@@ -1988,26 +1986,26 @@
                 const filterUsers = async (type) => {
                     currentFilter.value = type;
                     pagination.value.page = 1;
-                    loading.value = true;        // 
+                    loading.value = true;        //
                     await fetchUsers();
                     await fetchStats();
-                    loading.value = false;       // 
+                    loading.value = false;       //
                 };
 
                 const handleSearch = async () => {
                     pagination.value.page = 1;
-                    loading.value = true;        // 
+                    loading.value = true;        //
                     await fetchUsers();
                     await fetchStats();
-                    loading.value = false;       // 
+                    loading.value = false;       //
                 };
 
                 const clearSearch = async () => {
                     searchKeyword.value = '';
-                    loading.value = true;        // 
+                    loading.value = true;        //
                     await fetchUsers();
                     await fetchStats();
-                    loading.value = false;       // 
+                    loading.value = false;       //
                 };
 
                 const changePage = async (delta) => {
@@ -2057,10 +2055,10 @@
                 const goToPage = async (p) => {
                     if (p === '...') return;
                     pagination.value.page = p;
-                    loading.value = true;        // 
+                    loading.value = true;        //
                     await fetchUsers();          //  await
                     await fetchStats();          //  await
-                    loading.value = false;       // 
+                    loading.value = false;       //
                 };
 
                 const toggleSelectAll = () => {
@@ -2169,7 +2167,7 @@
                 const fetchUserPlots = async (userId) => {
                     try {
                         const res = await fetch(`/api/admin/users/${userId}/plots`, {
-                            credentials: 'same-origin'  
+                            credentials: 'same-origin'
                         });
                         if (res.ok) {
                             const data = await res.json();
@@ -2676,9 +2674,9 @@
                 // 退出登录
                 const logout = async () => {
                     try {
-                        await fetch('/api/auth/logout', { 
+                        await fetch('/api/auth/logout', {
                             method: 'POST',
-                            credentials: 'same-origin'  
+                            credentials: 'same-origin'
                         });
                         window.location.href = '/';
                     } catch (error) {
