@@ -247,15 +247,15 @@ def init_chat_database():
         conn.commit()
 
 
-def save_chat_session(user_email, title, messages, pest_name=None, image_base64=None, session_id=None, is_interrupted=False):
-    """保存对话记录（修复：关联用户）"""
+def save_chat_session(user_email, title, messages, pest_name=None, image_base64=None, session_id=None,
+                      is_interrupted=False):
     init_chat_database()
     now = datetime.now().isoformat()
     messages_json = json.dumps(messages, ensure_ascii=False) if isinstance(messages, list) else messages
+
     try:
         with get_chat_db_connection() as conn:
             cursor = conn.cursor()
-            # ... 原有代码 ...
 
             if session_id:
                 # 更新时检查权限：只能更新自己的会话
@@ -874,11 +874,9 @@ def delete_farm_record(record_id, user_id):
 
 
 def init_users_table():
-    """初始化用户表（增强安全字段）"""
+    """初始化用户表"""
     with get_db_connection() as conn:
         cursor = conn.cursor()
-
-        # 创建表（如果不存在）
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -887,16 +885,16 @@ def init_users_table():
                 password_hash TEXT,
                 name TEXT,
                 role TEXT DEFAULT 'farmer',
-                status TEXT DEFAULT 'pending',  -- pending/active/banned/locked
+                status TEXT DEFAULT 'pending',
                 avatar TEXT,
                 max_plots INTEGER DEFAULT 5,
                 last_login_ip TEXT,
                 last_login_at TEXT,
                 is_online INTEGER DEFAULT 0,
                 login_count INTEGER DEFAULT 0,
-                has_password INTEGER DEFAULT 0,  -- 关键字段：0=首次登录需设置，1=已设置
-                failed_login_attempts INTEGER DEFAULT 0,  -- 登录失败次数
-                locked_until INTEGER DEFAULT 0,  -- 锁定截止时间戳
+                has_password INTEGER DEFAULT 0,
+                failed_login_attempts INTEGER DEFAULT 0,
+                locked_until INTEGER DEFAULT 0,
                 created_at TEXT DEFAULT (datetime('now')),
                 updated_at TEXT
             )
@@ -909,15 +907,13 @@ def init_users_table():
         security_fields = [
             ('failed_login_attempts', 'INTEGER DEFAULT 0'),
             ('locked_until', 'INTEGER DEFAULT 0'),
+            ('enable_2fa', 'INTEGER DEFAULT 0'),      # <-- 新增
+            ('login_alert', 'INTEGER DEFAULT 1'),      # <-- 新增
         ]
-
-        for field_name, field_type in security_fields:
-            if field_name not in columns:
-                try:
-                    cursor.execute(f"ALTER TABLE users ADD COLUMN {field_name} {field_type}")
-                    print(f"已添加安全字段: {field_name}")
-                except Exception as e:
-                    print(f"添加字段失败: {e}")
+        for col_name, col_def in security_fields:
+            if col_name not in columns:
+                cursor.execute(f"ALTER TABLE users ADD COLUMN {col_name} {col_def}")
+                print(f"已添加用户字段: {col_name}")
 
         conn.commit()
 
@@ -1107,7 +1103,7 @@ def get_all_users(role=None, limit=50):
                     ORDER BY last_login DESC LIMIT ?
                 ''', (role, limit))
             else:
-                cursor.execute('SELECT * FROM users ORDER BY last_login DESC LIMIT ?', (limit,))
+                cursor.execute('SELECT * FROM users ORDER BY last_login_at DESC LIMIT ?', (limit,))
             return [dict(row) for row in cursor.fetchall()]
     except Exception as e:
         print(f"获取用户列表失败: {e}")
@@ -2466,17 +2462,57 @@ def init_farm_management_tables():
     conn = get_db_connection()
     cursor = conn.cursor()
 
+    # 设备表
+    cursor.execute('''
+            CREATE TABLE IF NOT EXISTS devices (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                device_id TEXT UNIQUE,
+                name TEXT NOT NULL,
+                type TEXT DEFAULT 'camera',
+                location TEXT,
+                lat REAL,
+                lng REAL,
+                ip_address TEXT,
+                firmware_version TEXT,
+                status TEXT DEFAULT 'online',
+                last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
+    cursor.execute("PRAGMA table_info(devices)")
+    existing_cols = [row[1] for row in cursor.fetchall()]
+    migrations = [
+        ('device_id', 'TEXT'),  # 去掉 UNIQUE
+        ('type', 'TEXT DEFAULT "camera"'),
+        ('location', 'TEXT'),
+        ('ip_address', 'TEXT'),
+        ('firmware_version', 'TEXT'),
+    ]
+    for col_name, col_def in migrations:
+        if col_name not in existing_cols:
+            cursor.execute(f'ALTER TABLE devices ADD COLUMN {col_name} {col_def}')
+            print(f"[迁移] devices 表已添加字段: {col_name}")
+
+    # 【新增】单独为 device_id 创建唯一索引（兼容 ALTER TABLE）
+    try:
+        cursor.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_devices_device_id ON devices(device_id)')
+    except Exception as e:
+        print(f"[迁移] device_id 索引已存在或创建失败: {e}")
+
     # 添加设备表
     cursor.execute('''
             CREATE TABLE IF NOT EXISTS user_devices (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id INTEGER NOT NULL,
                 name TEXT NOT NULL,
-                type TEXT,
+                type TEXT,                      -- 对应 device_type
                 icon TEXT DEFAULT 'fas fa-video',
-                location TEXT,
+                location TEXT,                  -- 地址描述
+                lat REAL,                       -- 【新增】纬度
+                lng REAL,                       -- 【新增】经度
                 status TEXT DEFAULT 'offline',
                 last_online TIMESTAMP,
+                last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES users(id)
             )
@@ -2656,7 +2692,7 @@ def get_user_devices(user_id):
         with get_db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute('''
-                SELECT id, name, type, icon, location, status, last_online
+                SELECT id, name, type, icon, location, lat, lng, status, last_online
                 FROM user_devices 
                 WHERE user_id = ?
             ''', (user_id,))
@@ -4069,31 +4105,38 @@ def get_latest_environment(user_id):
 # ==================== 设备管理 ====================
 
 def get_all_devices():
-    """获取所有设备列表"""
+    """获取所有设备列表（返回完整字段）"""
     with get_db_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute('SELECT id, name, lat, lng, status, last_update FROM devices ORDER BY id')
+        cursor.execute('SELECT * FROM devices ORDER BY id')
         return [dict(row) for row in cursor.fetchall()]
 
 
-def add_device(name, lat, lng, status='online'):
-    """添加设备"""
+def add_device(name, lat, lng, status='online', device_id=None,
+               device_type=None, location=None, ip_address=None, firmware_version=None):
+    """添加设备（支持完整字段）"""
     try:
         with get_db_connection() as conn:
             cursor = conn.cursor()
+            # 若未传入 device_id，自动生成
+            if not device_id:
+                import random, string
+                device_id = 'DEV-' + ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
             cursor.execute('''
-                INSERT INTO devices (name, lat, lng, status, last_update)
-                VALUES (?, ?, ?, ?, datetime('now'))
-            ''', (name, lat, lng, status))
+                INSERT INTO devices 
+                (device_id, name, type, location, lat, lng, ip_address, firmware_version, status, last_update)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+            ''', (device_id, name, device_type, location, lat, lng, ip_address, firmware_version, status))
             conn.commit()
-            return {"success": True, "id": cursor.lastrowid}
+            return {"success": True, "id": cursor.lastrowid, "device_id": device_id}
     except Exception as e:
         return {"success": False, "error": str(e)}
 
 
 def update_device(device_id, data):
-    """更新设备信息"""
-    allowed_fields = ['name', 'lat', 'lng', 'status']
+    """更新设备信息（支持完整字段）"""
+    allowed_fields = ['name', 'type', 'location', 'lat', 'lng',
+                      'ip_address', 'firmware_version', 'status', 'device_id']
     sets = []
     params = []
     for field in allowed_fields:
@@ -4238,6 +4281,80 @@ def init_model_registry():
             )
         ''')
         conn.commit()
+
+def update_user_security_settings(email, enable_2fa=None, login_alert=None):
+    """更新用户安全设置（2FA、登录提醒）"""
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            updates = []
+            params = []
+            if enable_2fa is not None:
+                updates.append("enable_2fa = ?")
+                params.append(1 if enable_2fa else 0)
+            if login_alert is not None:
+                updates.append("login_alert = ?")
+                params.append(1 if login_alert else 0)
+            if not updates:
+                return False
+            params.append(email)
+            sql = f"UPDATE users SET {', '.join(updates)}, updated_at = datetime('now') WHERE email = ?"
+            cursor.execute(sql, params)
+            conn.commit()
+            return cursor.rowcount > 0
+    except Exception as e:
+        print(f"更新安全设置失败: {e}")
+        return False
+
+
+def get_user_security_settings(email):
+    """获取用户安全设置"""
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT enable_2fa, login_alert FROM users WHERE email = ?",
+                (email,)
+            )
+            row = cursor.fetchone()
+            if row:
+                return {
+                    "enable_2fa": bool(row[0]),
+                    "login_alert": bool(row[1])
+                }
+            return {"enable_2fa": False, "login_alert": True}
+    except Exception as e:
+        print(f"获取安全设置失败: {e}")
+        return {"enable_2fa": False, "login_alert": True}
+
+# database.py
+
+def init_system_settings():
+    """初始化系统设置表"""
+    with get_db_connection() as conn:
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS system_settings (
+                key TEXT PRIMARY KEY,
+                value TEXT,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        # 插入默认配置
+        default_settings = [
+            ('log_retention', '30'),
+            ('alert_threshold', '0.8'),
+            ('enable_email_alert', '1')
+        ]
+        conn.executemany("INSERT OR IGNORE INTO system_settings (key, value) VALUES (?, ?)", default_settings)
+
+# 获取设置
+def get_all_settings():
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT key, value FROM system_settings")
+        return {row['key']: row['value'] for row in cursor.fetchall()}
+
+
 
 
 if __name__ == "__main__":

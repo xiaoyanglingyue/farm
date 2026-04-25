@@ -150,37 +150,53 @@ USER_PLOT_BINDINGS = [
 ]
 
 DEMO_DEVICES = [
-    {'id': 1, 'name': '田间监测站-A1', 'lat': 23.3242, 'lng': 113.8291,
+    {'id': 1, 'device_id': 'DEV-CAM001', 'name': '田间监测站-A1', 'type': 'camera', 'location': '增城01区-水稻主田北侧',
+     'lat': 23.3242, 'lng': 113.8291, 'ip_address': '192.168.1.101', 'firmware_version': 'v2.1.0',
      'status': 'online', 'last_update': datetime.now().strftime('%H:%M')},
-    {'id': 2, 'name': '智能摄像头-B2', 'lat': 23.3255, 'lng': 113.8280,
+    {'id': 2, 'device_id': 'DEV-CAM002', 'name': '智能摄像头-B2', 'type': 'camera', 'location': '增城02区-玉米试验田西侧',
+     'lat': 23.3255, 'lng': 113.8280, 'ip_address': '192.168.1.102', 'firmware_version': 'v2.0.8',
      'status': 'online', 'last_update': (datetime.now() - timedelta(minutes=5)).strftime('%H:%M')},
-    {'id': 3, 'name': '环境监测节点-C1', 'lat': 23.3230, 'lng': 113.8305,
+    {'id': 3, 'device_id': 'DEV-ENV001', 'name': '环境监测节点-C1', 'type': 'sensor', 'location': '增城03区-番茄大棚东侧',
+     'lat': 23.3230, 'lng': 113.8305, 'ip_address': '192.168.1.103', 'firmware_version': 'v1.9.5',
      'status': 'warning', 'last_update': (datetime.now() - timedelta(hours=2)).strftime('%H:%M')},
-    {'id': 4, 'name': '无人机停机坪-D1', 'lat': 23.3260, 'lng': 113.8310,
+    {'id': 4, 'device_id': 'DEV-DRN001', 'name': '无人机停机坪-D1', 'type': 'drone', 'location': '天河A区-大豆基地中心',
+     'lat': 23.3260, 'lng': 113.8310, 'ip_address': '192.168.1.104', 'firmware_version': 'v3.0.1',
      'status': 'offline', 'last_update': '昨日 18:30'},
-    {'id': 5, 'name': '灌溉控制单元-E2', 'lat': 23.3215, 'lng': 113.8275,
+    {'id': 5, 'device_id': 'DEV-IRR001', 'name': '灌溉控制单元-E2', 'type': 'irrigation', 'location': '天河B区-荔枝园南侧',
+     'lat': 23.3215, 'lng': 113.8275, 'ip_address': '192.168.1.105', 'firmware_version': 'v2.1.2',
      'status': 'online', 'last_update': datetime.now().strftime('%H:%M')},
-    {'id': 6, 'name': '土壤传感器-F3', 'lat': 23.3225, 'lng': 113.8285,
+    {'id': 6, 'device_id': 'DEV-SOL001', 'name': '土壤传感器-F3', 'type': 'sensor', 'location': '增城04区-小麦田中部',
+     'lat': 23.3225, 'lng': 113.8285, 'ip_address': '192.168.1.106', 'firmware_version': 'v1.8.9',
      'status': 'online', 'last_update': (datetime.now() - timedelta(minutes=3)).strftime('%H:%M')},
-    {'id': 7, 'name': '气象站-G1', 'lat': 23.3240, 'lng': 113.8290,
+    {'id': 7, 'device_id': 'DEV-MET001', 'name': '气象站-G1', 'type': 'weather', 'location': '增城05区-蔬菜大棚北侧',
+     'lat': 23.3240, 'lng': 113.8290, 'ip_address': '192.168.1.107', 'firmware_version': 'v2.2.0',
      'status': 'online', 'last_update': datetime.now().strftime('%H:%M')},
-    {'id': 8, 'name': '摄像头-H2', 'lat': 23.3235, 'lng': 113.8295,
+    {'id': 8, 'device_id': 'DEV-CAM003', 'name': '摄像头-H2', 'type': 'camera', 'location': '增城03区-番茄大棚西侧',
+     'lat': 23.3235, 'lng': 113.8295, 'ip_address': '192.168.1.108', 'firmware_version': 'v2.0.5',
      'status': 'online', 'last_update': (datetime.now() - timedelta(minutes=10)).strftime('%H:%M')},
-    {'id': 9, 'name': '传感器-I3', 'lat': 23.3245, 'lng': 113.8285,
+    {'id': 9, 'device_id': 'DEV-SEN002', 'name': '传感器-I3', 'type': 'sensor', 'location': '增城01区-水稻主田南侧',
+     'lat': 23.3245, 'lng': 113.8285, 'ip_address': '192.168.1.109', 'firmware_version': 'v1.9.2',
      'status': 'online', 'last_update': (datetime.now() - timedelta(minutes=2)).strftime('%H:%M')},
-    {'id': 10, 'name': '控制器-J1', 'lat': 23.3250, 'lng': 113.8290,
+    {'id': 10, 'device_id': 'DEV-CTL001', 'name': '控制器-J1', 'type': 'controller', 'location': '增城02区-玉米试验田东侧',
+     'lat': 23.3250, 'lng': 113.8290, 'ip_address': '192.168.1.110', 'firmware_version': 'v2.1.5',
      'status': 'warning', 'last_update': (datetime.now() - timedelta(hours=1)).strftime('%H:%M')},
-    {'id': 11, 'name': '监测站-K2', 'lat': 23.3220, 'lng': 113.8280,
+    {'id': 11, 'device_id': 'DEV-MON002', 'name': '监测站-K2', 'type': 'camera', 'location': '天河B区-荔枝园东侧',
+     'lat': 23.3220, 'lng': 113.8280, 'ip_address': '192.168.1.111', 'firmware_version': 'v2.0.3',
      'status': 'online', 'last_update': (datetime.now() - timedelta(minutes=8)).strftime('%H:%M')},
-    {'id': 12, 'name': '灌溉阀-L3', 'lat': 23.3230, 'lng': 113.8280,
+    {'id': 12, 'device_id': 'DEV-VLV001', 'name': '灌溉阀-L3', 'type': 'irrigation', 'location': '增城04区-小麦田北侧',
+     'lat': 23.3230, 'lng': 113.8280, 'ip_address': '192.168.1.112', 'firmware_version': 'v1.9.8',
      'status': 'online', 'last_update': datetime.now().strftime('%H:%M')},
-    {'id': 13, 'name': '摄像头-M1', 'lat': 23.3265, 'lng': 113.8300,
+    {'id': 13, 'device_id': 'DEV-CAM004', 'name': '摄像头-M1', 'type': 'camera', 'location': '天河A区-大豆基地西侧',
+     'lat': 23.3265, 'lng': 113.8300, 'ip_address': '192.168.1.113', 'firmware_version': 'v2.1.1',
      'status': 'offline', 'last_update': '昨日 20:15'},
-    {'id': 14, 'name': '传感器-N2', 'lat': 23.3210, 'lng': 113.8270,
+    {'id': 14, 'device_id': 'DEV-SEN003', 'name': '传感器-N2', 'type': 'sensor', 'location': '增城05区-蔬菜大棚南侧',
+     'lat': 23.3210, 'lng': 113.8270, 'ip_address': '192.168.1.114', 'firmware_version': 'v1.8.5',
      'status': 'online', 'last_update': (datetime.now() - timedelta(minutes=15)).strftime('%H:%M')},
-    {'id': 15, 'name': '气象仪-O3', 'lat': 23.3250, 'lng': 113.8300,
+    {'id': 15, 'device_id': 'DEV-MET002', 'name': '气象仪-O3', 'type': 'weather', 'location': '增城01区-水稻主田东侧',
+     'lat': 23.3250, 'lng': 113.8300, 'ip_address': '192.168.1.115', 'firmware_version': 'v2.2.1',
      'status': 'online', 'last_update': (datetime.now() - timedelta(minutes=1)).strftime('%H:%M')},
-    {'id': 16, 'name': '控制站-P1', 'lat': 23.3225, 'lng': 113.8290,
+    {'id': 16, 'device_id': 'DEV-CTL002', 'name': '控制站-P1', 'type': 'controller', 'location': '增城03区-番茄大棚中心',
+     'lat': 23.3225, 'lng': 113.8290, 'ip_address': '192.168.1.116', 'firmware_version': 'v2.0.9',
      'status': 'warning', 'last_update': (datetime.now() - timedelta(minutes=30)).strftime('%H:%M')},
 ]
 
@@ -544,28 +560,28 @@ DEMO_FARM_CROPS = [
 
 DEMO_USER_DEVICES = [
     {'id': 1, 'user_id': 2, 'name': '智能摄像头-01', 'type': 'camera',
-     'icon': 'fas fa-video', 'location': '增城01区', 'status': 'online',
+     'icon': 'fas fa-video', 'location': '增城01区', 'lat': 23.3242, 'lng': 113.8291, 'status': 'online',
      'last_online': datetime.now().isoformat()},
     {'id': 2, 'user_id': 2, 'name': '土壤传感器-02', 'type': 'sensor',
-     'icon': 'fas fa-thermometer-half', 'location': '大棚B', 'status': 'online',
+     'icon': 'fas fa-thermometer-half', 'location': '大棚B', 'lat': 23.3250, 'lng': 113.8300, 'status': 'online',
      'last_online': (datetime.now() - timedelta(minutes=30)).isoformat()},
     {'id': 3, 'user_id': 2, 'name': '气象站-03', 'type': 'sensor',
-     'icon': 'fas fa-cloud-sun', 'location': '增城03区', 'status': 'online',
+     'icon': 'fas fa-cloud-sun', 'location': '增城03区', 'lat': 23.3230, 'lng': 113.8305, 'status': 'online',
      'last_online': (datetime.now() - timedelta(hours=1)).isoformat()},
     {'id': 4, 'user_id': 3, 'name': '摄像头-04', 'type': 'camera',
-     'icon': 'fas fa-video', 'location': '增城05区', 'status': 'online',
+     'icon': 'fas fa-video', 'location': '增城05区', 'lat': 23.3255, 'lng': 113.8280, 'status': 'online',
      'last_online': (datetime.now() - timedelta(minutes=15)).isoformat()},
     {'id': 5, 'user_id': 5, 'name': '监测站-05', 'type': 'sensor',
-     'icon': 'fas fa-broadcast-tower', 'location': '天河A区', 'status': 'warning',
+     'icon': 'fas fa-broadcast-tower', 'location': '天河A区', 'lat': 23.3260, 'lng': 113.8310, 'status': 'warning',
      'last_online': (datetime.now() - timedelta(hours=2)).isoformat()},
     {'id': 6, 'user_id': 6, 'name': '控制器-06', 'type': 'controller',
-     'icon': 'fas fa-cog', 'location': '增城02区', 'status': 'online',
+     'icon': 'fas fa-cog', 'location': '增城02区', 'lat': 23.3215, 'lng': 113.8275, 'status': 'online',
      'last_online': datetime.now().isoformat()},
     {'id': 7, 'user_id': 2, 'name': '灌溉阀-07', 'type': 'irrigation',
-     'icon': 'fas fa-tint', 'location': '增城01区', 'status': 'online',
+     'icon': 'fas fa-tint', 'location': '增城01区', 'lat': 23.3225, 'lng': 113.8285, 'status': 'online',
      'last_online': (datetime.now() - timedelta(minutes=5)).isoformat()},
     {'id': 8, 'user_id': 3, 'name': '气象仪-08', 'type': 'sensor',
-     'icon': 'fas fa-wind', 'location': '增城03区', 'status': 'online',
+     'icon': 'fas fa-wind', 'location': '增城03区', 'lat': 23.3235, 'lng': 113.8295, 'status': 'online',
      'last_online': (datetime.now() - timedelta(minutes=20)).isoformat()},
 ]
 
@@ -743,7 +759,7 @@ DEMO_PEST_KNOWLEDGE = [
         'biological_control': '使用枯草芽孢杆菌、井冈霉素等生物农药防治。',
         'agricultural_control': '选用抗病品种，合理施肥，避免过量氮肥，浅水灌溉。',
         'similar_pests': json.dumps(['纹枯病', '白叶枯病']),
-        'image_urls': json.dumps(['https://example.com/rice_blast_1.jpg']),
+        'image_urls': json.dumps(['https://images.unsplash.com/photo-1536617621572-1d5f1e6269a0?w=800&q=80', 'https://images.unsplash.com/photo-1595508064774-5ff825a60098?w=800&q=80']),
         'video_url': None,
         'is_personal': 0, 'owner_email': None, 'is_shared': 0,
         'view_count': 1250, 'created_by': 'admin@farm.com',
@@ -765,7 +781,7 @@ DEMO_PEST_KNOWLEDGE = [
         'biological_control': '释放赤眼蜂防治，保护利用蜘蛛、青蛙等天敌。',
         'agricultural_control': '齐泥割稻、低茬收割，减少越冬虫源；灌水杀蛹。',
         'similar_pests': json.dumps(['三化螟', '大螟']),
-        'image_urls': json.dumps(['https://example.com/stem_borer_1.jpg']),
+        'image_urls': json.dumps(['https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=800&q=80', 'https://images.unsplash.com/photo-1563514227148-568d215cd82b?w=800&q=80']),
         'video_url': None,
         'is_personal': 0, 'owner_email': None, 'is_shared': 0,
         'view_count': 980, 'created_by': 'admin@farm.com',
@@ -787,7 +803,7 @@ DEMO_PEST_KNOWLEDGE = [
         'biological_control': '利用寄生蜂、病原微生物（白僵菌、绿僵菌）防治，保护利用自然天敌。',
         'agricultural_control': '调整播期，避免重茬，种植诱集植物，及时清除杂草。',
         'similar_pests': json.dumps(['玉米螟', '粘虫']),
-        'image_urls': json.dumps(['https://example.com/faw_1.jpg', 'https://example.com/faw_2.jpg']),
+        'image_urls': json.dumps(['https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=800&q=80', 'https://images.unsplash.com/photo-1592419044706-39796d40f98c?w=800&q=80']),
         'video_url': None,
         'is_personal': 0, 'owner_email': None, 'is_shared': 0,
         'view_count': 2150, 'created_by': 'admin@farm.com',
@@ -812,7 +828,7 @@ SUPPLEMENT_KNOWLEDGE = [
         'biological_control': '施用井冈霉素、多抗霉素等抗生素类杀菌剂，利用木霉菌防治。',
         'agricultural_control': '合理密植，科学施肥，浅水灌溉，适时晒田，清除田边杂草。',
         'similar_pests': json.dumps(['稻瘟病', '白叶枯病']),
-        'image_urls': json.dumps(['https://example.com/sheath_blight_1.jpg']),
+        'image_urls': json.dumps(['https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=800&q=80', 'https://images.unsplash.com/photo-1563514227148-568d215cd82b?w=800&q=80']),
         'view_count': 856
     },
     {
@@ -829,7 +845,7 @@ SUPPLEMENT_KNOWLEDGE = [
         'biological_control': '保护蜘蛛、黑肩绿盲蝽等天敌，使用真菌类生物农药（白僵菌、绿僵菌）。',
         'agricultural_control': '合理密植，科学管水，避免偏施氮肥，及时晒田，铲除田边杂草。',
         'similar_pests': json.dumps(['稻纵卷叶螟', '二化螟']),
-        'image_urls': json.dumps(['https://example.com/planthopper_1.jpg', 'https://example.com/planthopper_2.jpg']),
+        'image_urls': json.dumps(['https://images.unsplash.com/photo-1595508064774-5ff825a60098?w=800&q=80', 'https://images.unsplash.com/photo-1536617621572-1d5f1e6269a0?w=800&q=80']),
         'view_count': 1423
     },
     {
@@ -846,7 +862,7 @@ SUPPLEMENT_KNOWLEDGE = [
         'biological_control': '保护利用赤眼蜂、寄生蝇等天敌，使用苏云金杆菌制剂。',
         'agricultural_control': '合理施肥，避免偏施氮肥，适时烤田，降低田间湿度。',
         'similar_pests': json.dumps(['稻飞虱', '二化螟']),
-        'image_urls': json.dumps(['https://example.com/leaf_roller_1.jpg']),
+        'image_urls': json.dumps(['https://images.unsplash.com/photo-1595508064774-5ff825a60098?w=800&q=80', 'https://images.unsplash.com/photo-1536617621572-1d5f1e6269a0?w=800&q=80']),
         'view_count': 678
     },
     {
@@ -863,7 +879,7 @@ SUPPLEMENT_KNOWLEDGE = [
         'biological_control': '保护利用瓢虫、草蛉、蚜茧蜂等天敌，使用真菌制剂。',
         'agricultural_control': '清除田边杂草，合理施肥，适时灌溉，破坏其适生环境。',
         'similar_pests': json.dumps(['小麦红蜘蛛', '麦叶蜂']),
-        'image_urls': json.dumps(['https://example.com/wheat_aphid_1.jpg']),
+        'image_urls': json.dumps(['https://images.unsplash.com/photo-1501430654243-c934cec2e1c0?w=800&q=80', 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=800&q=80']),
         'view_count': 542
     },
     {
@@ -880,7 +896,7 @@ SUPPLEMENT_KNOWLEDGE = [
         'biological_control': '使用枯草芽孢杆菌、木霉菌等生物制剂，在扬花期喷雾。',
         'agricultural_control': '选用抗病品种，合理密植，清沟排渍，降低田间湿度，清除病残体。',
         'similar_pests': json.dumps(['小麦锈病', '小麦白粉病']),
-        'image_urls': json.dumps(['https://example.com/fhb_1.jpg', 'https://example.com/fhb_2.jpg']),
+        'image_urls': json.dumps(['https://images.unsplash.com/photo-1501430654243-c934cec2e1c0?w=800&q=80', 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=800&q=80']),
         'view_count': 1289
     },
     {
@@ -897,7 +913,7 @@ SUPPLEMENT_KNOWLEDGE = [
         'biological_control': '释放赤眼蜂防治，使用白僵菌或苏云金杆菌制剂，保护利用天敌。',
         'agricultural_control': '处理秸秆消灭越冬虫源，种植诱集作物，黑光灯诱杀成虫，及时摘除虫果。',
         'similar_pests': json.dumps(['草地贪夜蛾', '玉米蚜']),
-        'image_urls': json.dumps(['https://example.com/corn_borer_1.jpg']),
+        'image_urls': json.dumps(['https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=800&q=80', 'https://images.unsplash.com/photo-1592419044706-39796d40f98c?w=800&q=80']),
         'view_count': 967
     },
     {
@@ -914,7 +930,7 @@ SUPPLEMENT_KNOWLEDGE = [
         'biological_control': '使用枯草芽孢杆菌、多抗霉素等生物农药防治。',
         'agricultural_control': '选用抗病品种，合理密植，清洁田园，轮作倒茬，适期早播。',
         'similar_pests': json.dumps(['玉米小斑病', '玉米灰斑病']),
-        'image_urls': json.dumps(['https://example.com/nclb_1.jpg']),
+        'image_urls': json.dumps(['https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=800&q=80', 'https://images.unsplash.com/photo-1592419044706-39796d40f98c?w=800&q=80']),
         'view_count': 734
     },
     {
@@ -931,7 +947,7 @@ SUPPLEMENT_KNOWLEDGE = [
         'biological_control': '使用木霉菌、枯草芽孢杆菌等生物农药，注意棚内温湿度管理。',
         'agricultural_control': '加强通风，降低湿度，及时清除病花、病果、病叶，合理密植，地膜覆盖。',
         'similar_pests': json.dumps(['番茄叶霉病', '番茄早疫病']),
-        'image_urls': json.dumps(['https://example.com/gray_mold_1.jpg', 'https://example.com/gray_mold_2.jpg']),
+        'image_urls': json.dumps(['https://images.unsplash.com/photo-1592841200221-a6898f307baa?w=800&q=80', 'https://images.unsplash.com/photo-1561136594-7f68413baa99?w=800&q=80']),
         'view_count': 1567
     },
     {
@@ -948,7 +964,7 @@ SUPPLEMENT_KNOWLEDGE = [
         'biological_control': '使用病毒抑制剂，防治传毒媒介，培育无病苗。',
         'agricultural_control': '选用抗病品种，种子消毒，防虫网隔离，及时清除病株，加强肥水管理。',
         'similar_pests': json.dumps(['番茄褪绿病毒病', '番茄斑萎病毒病']),
-        'image_urls': json.dumps(['https://example.com/tv_1.jpg']),
+        'image_urls': json.dumps(['https://images.unsplash.com/photo-1592841200221-a6898f307baa?w=800&q=80', 'https://images.unsplash.com/photo-1561136594-7f68413baa99?w=800&q=80']),
         'view_count': 1123
     },
     {
@@ -965,7 +981,7 @@ SUPPLEMENT_KNOWLEDGE = [
         'biological_control': '使用枯草芽孢杆菌、木霉菌等生物农药，配合高温闷棚。',
         'agricultural_control': '选用抗病品种，加强通风降湿，膜下灌溉，高温闷棚（30℃以上2小时），合理施肥。',
         'similar_pests': json.dumps(['黄瓜细菌性角斑病', '黄瓜白粉病']),
-        'image_urls': json.dumps(['https://example.com/downy_1.jpg', 'https://example.com/downy_2.jpg']),
+        'image_urls': json.dumps(['https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=800&q=80', 'https://images.unsplash.com/photo-1449300079323-02e209d9d3a6?w=800&q=80']),
         'view_count': 1834
     },
     {
@@ -982,7 +998,7 @@ SUPPLEMENT_KNOWLEDGE = [
         'biological_control': '释放丽蚜小蜂、瓢虫等天敌，使用昆虫病原真菌。',
         'agricultural_control': '清除残株杂草，防虫网隔离，黄板诱杀，加强通风，合理施肥。',
         'similar_pests': json.dumps(['烟粉虱', '蚜虫']),
-        'image_urls': json.dumps(['https://example.com/whitefly_1.jpg']),
+        'image_urls': json.dumps(['https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=800&q=80', 'https://images.unsplash.com/photo-1449300079323-02e209d9d3a6?w=800&q=80']),
         'view_count': 892
     }
 ]
@@ -1257,13 +1273,18 @@ def init_email_db():
         )
     """)
 
-    # 创建设备表
+    # 创建设备表（补全 database.py 中的新字段）
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS devices (
             id INTEGER PRIMARY KEY,
+            device_id TEXT,
             name TEXT NOT NULL,
+            type TEXT DEFAULT 'camera',
+            location TEXT,
             lat REAL NOT NULL,
             lng REAL NOT NULL,
+            ip_address TEXT,
+            firmware_version TEXT,
             status TEXT DEFAULT 'online',
             last_update TEXT
         )
@@ -1340,8 +1361,11 @@ def init_email_db():
             type TEXT,
             icon TEXT DEFAULT 'fas fa-video',
             location TEXT,
+            lat REAL,
+            lng REAL,
             status TEXT DEFAULT 'offline',
             last_online TIMESTAMP,
+            last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         )
@@ -1456,13 +1480,17 @@ def init_email_db():
             VALUES (?, ?, ?, ?)
         """, (binding['user_id'], binding['plot_id'], binding['is_default'], binding['bind_at']))
 
-    # 插入设备数据
+    # 插入设备数据（包含新增字段）
     for device in DEMO_DEVICES:
         cursor.execute("""
-            INSERT INTO devices (id, name, lat, lng, status, last_update)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, (device['id'], device['name'], device['lat'], device['lng'],
-              device['status'], device['last_update']))
+            INSERT INTO devices (id, device_id, name, type, location, lat, lng, ip_address, firmware_version, status, last_update)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            device['id'], device.get('device_id'), device['name'], device.get('type', 'camera'),
+            device.get('location'), device['lat'], device['lng'],
+            device.get('ip_address'), device.get('firmware_version'),
+            device['status'], device['last_update']
+        ))
 
     # 插入农事记录 - 包含user_id, remark, updated_at
     for record in DEMO_FARM_RECORDS:
@@ -1498,12 +1526,12 @@ def init_email_db():
 
     for device in DEMO_USER_DEVICES:
         cursor.execute("""
-            INSERT INTO user_devices (id, user_id, name, type, icon, location, status, last_online, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO user_devices (id, user_id, name, type, icon, location, lat, lng, status, last_online, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             device['id'], device['user_id'], device['name'], device['type'],
-            device['icon'], device['location'], device['status'],
-            device['last_online'],
+            device['icon'], device['location'], device.get('lat'), device.get('lng'),
+            device['status'], device['last_online'],
             datetime.now().isoformat()
         ))
 
@@ -2274,11 +2302,18 @@ def print_summary():
     cursor.execute("SELECT status, COUNT(*) FROM devices GROUP BY status")
     device_status = dict(cursor.fetchall())
 
+    cursor.execute("SELECT type, COUNT(*) FROM devices GROUP BY type")
+    device_types = dict(cursor.fetchall())
+
     print(f"\n📹 监测设备:")
     print(f"   总设备数: {total_devices} 个")
     print(f"   状态分布: ", end="")
     dev_map = {'online': '在线', 'warning': '异常', 'offline': '离线'}
     print(", ".join([f"{dev_map.get(k, k)} {v}个" for k, v in device_status.items()]))
+    print(f"   类型分布: ", end="")
+    type_map = {'camera': '摄像头', 'sensor': '传感器', 'controller': '控制器',
+                'drone': '无人机', 'irrigation': '灌溉设备', 'weather': '气象站'}
+    print(", ".join([f"{type_map.get(k, k)} {v}个" for k, v in device_types.items()]))
 
     cursor.execute("SELECT COUNT(*) FROM farm_records")
     total_records = cursor.fetchone()[0]

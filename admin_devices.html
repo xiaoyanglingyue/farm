@@ -262,6 +262,21 @@
             border-top: 1px solid var(--border-color);
         }
 
+        /* 诊断结果弹窗 */
+        .diag-status { padding: 14px; border-radius: 8px; text-align: center; margin-bottom: 18px; font-weight: 600; font-size: 15px; }
+        .diag-status.healthy { background: #f6ffed; color: #52c41a; }
+        .diag-status.warning { background: #fff7e6; color: #faad14; }
+        .diag-status.critical { background: #fff1f0; color: #ff4d4f; }
+        .diag-section { display: grid; gap: 10px; margin-bottom: 16px; }
+        .diag-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+        .diag-item span:first-child { color: #8c8c8c; }
+        .diag-item .net-ok { color: #52c41a; font-weight: 500; }
+        .diag-item .net-bad { color: #ff4d4f; font-weight: 500; }
+        .diag-issues { background: #fff7e6; border-radius: 8px; padding: 14px; }
+        .diag-issues-title { font-weight: 600; color: #faad14; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+        .diag-issues ul { margin: 0; padding-left: 18px; color: #595959; font-size: 13px; }
+        .diag-issues li { margin-bottom: 6px; }
+
         @media (max-width: 1400px) {
             .device-grid { grid-template-columns: repeat(2, 1fr); }
         }
@@ -269,7 +284,8 @@
             .device-grid { grid-template-columns: 1fr; }
         }
     </style>
-<base target="_blank">
+
+
 </head>
 <body>
     <div id="app" style="display: contents;">
@@ -350,7 +366,7 @@
                         <div class="device-meta-item"><span>位置</span><span>{{ device.location || '-' }}</span></div>
                         <div class="device-meta-item"><span>IP地址</span><span>{{ device.ip_address || '-' }}</span></div>
                         <div class="device-meta-item"><span>固件版本</span><span>{{ device.firmware_version || '-' }}</span></div>
-                        <div class="device-meta-item"><span>最后心跳</span><span>{{ formatTime(device.last_heartbeat) }}</span></div>
+                        <div class="device-meta-item"><span>最后心跳</span><span>{{ formatTime(device.last_update) }}</span></div>
                         <div class="device-meta-item"><span>关联地块</span><span>{{ device.plot_name || '-' }}</span></div>
                     </div>
                     <div class="device-actions">
@@ -361,6 +377,41 @@
                 </div>
             </div>
         </div>
+
+        <!-- 诊断结果弹窗 -->
+        <div v-if="showDiagModal" class="modal-overlay" @click.self="showDiagModal = false">
+                <div class="modal" style="width: 520px;">
+                    <div class="modal-header">
+                        <div class="modal-title"><i class="fas fa-stethoscope" style="color: var(--primary-color); margin-right: 8px;"></i>设备诊断结果</div>
+                        <i class="fas fa-times modal-close" @click="showDiagModal = false"></i>
+                    </div>
+                    <div v-if="diagResult">
+                        <div :class="['diag-status', diagResult.overall]">
+                            <i :class="diagResult.overall === 'healthy' ? 'fas fa-check-circle' : 'fas fa-exclamation-triangle'"></i>
+                            {{ diagResult.message }}
+                        </div>
+                        <div class="diag-section">
+                            <div class="diag-item"><span>设备名称</span><span>{{ diagResult.name }}</span></div>
+                            <div class="diag-item"><span>设备ID</span><span>{{ diagResult.device_id }}</span></div>
+                            <div class="diag-item"><span>网络状态</span><span :class="diagResult.network_status === 'connected' ? 'net-ok' : 'net-bad'">{{ diagResult.network_status === 'connected' ? '已连接' : '未连接' }}</span></div>
+                            <div class="diag-item"><span>网络延迟</span><span>{{ diagResult.latency_ms > 0 ? diagResult.latency_ms + ' ms' : '-' }}</span></div>
+                            <div class="diag-item"><span>丢包率</span><span>{{ diagResult.packet_loss >= 0 ? diagResult.packet_loss + '%' : '-' }}</span></div>
+                            <div class="diag-item"><span>存储使用</span><span>{{ diagResult.storage_usage }}%</span></div>
+                            <div class="diag-item"><span>固件状态</span><span>{{ diagResult.firmware_ok ? '正常' : '未记录' }}</span></div>
+                            <div class="diag-item"><span>最后心跳</span><span>{{ formatTime(diagResult.last_heartbeat) }}</span></div>
+                        </div>
+                        <div v-if="diagResult.issues && diagResult.issues.length" class="diag-issues">
+                            <div class="diag-issues-title"><i class="fas fa-exclamation-triangle"></i> 发现 {{ diagResult.issues.length }} 个问题</div>
+                            <ul>
+                                <li v-for="(issue, idx) in diagResult.issues" :key="idx">{{ issue }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-primary" @click="showDiagModal = false">确定</button>
+                    </div>
+                </div>
+            </div>
 
         <!-- 添加/编辑设备弹窗 -->
         <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
@@ -431,6 +482,9 @@
                     ip_address: '', coordinates: '', firmware_version: ''
                 });
 
+                const showDiagModal = ref(false);
+                const diagResult = ref(null);
+
                 const fetchCurrentUser = async () => {
                     try {
                         const res = await fetch('/api/auth/me', { credentials: 'same-origin' });
@@ -478,33 +532,56 @@
                 const refreshDevices = () => { fetchDevices(); };
                 const openAddModal = () => {
                     editingDevice.value = null;
-                    form.value = { name: '', device_id: '', type: 'camera', location: '', ip_address: '', coordinates: '', firmware_version: '' };
+                    // 自动生成设备ID：DEV-年月日-4位随机数
+                    const date = new Date().toISOString().slice(0,10).replace(/-/g,'');
+                    const rand = Math.floor(1000 + Math.random() * 9000);
+                    form.value = {
+                        name: '',
+                        device_id: `DEV-${date}-${rand}`,
+                        type: 'camera',
+                        location: '',
+                        ip_address: '',
+                        coordinates: '',
+                        firmware_version: ''
+                    };
                     showModal.value = true;
                 };
+
                 const editDevice = (device) => {
                     editingDevice.value = device;
-                    form.value = { ...device };
+                    form.value = {
+                        name: device.name || '',
+                        device_id: device.device_id || device.id,
+                        type: device.type || 'camera',
+                        location: device.location || '',
+                        ip_address: device.ip_address || '',
+                        coordinates: (device.lat && device.lng) ? `${device.lat},${device.lng}` : '',
+                        firmware_version: device.firmware_version || ''
+                    };
                     showModal.value = true;
                 };
                 const closeModal = () => { showModal.value = false; };
+
                 const saveDevice = async () => {
-                    if (!form.value.name || !form.value.device_id) { alert('请填写设备名称和ID'); return; }
+                    if (!form.value.name) { alert('请填写设备名称'); return; }
                     saving.value = true;
                     try {
                         const url = editingDevice.value ? `/api/devices/${editingDevice.value.id}` : '/api/devices';
                         const method = editingDevice.value ? 'PUT' : 'POST';
+                        const payload = { ...form.value };
+                        // 编辑时 device_id 已在输入框禁用，不会变动；直接提交即可
                         const res = await fetch(url, {
                             method,
                             headers: { 'Content-Type': 'application/json' },
                             credentials: 'same-origin',
-                            body: JSON.stringify(form.value)
+                            body: JSON.stringify(payload)
                         });
                         if (res.ok) {
                             closeModal();
                             fetchDevices();
                         } else {
                             const err = await res.json();
-                            alert(err.message || '保存失败');
+                            alert(err.error || '保存失败');
                         }
                     } catch (error) { alert('保存失败: ' + error); }
                     finally { saving.value = false; }
@@ -517,13 +594,23 @@
                         else alert('删除失败');
                     } catch (error) { alert('删除失败: ' + error); }
                 };
+
                 const checkDevice = async (id) => {
                     try {
                         const res = await fetch(`/api/devices/${id}/check`, { credentials: 'same-origin' });
+                        if (!res.ok) throw new Error('诊断接口异常');
                         const data = await res.json();
-                        alert(data.message || '诊断完成');
-                    } catch (error) { alert('诊断失败'); }
+                        if (data.code === 200) {
+                            diagResult.value = data.data;
+                            showDiagModal.value = true;
+                        } else {
+                            alert(data.error || '诊断失败');
+                        }
+                    } catch (error) {
+                        alert('诊断失败: ' + error.message);
+                    }
                 };
+
                 const formatTime = (ts) => {
                     if (!ts) return '-';
                     const d = new Date(ts);
@@ -545,7 +632,7 @@
                     currentUser, pendingComments, loading, devices, filteredDevices,
                     searchQuery, statusFilter, showModal, editingDevice, saving, form,
                     filterDevices, refreshDevices, openAddModal, editDevice, closeModal,
-                    saveDevice, deleteDevice, checkDevice, formatTime
+                    saveDevice, deleteDevice, checkDevice, formatTime,showDiagModal, diagResult,
                 };
             }
         }).mount('#app');

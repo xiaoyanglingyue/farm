@@ -1023,9 +1023,6 @@
         ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
     </style>
-    <base target="_blank">
-<base target="_blank">
-<base target="_blank">
 </head>
 <body>
     <div id="app" style="display: contents;">
@@ -1058,11 +1055,15 @@
                 </a>
 
                 <template v-if="currentUser && currentUser.role === 'admin'">
+                    <a href="/admin/stats" class="nav-item">
+                        <i class="fas fa-chart-bar"></i> 数据统计
+                    </a>
                     <a href="/admin/comments" class="nav-item">
                         <i class="fas fa-comments"></i> 评论审核
                         <span class="badge" v-if="pendingComments > 0">{{ pendingComments }}</span>
                     </a>
                     <a href="/admin/users" class="nav-item"><i class="fas fa-users-cog"></i> 用户管理</a>
+                    <a href="/admin/devices" class="nav-item"><i class="fas fa-server"></i> 设备管理</a>
                     <a href="/admin/federated" class="nav-item">
                         <i class="fas fa-network-wired"></i> 联邦学习
                     </a>
@@ -1937,6 +1938,10 @@
                                     <span class="info-label">影响面积</span>
                                     <span class="info-value">${risk.area || 12.5} 亩</span>
                                 </div>
+                                <div class="info-row">
+                                    <span class="info-label">位置地址</span>
+                                    <span class="info-value">${risk.address || '未记录位置'}</span>
+                                </div>
                             </div>
                             <div class="info-actions">
                                 <button class="info-btn" onclick="window.open('/detect?area=${risk.id}', '_blank')">
@@ -1959,15 +1964,10 @@
                 const loadAllData = async () => {
                     loading.value = true;
                     try {
-                        const [devicesData, risksData, heatData] = await Promise.all([
+                        const [devicesData, heatData] = await Promise.all([
                             window.apiRequest('/api/map/devices'),
-                            window.apiRequest('/api/map/risks'),
                             window.apiRequest('/api/map/heatmap')
                         ]);
-
-                        devices.value = devicesData || [];
-                        risks.value = risksData || [];
-                        updateStats();
                         renderLayers(heatData?.points || []);
 
                         const savedAreas = localStorage.getItem('drawnAreas');
@@ -2336,12 +2336,12 @@
                         const dayData = {
                             date: dateStr,
                             points: (heatData?.points || []).map(p => ({
-                                lat: p.lat,
-                                lng: p.lng,
+                                lat: p.lat, lng: p.lng,
                                 count: p.count || 50,
                                 confidence: p.count || 50,
                                 pest_name: p.pest_name || '未知',
-                                risk_level: (p.count || 50) >= 75 ? 'high' : (p.count || 50) >= 50 ? 'medium' : 'low'
+                                risk_level: p.risk_level || ((p.count || 50) >= 75 ? 'high' : (p.count || 50) >= 50 ? 'medium' : 'low'),
+                                address: p.address || p.notes || ''   // 【新增】
                             })),
                             count: (heatData?.points || []).length,
                             type: 'history'
@@ -2409,9 +2409,10 @@
                                     points: (day.points || []).map(p => ({
                                         lat: p.lat, lng: p.lng,
                                         count: p.count || 50,
-                                        confidence: p.confidence || 50,
+                                        confidence: p.confidence || p.count || 50,
                                         pest_name: p.pest_name || '未知',
-                                        risk_level: (p.count || 50) >= 75 ? 'high' : (p.count || 50) >= 50 ? 'medium' : 'low'
+                                        risk_level: p.risk_level || ((p.count || 50) >= 75 ? 'high' : (p.count || 50) >= 50 ? 'medium' : 'low'),
+                                        address: p.address || p.notes || ''   // 【新增】保留数据库地址
                                     })),
                                     count: day.count || (day.points || []).length,
                                     type: 'history'
@@ -2433,7 +2434,19 @@
                                     type: 'prediction'
                                 };
                             } else {
-                                // 【关键】无数据天也占位，保证时间轴连续
+                                const prevDate = new Date(dateStr);
+                                prevDate.setDate(prevDate.getDate() - 1);
+                                const prevDateStr = prevDate.toISOString().split('T')[0];
+                                const prevDay = historyByDate[prevDateStr] ||
+                                                (timelineData.value.length > 0 ? timelineData.value[timelineData.value.length - 1] : null);
+
+                                if (prevDay && prevDay.points && prevDay.points.length > 0) {
+                                    return {
+                                        ...prevDay,
+                                        date: dateStr,
+                                        type: 'carryover'  // 标记为继承数据，不是真实检测
+                                    };
+                                }
                                 return {
                                     date: dateStr,
                                     points: [],
@@ -2597,6 +2610,7 @@
 
                     // 按病虫害名称分组，计算平均置信度
                     const pestGroups = {};
+                    const pestAddresses = {};
                     allPoints.forEach(p => {
                         const pest = p.pest_name || '未知虫害';
                         if (!pestGroups[pest]) pestGroups[pest] = [];
@@ -2605,6 +2619,7 @@
 
                     let highCount = 0, mediumCount = 0;
                     Object.keys(pestGroups).forEach(pestName => {
+                        const address = pestAddresses[pestName] || '未记录位置';
                         const group = pestGroups[pestName];
                         const avgConf = group.reduce((sum, p) => sum + (p.confidence || p.count || 50), 0) / group.length;
                         if (avgConf >= 75) highCount++;
@@ -2633,8 +2648,49 @@
                         try { map.value.remove(o); } catch(e) {}
                     });
                     riskOverlays.value = [];
+                    if (window._historyRefOverlays) {
+                        window._historyRefOverlays.forEach(o => {
+                            try { map.value.remove(o); } catch(e) {}
+                        });
+                    }
+                    window._historyRefOverlays = [];
 
                     if (!dayData) return;
+
+                    if (dayData.type === 'prediction' && currentTimelineIndex.value > 0) {
+                        const prevDay = timelineData.value[currentTimelineIndex.value - 1];
+                        if (prevDay && prevDay.points && prevDay.points.length > 0) {
+                            window._historyRefOverlays = [];
+
+                            prevDay.points.forEach(p => {
+                                if (p.lat == null || p.lng == null || isNaN(p.lat) || isNaN(p.lng)) return;
+
+                                // 灰色虚线圆圈：昨日实际影响范围
+                                const refCircle = new AMap.Circle({
+                                    center: [p.lng, p.lat],
+                                    radius: 50,
+                                    fillColor: '#888888',
+                                    fillOpacity: 0.08,
+                                    strokeColor: '#888888',
+                                    strokeWeight: 1,
+                                    strokeOpacity: 0.35,
+                                    strokeStyle: 'dashed'
+                                });
+
+                                // 灰色实心小点：昨日检测位置
+                                const refMarker = new AMap.Marker({
+                                    position: [p.lng, p.lat],
+                                    content: '<div style="width:6px;height:6px;background:#888;border-radius:50%;opacity:0.4;"></div>',
+                                    offset: new AMap.Pixel(-3, -3),
+                                    zIndex: 1
+                                });
+
+                                map.value.add(refCircle);
+                                map.value.add(refMarker);
+                                window._historyRefOverlays.push(refCircle, refMarker);
+                            });
+                        }
+                    }
 
                     // 1) 渲染热力图
                     if (showHeatmap.value && dayData.points && dayData.points.length > 0) {
@@ -2678,6 +2734,13 @@
                             });
                         }
 
+                        allPoints = allPoints.filter(p =>
+                            p.lat != null && p.lng != null &&
+                            !isNaN(p.lat) && !isNaN(p.lng)
+                        );
+
+                        if (allPoints.length === 0) return;
+
                         if (allPoints.length > 0) {
                             // 按病虫害名称分组
                             const pestGroups = {};
@@ -2689,9 +2752,15 @@
 
                             Object.keys(pestGroups).forEach(pestName => {
                                 const group = pestGroups[pestName];
-                                const avgLat = group.reduce((sum, p) => sum + p.lat, 0) / group.length;
-                                const avgLng = group.reduce((sum, p) => sum + p.lng, 0) / group.length;
-                                const avgConf = group.reduce((sum, p) => sum + (p.confidence || p.count || 50), 0) / group.length;
+                                const validGroup = group.filter(p => p.lat != null && p.lng != null);
+                                if (validGroup.length === 0) return;
+
+                                const avgLat = validGroup.reduce((sum, p) => sum + p.lat, 0) / validGroup.length;
+                                const avgLng = validGroup.reduce((sum, p) => sum + p.lng, 0) / validGroup.length;
+                                const avgConf = validGroup.reduce((sum, p) => sum + (p.confidence || p.count || 50), 0) / validGroup.length;
+
+                                // 【新增】取地址用于弹窗显示（解决 address 未定义报错）
+                                const address = validGroup[0].address || validGroup[0].notes || '未记录位置';
 
                                 const isPred = group[0].is_prediction || isPredictionDay;
                                 const riskLevel = avgConf >= 75 ? 'high' : avgConf >= 50 ? 'medium' : 'low';
@@ -2732,11 +2801,15 @@
                                 // 点击弹出信息
                                 const infoWindow = new AMap.InfoWindow({
                                     content: `
-                                        <div style="padding: 12px; min-width: 200px;">
+                                        <div style="padding: 12px; min-width: 220px;">
                                             <div style="font-weight: 600; margin-bottom: 8px; color: ${color};">
                                                 <i class="fas fa-exclamation-triangle"></i> ${pestName}
                                             </div>
                                             <div style="font-size: 13px; color: #666; line-height: 1.6;">
+                                                <div style="margin-bottom: 4px;">
+                                                    <i class="fas fa-map-marker-alt" style="color: #1890ff; width: 14px;"></i>
+                                                    <strong>位置：</strong>${address}
+                                                </div>
                                                 <div>风险等级: ${riskLevel === 'high' ? '高风险' : riskLevel === 'medium' ? '中风险' : '低风险'}</div>
                                                 <div>平均置信度: ${Math.round(avgConf)}%</div>
                                                 <div>检测/预测点数: ${group.length}</div>

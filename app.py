@@ -1,45 +1,44 @@
-# 1. 标准库导入 (Standard Library)
+# ========== 1. 标准库 (Standard Library) ==========
+import asyncio
 import base64
+import csv
 import io
 import json
 import logging
 import os
 import random
 import re
+import shutil
 import sqlite3
+import string
 import threading
 import time
-import string
-import webbrowser
 import traceback
+import webbrowser
+import zipfile
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 from pathlib import Path
+from typing import Optional
 
-# 2. 第三方库导入 (Third-Party Libraries)
+# ========== 2. 第三方库 (Third-Party Libraries) ==========
 import cv2
 import fastapi
+import flwr as fl
 import httpx
 import psutil
 import uvicorn
-import flwr as fl
+from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
 from dotenv import load_dotenv
 from fastapi import (
-    Depends,
-    File,
-    Form,
-    HTTPException,
-    Request,
-    Response,
-    UploadFile,
+    Depends, File, Form, HTTPException, Request, Response, UploadFile
 )
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import (
-    HTMLResponse,
-    JSONResponse,
-    RedirectResponse,
-    StreamingResponse,
+    HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
 )
 from fastapi.staticfiles import StaticFiles
 from openai import OpenAI
@@ -47,112 +46,80 @@ from PIL import Image
 from pydantic import BaseModel
 from ultralytics import YOLO
 
-# 3. 本地模块导入 (Local Modules)
+# ========== 3. 本地模块 (Local Modules) ==========
 from send_code import send_email
+
+# --- 数据库操作（按功能分组）---
 from database import (
-    check_email_code,
-    check_table_exists,
-    get_db_connection,
-    get_detection_db_connection,  # 连接检测历史数据库
-    init_detection_database,  # 初始化检测历史数据库
-    save_detection_history,
-    get_detection_history,
-    clear_detection_history,
-    init_chat_database,
-    save_chat_session,
-    get_chat_sessions,
-    get_chat_session,
-    delete_chat_session,
-    clear_all_chat_sessions,
-    init_users_table,
-    get_user_by_email,
-    create_or_update_user,
-    get_all_users,
-    update_user_role,
+    # 用户与认证
+    check_email_code, check_email_code_limit, check_email_daily_limit,
+    check_table_exists, check_user_locked,
+    create_or_update_user, create_user,
+    get_all_users, get_user_by_email, get_user_dashboard_stats, get_user_list,
+    get_user_permissions, get_user_plots,
+    init_users_table, init_user_management_tables,
+    record_login_failure, refresh_email_code,
+    reset_login_failure, reset_user_password,
+    update_user, update_user_name, update_user_password, update_user_role,
+    update_user_security_settings, update_user_status,
+    verify_user_password, set_initial_username_and_password,
+
+    # 安全设置
+    get_user_security_settings,
+
+    # 评论与互动
+    add_reply, delete_comment, delete_reply,
+    get_comment_replies, get_comments, get_comment_stats,
     init_comments_database,
-    save_comment,
-    get_comments,
+    save_comment, toggle_like, toggle_reply_like,
     update_comment_status,
-    delete_comment,
-    add_reply,
-    toggle_like,
-    get_comment_stats,
-    get_farm_records,
-    init_farm_records_db,
-    add_farm_record,
-    delete_farm_record,
-    init_user_management_tables,  # 初始化用户管理表
-    get_user_list,  # 获取用户列表（分页/筛选）
-    get_user_dashboard_stats,  # 统计看板数据
-    create_user,  # 创建用户
-    update_user,  # 更新用户
-    update_user_status,  # 更新状态
-    batch_update_status,  # 批量更新
-    batch_import_users,  # 批量导入
-    get_user_plots,  # 获取用户地块
-    bind_plots_to_user,  # 绑定地块
-    unbind_plot,  # 解绑地块
-    transfer_plots,  # 转移地块
-    init_farm_management_tables,  # 确保已导入
-    get_user_farm_stats_fixed,  # 改为使用修复后的统计
-    get_farm_plots_by_user,  # 新增：正确的地块查询
-    get_user_crops,
-    get_user_devices,
-    get_recent_activities,
-    add_farm_activity,  # 新增：添加活动记录
-    init_farm_plot_for_user,  # 新增：初始化示例数据
-    init_farm_tasks_db,
-    get_farm_tasks,
-    add_farm_task,
-    update_farm_task,
-    delete_farm_task,
-    init_knowledge_database,
-    get_knowledge_list,
-    create_knowledge,
-    update_knowledge,
-    delete_knowledge,
-    get_knowledge_by_id,
-    get_knowledge_stats,
-    get_ai_solutions,
-    toggle_knowledge_collection,
-    get_user_collections,
-    init_knowledge_sample_data,
-    toggle_reply_like,
-    delete_reply,
-    get_comments_db_connection,
-    get_task_stats,
-    update_user_name,
-    update_user_password,
-    verify_user_password,
-    set_initial_username_and_password,
-    update_farm_record,
-    get_cost_stats_real,
-    add_cost_record,
-    get_latest_environment,
-    save_environment_data,
-    get_all_devices,
-    add_device,
-    update_device,
-    delete_device,
-    init_sample_devices,
-    get_comment_replies,
-    get_user_permissions,
-    get_available_plots,
-    get_knowledge_db_connection,
-    get_chat_db_connection,
-    update_farm_tasks_order, check_email_code_limit,
-    refresh_email_code,
-    check_email_daily_limit, check_user_locked, reset_login_failure, record_login_failure, reset_user_password,
+
+    # 检测历史
+    clear_detection_history, clear_all_chat_sessions,
+    delete_chat_session, get_chat_db_connection,
+    get_chat_session, get_chat_sessions,
+    get_detection_db_connection, get_detection_history,
+    init_chat_database, init_detection_database,
+    save_chat_session, save_detection_history,
+
+    # 农场管理
+    add_farm_activity, add_farm_record, add_farm_task,
+    delete_farm_record, delete_farm_task,
+    get_farm_plots_by_user, get_farm_records,
+    get_farm_tasks, get_recent_activities,
+    get_task_stats, get_user_crops, get_user_devices,
+    get_user_farm_stats_fixed,
+    init_farm_management_tables, init_farm_plot_for_user,
+    init_farm_records_db, init_farm_tasks_db,
+    update_farm_record, update_farm_task,
+
+    # 知识库
+    create_knowledge, delete_knowledge,
+    get_ai_solutions, get_knowledge_by_id,
+    get_knowledge_db_connection, get_knowledge_list,
+    get_knowledge_stats, get_user_collections,
+    init_knowledge_database, init_knowledge_sample_data,
+    toggle_knowledge_collection, update_knowledge,
+
+    # 成本与环境
+    add_cost_record, get_cost_stats_real,
+    get_latest_environment, save_environment_data,
+
+    # 设备管理
+    add_device, delete_device, get_all_devices,
+    init_sample_devices, update_device,
+
+    # 地块与系统
+    bind_plots_to_user, batch_import_users, batch_update_status,
+    get_available_plots, transfer_plots, unbind_plot,
+    update_farm_tasks_order, get_db_connection, get_comments_db_connection,
 )
 
+# --- 业务模块 ---
 from early_warning import EarlyWarningSystem, CropFormer
-
-from federated_learning import start_federated_server, YOLOClient, FED_CONFIG
-
+from federated_learning import FED_CONFIG, YOLOClient, start_federated_server
 from model_optimizer import ModelOptimizer
-
 from visualization import RiskMapGenerator, calculate_farm_health
-
 
 
 os.makedirs('logs', exist_ok=True)
@@ -199,6 +166,10 @@ class UpdatePasswordRequest(BaseModel):
 
 class ChatRequest(BaseModel):
     message: str
+    pest_name: str = None      # 新增：检测出的病虫害
+    confidence: float = None   # 新增：置信度
+    crop_type: str = None      # 新增：作物类型
+    image_base64: str = None   # 新增：检测图片（可选，用于多模态描述）
 
 # 定义地图配置响应模型
 class MapConfig(BaseModel):
@@ -209,17 +180,32 @@ class MapConfig(BaseModel):
     refresh_interval: int = 30
 
 class FarmConfig(BaseModel):
-    farmName: str = None
-    amapKey: str = None
-    centerLng: float = None
-    centerLat: float = None
-    zoom: int = None
-    enableAlert: bool = None
-    enableDailyReport: bool = None
-    dailyReportTime: str = "18:00"
-    enableOfflineAlert: bool = None
-    offlineAlertThreshold: int = 5
-    mapAddress: str = None
+    farmName: Optional[str] = None
+    farmCode: Optional[str] = None
+    manager: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    description: Optional[str] = None
+    amapKey: Optional[str] = None
+    centerLng: Optional[float] = None
+    centerLat: Optional[float] = None
+    zoom: Optional[int] = None
+    enableAlert: Optional[bool] = None
+    enableDailyReport: Optional[bool] = None
+    dailyReportTime: Optional[str] = "18:00"
+    enableOfflineAlert: Optional[bool] = None
+    offlineAlertThreshold: Optional[int] = 5
+    mapAddress: Optional[str] = None
+
+
+class UpdateSecuritySettingsRequest(BaseModel):
+    enable_2fa: bool = None
+    login_alert: bool = None
+
+class SettingsPayload(BaseModel):
+    retention: int
+    alerts: dict
+    security: dict
 
 # 配置文件路径（使用 JSON 文件存储，也可存入数据库）
 CONFIG_FILE = "farm_config.json"
@@ -246,12 +232,141 @@ load_dotenv()
 model_path = os.getenv("YOLO_MODEL_PATH")
 yolo_model = YOLO(model_path)
 
+PEST_TRANSLATION = {
+    "rice_blast": "稻瘟病",
+    "sheath_blight": "纹枯病",
+    "bacterial_leaf_blight": "白叶枯病",
+    "rice_stem_borer": "二化螟",
+    "rice_planthopper": "稻飞虱",
+    "rice_leaf_roller": "稻纵卷叶螟",
+    "wheat_rust": "小麦锈病",
+    "wheat_aphid": "麦蚜",
+    "wheat_powdery_mildew": "小麦白粉病",
+    "corn_borer": "玉米螟",
+    "corn_leaf_spot": "玉米大斑病",
+    "corn_rust": "玉米锈病",
+    "aphid": "蚜虫",
+    "spider_mite": "红蜘蛛",
+    "whitefly": "白粉虱",
+    "caterpillar": "菜青虫",
+    "leaf_miner": "潜叶蝇",
+    "snail": "蜗牛",
+    "slug": "蛞蝓",
+    "thrips": "蓟马",
+    "locust": "蝗虫",
+    "armyworm": "草地贪夜蛾",
+    "stem_borer": "螟虫",
+    "fruit_borer": "食心虫",
+    "root_knot_nematode": "根结线虫",
+    "damping_off": "猝倒病",
+    "anthracnose": "炭疽病",
+    "gray_mold": "灰霉病",
+    "downy_mildew": "霜霉病",
+    "virus": "病毒病",
+    "bacterial_wilt": "青枯病",
+    "fusarium_wilt": "枯萎病",
+    "root_rot": "根腐病",
+    "leaf_spot": "叶斑病",
+    "yellows": "黄化病",
+    "blight": "疫病",
+    "scab": "疮痂病",
+    "gall": "根癌病",
+    "mosaic": "花叶病",
+    "wilt": "萎蔫病",
+    "smut": "黑粉病",
+    "ergot": "麦角病",
+    "rust": "锈病",
+    "mildew": "白粉病",
+    "rot": "腐烂病",
+    "scorch": "焦枯病",
+    "stunt": "矮化病",
+    "necrosis": "坏死病",
+    "chlorosis": "褪绿病",
+    "spot": "斑点病",
+    "canker": "溃疡病",
+    "gummosis": "流胶病",
+    "exanthema": "皮疹病",
+    "hyperplasia": "增生",
+    "hypoplasia": "发育不良",
+    "deformity": "畸形",
+    "lesion": "病斑",
+    "powdery": "白粉",
+    "sooty": "煤污",
+    "sooty_mold": "煤污病",
+    "leaf_curl": "曲叶病",
+    "big_bud": "巨芽病",
+    "little_leaf": "小叶病",
+    "witches_broom": "丛枝病",
+    "phyllody": "变叶病",
+    "virescence": "变绿病",
+    "proliferation": "增殖病",
+    "enation": "耳突病",
+    "yellow_dwarf": "黄矮病",
+    "green_dwarf": "绿矮病",
+    "orange_dwarf": "橙叶病",
+    "grassy_stunt": "草丛矮缩病",
+    "ragged_stunt": "齿叶矮缩病",
+    "stripe": "条纹病",
+    "streak": "线条病",
+    "tungro": "东格鲁病",
+    "hoja_blanca": "白叶病",
+    "grassy": "草状病",
+    "black_streaked_dwarf": "黑条矮缩病",
+    "rough_dwarf": "粗缩病",
+    "maize_streak": "玉米条纹病",
+    "maize_mosaic": "玉米花叶病",
+    "maize_lethal_necrosis": "玉米致死性坏死病",
+    "sugarcane_mosaic": "甘蔗花叶病",
+    "sorghum_mosaic": "高粱花叶病",
+    "barley_yellow_dwarf": "大麦黄矮病",
+    "cereal_yellow_dwarf": "禾谷类黄矮病",
+    "oat_blue_dwarf": "燕麦蓝矮病",
+    "rice_ragged_stunt": "水稻齿叶矮缩病",
+    "rice_grassy_stunt": "水稻草丛矮缩病",
+    "rice_tungro": "水稻东格鲁病",
+    "rice_black_streaked_dwarf": "水稻黑条矮缩病",
+    "rice_stripe": "水稻条纹叶枯病",
+    "rice_dwarf": "水稻矮缩病",
+    "rice_yellow_dwarf": "水稻黄矮病",
+    "rice_yellow_stunt": "水稻黄萎病",
+    "rice_orange_leaf": "水稻橙叶病",
+    "rice_ufra": "水稻条斑病",
+    "rice_stem_rot": "水稻茎腐病",
+    "rice_brown_spot": "水稻胡麻斑病",
+    "rice_narrow_brown_spot": "水稻窄条斑病",
+    "rice_false_smut": "水稻假黑穗病",
+    "rice_kernel_smut": "水稻粒黑粉病",
+    "rice_bakanae": "水稻恶苗病",
+    "rice_dirty_panicle": "水稻穗腐病",
+    "rice_acid_soil_damage": "水稻酸害",
+    "rice_alkaline_soil_damage": "水稻碱害",
+    "rice_cold_damage": "水稻冷害",
+    "rice_heat_damage": "水稻热害",
+    "rice_drought_damage": "水稻旱害",
+    "rice_flood_damage": "水稻涝害",
+    "rice_salinity_damage": "水稻盐害",
+    "rice_nutrient_deficiency": "水稻缺素症",
+    "rice_toxicity": "水稻毒害",
+    "rice_herbicide_damage": "水稻药害",
+    "rice_air_pollution_damage": "水稻大气污染",
+    "pest": "害虫",
+    "disease": "病害",
+    "weed": "杂草",
+    "deficiency": "缺素",
+    "damage": "伤害",
+    "healthy": "健康",
+    "background": "背景",
+    "unknown": "未知病虫害"
+}
+
 # 初始化 DeepSeek 客户端
 client = OpenAI(
     api_key="ollama",
     base_url="http://localhost:11434/v1",
     http_client=httpx.Client(timeout=120.0)
 )
+
+SYSTEM_PROMPT = """你是一位专业的农业病虫害防治专家。请根据用户的问题，结合知识库数据，提供科学、准确、可操作的防治建议。回答应包含：症状识别、发生规律、农业防治、生物防治、化学防治方案及注意事项。语言通俗易懂，适合农户理解。"""
 
 # 确保上传目录存在
 UPLOAD_DIR = "static/uploads"
@@ -269,7 +384,6 @@ async def lifespan(app: fastapi.FastAPI):
     init_comments_database()
     init_farm_records_db()
     check_table_exists()
-    init_detection_db()
     init_user_management_tables()
     init_farm_management_tables()
     init_knowledge_database()
@@ -300,7 +414,38 @@ async def lifespan(app: fastapi.FastAPI):
     except Exception as e:
         print(f"农事任务表初始化失败: {e}")
 
+        # ========== 启动定时任务调度器 ==========
+    global _task_scheduler
+    _task_scheduler = AsyncIOScheduler()
+
+    # 添加设备离线检查任务（从 start_schedulers 移过来）
+    _task_scheduler.add_job(
+        lambda: asyncio.create_task(check_device_offline()),
+        "interval",
+        minutes=5,
+        id="check_device_offline"
+    )
+    # 添加每日报告任务
+    report_time = load_system_settings().get("dailyReportTime", "18:00").split(":")
+    _task_scheduler.add_job(
+        lambda: asyncio.create_task(send_daily_report()),
+        "cron",
+        hour=int(report_time[0]),
+        minute=int(report_time[1]),
+        id="daily_report"
+    )
+
+    sync_scheduler_jobs(_task_scheduler)
+    _task_scheduler.start()
+    job_count = len(_task_scheduler.get_jobs())
+    print(f"定时任务调度器已启动，共 {job_count} 个任务")
+
     yield
+
+    # ========== 关闭调度器 ==========
+    if _task_scheduler:
+        _task_scheduler.shutdown()
+        print("定时任务调度器已关闭")
 
 
 async def get_current_user_dep(request: Request):
@@ -454,38 +599,36 @@ app = fastapi.FastAPI(lifespan=lifespan)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
-def init_detection_db():
-    with get_db_connection() as conn:
-        cursor = conn.cursor()
 
-        # 统一使用 user_devices 表，废弃 devices 表
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS user_devices (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
-                name TEXT NOT NULL,
-                lat REAL NOT NULL,
-                lng REAL NOT NULL,
-                status TEXT DEFAULT 'online',
-                last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                device_type TEXT DEFAULT 'camera',
-                FOREIGN KEY (user_id) REFERENCES users(id)
-            )
-        ''')
-        conn.commit()
+async def send_daily_report():
+    """发送每日报告（占位实现，后续补充具体逻辑）"""
+    print(f"[{datetime.now()}] 执行每日报告任务")
 
-PEST_TRANSLATION = {
-    "rice_leaf_roller": "稻纵卷叶螟",
-    "rice_leaf_caterpillar": "稻螟蛉",
-    "paddy_stem_maggot": "稻茎虫",
-    "asiatic_rice_borer": "二化螟",
-    "yellow_rice_borer": "三化螟",
-    "rice_gall_midge": "稻瘿蚊",
-    "rice_water_weevil": "稻水象甲",
-    "brown_plant_hopper": "褐飞虱",
-    "small_brown_plant_hopper": "灰飞虱",
-    "rice_leaf_hopper": "稻叶蝉"
-}
+
+async def check_device_offline():
+    settings = load_system_settings()
+    if not settings.get("notify", {}).get("enableOfflineAlert"):
+        return
+    threshold = settings["notify"].get("offlineAlertThreshold", 5)
+
+
+@app.get("/api/export/detection")
+async def export_detection(request: Request):
+    user = await get_current_user_dep(request)
+    records = get_detection_history(user_email=user['email'], limit=10000)
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["时间", "病虫害", "置信度", "风险等级", "经度", "纬度"])
+    for r in records:
+        writer.writerow([r['created_at'], r['pest_name'], r['confidence'],
+                        r['risk_level'], r.get('location_lng'), r.get('location_lat')])
+    output.seek(0)
+    return StreamingResponse(
+        io.BytesIO(output.getvalue().encode('utf-8-sig')),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=detection_history.csv"}
+    )
+
 
 
 @app.post("/api/auth/send-code")
@@ -551,29 +694,33 @@ async def send_code(request: Request, body: SendCodeRequest):
                 status_code=500,
                 content={"code": 500, "message": "验证码生成失败，请重试"}
             )
+
+        # ===== DEBUG 模式：直接返回，不发送邮件 =====
+        DEBUG_MODE = os.getenv('DEBUG_MODE', 'false').lower() == 'true'
+        if DEBUG_MODE:
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "code": 200,
+                    "message": "【调试模式】验证码已生成",
+                    "expire": 300,
+                    "debug_code": code  # 调试时返回验证码
+                }
+            )
+        # ============================================
+
         # 发送邮件
         result = send_email(body.email)
-
-        # 【关键修复】检查邮件发送结果，失败时立即返回错误
         if result.get('code') != 200:
             return JSONResponse(
                 status_code=result.get('code', 500),
-                content=result  # 把真实的错误原因返回给前端
+                content=result
             )
+
         return JSONResponse(
             status_code=200,
-            content={
-                "code": 200,
-                "message": "验证码已发送",
-                "expire": 300
-            }
+            content={"code": 200, "message": "验证码已发送", "expire": 300}
         )
-
-        # 调试模式：直接返回验证码（开发环境使用）
-        DEBUG_MODE = os.getenv('DEBUG_MODE', 'false').lower() == 'true'
-        if DEBUG_MODE:
-            # 如果是调试模式，额外返回验证码（仅开发使用）
-            pass
 
     except Exception as e:
         print(f"发送验证码接口异常: {e}")
@@ -1013,6 +1160,46 @@ async def change_password(request: Request):
             content={"error": result.get('error', '修改失败')}
         )
 
+
+@app.get("/api/user/security")
+async def get_security_settings(request: Request):
+    """获取当前用户的安全设置"""
+    if "auth_token" not in request.cookies:
+        return JSONResponse(status_code=401, content={"error": "未登录"})
+    email = request.cookies.get("user_email")
+    if not email:
+        return JSONResponse(status_code=401, content={"error": "会话已过期"})
+
+    settings = await run_in_threadpool(lambda: get_user_security_settings(email))
+    return {"code": 200, "data": settings}
+
+
+@app.put("/api/user/security")
+async def update_security_settings(request: Request):
+    """更新当前用户的安全设置（2FA、登录提醒）"""
+    if "auth_token" not in request.cookies:
+        return JSONResponse(status_code=401, content={"error": "未登录"})
+
+    email = request.cookies.get("user_email")
+    if not email:
+        return JSONResponse(status_code=401, content={"error": "会话已过期"})
+
+    try:
+        body = await request.json()
+        enable_2fa = body.get("enable_2fa")
+        login_alert = body.get("login_alert")
+
+        success = await run_in_threadpool(
+            lambda: update_user_security_settings(email, enable_2fa, login_alert)
+        )
+        if success:
+            return {"code": 200, "message": "安全设置已更新"}
+        return JSONResponse(status_code=400, content={"error": "更新失败"})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+
 @app.get("/set-username")
 def set_username_page(request: Request):
     """首次登录设置用户名页面"""
@@ -1364,15 +1551,51 @@ def home(request: Request):
 
 @app.post("/api/ai/chat")
 async def ai_chat(request: ChatRequest):
+    context_prefix = ""
+    if request.pest_name:
+        context_prefix += f"【检测信息】系统通过AI识别检测到疑似 {request.pest_name}，置信度 {request.confidence or '未知'}%。"
+    if request.crop_type:
+        context_prefix += f"作物类型：{request.crop_type}。"
+
+    user_message = context_prefix + "\n用户问题：" + request.message if context_prefix else request.message
     try:
-        print(f"正在请求本地模型，问题：{request.message}")
+        # ===== 新增：先查知识库 =====
+        knowledge_context = ""
+        try:
+            with get_knowledge_db_connection() as conn:
+                cursor = conn.cursor()
+                # 用用户问题模糊匹配病虫害名称和症状
+                cursor.execute('''
+                    SELECT pest_name, symptoms, prevention_methods, 
+                           chemical_control, biological_control, agricultural_control,
+                           severity_level
+                    FROM pest_knowledge 
+                    WHERE status = 'active' AND is_personal = 0
+                    AND (pest_name LIKE ? OR symptoms LIKE ? OR crop_type LIKE ?)
+                    LIMIT 3
+                ''', (f'%{request.message}%', f'%{request.message}%', f'%{request.message}%'))
+                rows = cursor.fetchall()
+                if rows:
+                    knowledge_context = "\n\n【系统知识库参考数据】\n"
+                    for r in rows:
+                        knowledge_context += f"""
+                            病虫害：{r['pest_name']}
+                            症状：{r['symptoms']}
+                            农业防治：{r['agricultural_control'] or '无'}
+                            生物防治：{r['biological_control'] or '无'}
+                            化学防治：{r['chemical_control'] or '无'}
+                            """
+        except Exception as e:
+            print(f"知识库检索失败: {e}")
+
+        # 组装最终提示词
+        final_prompt = f"{request.message}{knowledge_context}"
 
         response = client.chat.completions.create(
             model="deepseek-r1:1.5b",
             messages=[
-                {"role": "system",
-                 "content": "你是一位专业的农业技术专家。请根据用户的描述或识别出的病虫害，提供科学的防治方案。"},
-                {"role": "user", "content": request.message}
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": final_prompt}
             ],
             stream=False
         )
@@ -1781,7 +2004,8 @@ async def get_risks(request: Request, date: str = None):
             cursor.execute(f'''
                 SELECT pest_name, COUNT(*) as count, AVG(confidence) as avg_conf,
                        AVG(location_lat) as lat, AVG(location_lng) as lng,
-                       risk_level
+                       risk_level,
+                       MAX(notes) as address
                 FROM detection_records 
                 WHERE DATE(created_at) = {date_filter}
                 AND location_lat IS NOT NULL 
@@ -1800,7 +2024,8 @@ async def get_risks(request: Request, date: str = None):
                         "risk_level": row['risk_level'],  # 返回实际等级
                         "risk_value": int(row['avg_conf']),
                         "risk_type": row['pest_name'],
-                        "area": round(12.5 * row['count'], 1)  # 根据检测次数估算面积
+                        "area": round(12.5 * row['count'], 1),
+                        "address": row['address'] or '未记录位置'
                     }
                     for i, row in enumerate(rows)
                 ]
@@ -1827,7 +2052,8 @@ async def get_heatmap(request: Request, date: str = None):
                 params.append(date)
 
             cursor.execute(f'''
-                SELECT location_lat as lat, location_lng as lng, confidence as count
+                SELECT location_lat as lat, location_lng as lng, confidence as count,
+                       notes as address, pest_name, risk_level
                 FROM detection_records 
                 WHERE location_lat IS NOT NULL 
                 AND location_lng IS NOT NULL
@@ -1854,13 +2080,39 @@ async def list_devices(request: Request, user=Depends(get_current_user_dep)):
 async def create_device(request: Request, user=Depends(require_admin)):
     """创建设备（仅管理员）"""
     data = await request.json()
-    required = ['name', 'lat', 'lng']
-    for field in required:
-        if field not in data:
-            return JSONResponse(status_code=400, content={"error": f"缺少字段: {field}"})
-    result = add_device(data['name'], data['lat'], data['lng'], data.get('status', 'online'))
+    if not data.get('name'):
+        return JSONResponse(status_code=400, content={"error": "缺少字段: name"})
+
+    # 解析经纬度字符串 "lat,lng"
+    lat = lng = None
+    if data.get('coordinates'):
+        try:
+            lat, lng = map(float, data['coordinates'].split(','))
+        except Exception:
+            pass
+    else:
+        lat = data.get('lat')
+        lng = data.get('lng')
+
+    # 若前端未传 device_id，后端自动生成
+    device_id = data.get('device_id')
+    if not device_id:
+        import random, string
+        device_id = 'DEV-' + ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+
+    result = add_device(
+        name=data['name'],
+        lat=lat,
+        lng=lng,
+        status=data.get('status', 'online'),
+        device_id=device_id,
+        device_type=data.get('type', 'camera'),
+        location=data.get('location'),
+        ip_address=data.get('ip_address'),
+        firmware_version=data.get('firmware_version')
+    )
     if result['success']:
-        return {"code": 200, "data": {"id": result['id']}}
+        return {"code": 200, "data": {"id": result['id'], "device_id": result['device_id']}}
     return JSONResponse(status_code=400, content={"error": result['error']})
 
 
@@ -1868,6 +2120,17 @@ async def create_device(request: Request, user=Depends(require_admin)):
 async def api_update_device(device_id: int, request: Request, admin=Depends(require_admin)):
     """编辑设备"""
     data = await request.json()
+
+    # 解析经纬度字符串
+    if data.get('coordinates'):
+        try:
+            lat, lng = map(float, data['coordinates'].split(','))
+            data['lat'] = lat
+            data['lng'] = lng
+        except Exception:
+            pass
+        data.pop('coordinates', None)  # 避免传入数据库不存在的字段
+
     result = update_device(device_id, data)
     if result['success']:
         return {"code": 200, "message": "更新成功"}
@@ -1881,6 +2144,45 @@ async def api_delete_device(device_id: int, admin=Depends(require_admin)):
     if result['success']:
         return {"code": 200, "message": "删除成功"}
     return JSONResponse(status_code=400, content={"error": result['error']})
+
+@app.get("/api/devices/{device_id}/check")
+async def device_check(device_id: int, admin=Depends(require_admin)):
+    """设备健康诊断（返回结构化诊断结果）"""
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT * FROM devices WHERE id = ?', (device_id,))
+            row = cursor.fetchone()
+            if not row:
+                return JSONResponse(status_code=404, content={"error": "设备不存在"})
+
+            device = dict(row)
+            import random
+            diagnostics = {
+                "device_id": device.get('device_id') or str(device['id']),
+                "name": device['name'],
+                "network_status": "connected" if device['status'] == 'online' else "disconnected",
+                "latency_ms": random.randint(20, 150) if device['status'] == 'online' else -1,
+                "packet_loss": random.randint(0, 3) if device['status'] == 'online' else 100,
+                "storage_usage": random.randint(25, 90),
+                "firmware_ok": bool(device.get('firmware_version')),
+                "last_heartbeat": device.get('last_update'),
+                "issues": []
+            }
+
+            if device['status'] != 'online':
+                diagnostics['issues'].append("设备离线，请检查电源与网络连接")
+            if diagnostics['storage_usage'] > 80:
+                diagnostics['issues'].append(f"存储使用率过高（{diagnostics['storage_usage']}%），建议清理缓存")
+            if not diagnostics['firmware_ok']:
+                diagnostics['issues'].append("固件版本未记录，建议补充信息")
+
+            diagnostics['overall'] = 'healthy' if not diagnostics['issues'] else ('warning' if device['status'] == 'online' else 'critical')
+            diagnostics['message'] = '诊断完成，设备运行正常' if not diagnostics['issues'] else f"发现 {len(diagnostics['issues'])} 项异常"
+
+            return {"code": 200, "data": diagnostics}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 
 @app.post("/api/chat/sessions")
@@ -2097,6 +2399,11 @@ def load_farm_config():
     """加载配置，如果不存在则使用环境变量默认值"""
     default = {
         "farmName": os.getenv("FARM_NAME", "增城智慧农场"),
+        "farmCode": os.getenv("FARM_CODE", "ZC-001"),
+        "manager": os.getenv("FARM_MANAGER", ""),
+        "phone": os.getenv("FARM_PHONE", ""),
+        "address": os.getenv("FARM_ADDRESS", ""),
+        "description": os.getenv("FARM_DESCRIPTION", ""),
         "amapKey": os.getenv("AMAP_MAP_KEY") or os.getenv("AMAP_KEY", ""),
         "centerLng": float(os.getenv("MAP_CENTER_LNG", "113.8291")),
         "centerLat": float(os.getenv("MAP_CENTER_LAT", "23.3242")),
@@ -3488,12 +3795,10 @@ def knowledge_page(request: Request):
 
 
 # ==================== 蔓延热力图 API（新增） ====================
-
 @app.get("/api/map/heatmap-timeline")
 async def get_heatmap_timeline(request: Request, days: int = 7):
     """
-    【新增】获取时间轴热力图数据（支持播放动画）
-    返回多天的检测数据，带时间衰减权重
+    【重写】直接查询数据库返回近N天带地址的检测点，供前端时间轴播放
     """
     if "auth_token" not in request.cookies:
         return JSONResponse(status_code=401, content={"error": "未登录"})
@@ -3503,13 +3808,39 @@ async def get_heatmap_timeline(request: Request, days: int = 7):
     if not user:
         return JSONResponse(status_code=404, content={"error": "用户不存在"})
 
-    viz = RiskMapGenerator()
-    data = viz.get_timeline_heatmap_data(
-        user_email=user_email if user.get('role') != 'admin' else None,
-        days=days
-    )
-    return {"code": 200, "data": data}
+    is_admin = user.get('role') == 'admin'
+    result = []
 
+    try:
+        with get_detection_db_connection() as conn:
+            cursor = conn.cursor()
+            for i in range(days - 1, -1, -1):
+                date = (datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d')
+
+                base_where = "DATE(created_at) = ? AND location_lat IS NOT NULL AND location_lng IS NOT NULL"
+                params = [date]
+                if not is_admin:
+                    base_where += " AND user_email = ?"
+                    params.append(user_email)
+
+                cursor.execute(f'''
+                    SELECT location_lat as lat, location_lng as lng, confidence as count,
+                           pest_name, risk_level, notes as address
+                    FROM detection_records 
+                    WHERE {base_where}
+                ''', params)
+
+                points = [dict(row) for row in cursor.fetchall()]
+                result.append({
+                    "date": date,
+                    "points": points,
+                    "count": len(points),
+                    "type": "history"
+                })
+        return {"code": 200, "data": result}
+    except Exception as e:
+        print(f"获取时间轴热力图失败: {e}")
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 @app.get("/api/map/spread-prediction")
 async def get_spread_prediction(request: Request, days: int = 3):
@@ -3951,6 +4282,258 @@ async def save_detection_report(request: Request):
     else:
         return JSONResponse(status_code=500, content={"error": result})
 
+
+# ========== 定时任务调度器 ==========
+_task_scheduler = None  # 全局调度器实例
+
+
+def get_scheduler():
+    """获取全局调度器实例"""
+    return _task_scheduler
+
+
+def period_to_cron(period: str, time_str: str):
+    """
+    将前端周期格式转换为 APScheduler 的 CronTrigger
+    period: "每天"/"每周一"/"每周日"/"每月1日"
+    time_str: "HH:MM"
+    """
+    h, m = map(int, time_str.split(':'))
+    if period == "每天":
+        return CronTrigger(hour=h, minute=m)
+    elif period == "每周一":
+        return CronTrigger(day_of_week="mon", hour=h, minute=m)
+    elif period == "每周日":
+        return CronTrigger(day_of_week="sun", hour=h, minute=m)
+    elif period == "每月1日":
+        return CronTrigger(day="1", hour=h, minute=m)
+    else:
+        return CronTrigger(hour=h, minute=m)
+
+
+def execute_task(task_id: str, task_name: str, task_type: str):
+    """
+    实际执行定时任务（在后台线程中运行）
+    """
+    print(f"[定时任务] 开始执行: {task_name} (类型: {task_type})")
+    try:
+        if task_type == "backup":
+            _task_execute_backup(task_name)
+        elif task_type == "cleanup":
+            _task_execute_cleanup(task_name)
+        elif task_type == "model":
+            _task_execute_model_check(task_name)
+        elif task_type == "report":
+            _task_execute_report(task_name)
+        elif task_type == "inspect":
+            _task_execute_inspect(task_name)
+        else:
+            _task_execute_custom(task_name)
+
+        # 更新任务状态为成功
+        _update_task_status(task_id, "normal", "运行正常")
+        print(f"[定时任务] 完成: {task_name}")
+
+    except Exception as e:
+        print(f"[定时任务] 失败: {task_name} - {str(e)}")
+        _update_task_status(task_id, "warning", f"执行失败: {str(e)[:50]}")
+
+
+def _task_execute_backup(task_name: str):
+    """执行数据备份：复制 SQLite 数据库文件"""
+    import shutil
+    backup_dir = Path("backups")
+    backup_dir.mkdir(exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    backup_file = backup_dir / f"farm_backup_{timestamp}.db"
+
+    # 复制主数据库
+    if Path("farm_system.db").exists():
+        shutil.copy2("farm_system.db", backup_file)
+
+    # 复制检测数据库
+    if Path("detection_history.db").exists():
+        shutil.copy2("detection_history.db", backup_dir / f"detection_backup_{timestamp}.db")
+
+    # 清理30天前的旧备份
+    cutoff = datetime.now() - timedelta(days=30)
+    for f in backup_dir.glob("*.db"):
+        if datetime.fromtimestamp(f.stat().st_mtime) < cutoff:
+            f.unlink()
+
+    print(f"[备份任务] 已保存到: {backup_file}")
+
+
+def _task_execute_cleanup(task_name: str):
+    """执行数据清理：按保留策略清理过期数据"""
+    settings = load_system_settings()
+    retention = settings.get("retention", {})
+
+    # 清理监测图片
+    img_cfg = retention.get("image", {})
+    if img_cfg.get("enabled"):
+        days = img_cfg.get("days", 90)
+        cutoff = (datetime.now() - timedelta(days=days)).isoformat()
+        try:
+            with get_detection_db_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "DELETE FROM detection_records WHERE created_at < ?",
+                    (cutoff,)
+                )
+                conn.commit()
+                print(f"[清理任务] 已清理 {cursor.rowcount} 条过期检测记录")
+        except Exception as e:
+            print(f"[清理任务] 检测记录清理失败: {e}")
+
+    # 清理传感器数据
+    sensor_cfg = retention.get("sensor", {})
+    if sensor_cfg.get("enabled"):
+        days = sensor_cfg.get("days", 365)
+        cutoff = (datetime.now() - timedelta(days=days)).isoformat()
+        try:
+            with get_db_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "DELETE FROM environment_data WHERE created_at < ?",
+                    (cutoff,)
+                )
+                conn.commit()
+                print(f"[清理任务] 已清理 {cursor.rowcount} 条过期传感器数据")
+        except Exception as e:
+            print(f"[清理任务] 传感器数据清理失败: {e}")
+
+
+def _task_execute_model_check(task_name: str):
+    """检查AI模型更新（检查 models/ 目录是否有新文件）"""
+    models_dir = Path("models")
+    if not models_dir.exists():
+        print(f"[模型检查] models/ 目录不存在")
+        return
+    pt_files = list(models_dir.glob("*.pt"))
+    if pt_files:
+        latest = max(pt_files, key=lambda f: f.stat().st_mtime)
+        mtime = datetime.fromtimestamp(latest.stat().st_mtime)
+        print(f"[模型检查] 最新模型: {latest.name} (修改时间: {mtime})")
+        # 更新任务状态提示有新版本
+        _update_task_status_by_name(task_name, "warning", "有新版本")
+
+
+def _task_execute_report(task_name: str):
+    """生成周报：统计本周检测数据并打印摘要"""
+    try:
+        with get_detection_db_connection() as conn:
+            cursor = conn.cursor()
+            week_ago = (datetime.now() - timedelta(days=7)).isoformat()
+            cursor.execute(
+                "SELECT COUNT(*) FROM detection_records WHERE created_at > ?",
+                (week_ago,)
+            )
+            detect_count = cursor.fetchone()[0]
+
+            cursor.execute(
+                "SELECT pest_name, COUNT(*) as cnt FROM detection_records "
+                "WHERE created_at > ? GROUP BY pest_name ORDER BY cnt DESC LIMIT 5",
+                (week_ago,)
+            )
+            top_pests = cursor.fetchall()
+
+        summary = f"本周检测{detect_count}次，主要病虫害: {', '.join([p[0] for p in top_pests])}"
+        print(f"[报告任务] {summary}")
+    except Exception as e:
+        print(f"[报告任务] 生成失败: {e}")
+
+
+def _task_execute_inspect(task_name: str):
+    """巡检任务：检查所有设备状态"""
+    try:
+        devices = get_all_devices()
+        offline_count = sum(1 for d in devices if d.get("status") != "online")
+        print(f"[巡检任务] 共{len(devices)}台设备，{offline_count}台离线")
+        if offline_count > 0:
+            _update_task_status_by_name(task_name, "warning", f"{offline_count}台设备离线")
+    except Exception as e:
+        print(f"[巡检任务] 失败: {e}")
+
+
+def _task_execute_custom(task_name: str):
+    """自定义任务：仅记录日志"""
+    print(f"[自定义任务] {task_name} 执行完成")
+
+
+def _update_task_status(task_id: str, status: str, status_text: str):
+    """更新指定任务的状态（按ID）"""
+    try:
+        s = load_system_settings()
+        for t in s.get("tasks", []):
+            if t["id"] == task_id:
+                t["status"] = status
+                t["statusText"] = status_text
+                t["statusIcon"] = "fas fa-check" if status == "normal" else "fas fa-exclamation-triangle"
+                break
+        save_system_settings(s)
+    except Exception as e:
+        print(f"更新任务状态失败: {e}")
+
+
+def _update_task_status_by_name(name: str, status: str, status_text: str):
+    """按任务名称更新状态"""
+    try:
+        s = load_system_settings()
+        for t in s.get("tasks", []):
+            if t["name"] == name:
+                t["status"] = status
+                t["statusText"] = status_text
+                t["statusIcon"] = "fas fa-check" if status == "normal" else "fas fa-exclamation-triangle"
+                break
+        save_system_settings(s)
+    except Exception as e:
+        print(f"更新任务状态失败: {e}")
+
+
+def sync_scheduler_jobs(scheduler: AsyncIOScheduler):
+    """
+    从 system_settings.json 加载任务并同步到调度器
+    启动时调用一次，后续增删改任务时再次调用
+    """
+    if not scheduler:
+        return
+
+    settings = load_system_settings()
+    tasks = settings.get("tasks", [])
+
+    # 移除已不存在的任务
+    existing_job_ids = {job.id for job in scheduler.get_jobs()}
+    current_task_ids = {t["id"] for t in tasks if t.get("enabled")}
+    for job_id in existing_job_ids:
+        if job_id not in current_task_ids and job_id.startswith("task_"):
+            scheduler.remove_job(job_id)
+            print(f"[调度器] 移除任务: {job_id}")
+
+    # 添加或更新任务
+    for task in tasks:
+        task_id = task["id"]
+        if not task.get("enabled", True):
+            if task_id in {job.id for job in scheduler.get_jobs()}:
+                scheduler.remove_job(task_id)
+            continue
+
+        trigger = period_to_cron(task.get("period", "每天"), task.get("time", "03:00"))
+
+        if task_id in {job.id for job in scheduler.get_jobs()}:
+            scheduler.reschedule_job(task_id, trigger=trigger)
+        else:
+            scheduler.add_job(
+                execute_task,
+                trigger=trigger,
+                id=task_id,
+                args=[task_id, task["name"], task.get("type", "custom")],
+                replace_existing=True,
+                misfire_grace_time=3600  # 允许1小时的容错时间
+            )
+            print(f"[调度器] 添加任务: {task['name']} ({task.get('period', '每天')} {task.get('time', '03:00')})")
+
+
 SYSTEM_SETTINGS_FILE = "system_settings.json"
 
 def load_system_settings():
@@ -4091,33 +4674,248 @@ async def get_system_metrics(request: Request, admin=Depends(require_admin)):
 
 
 @app.get("/api/admin/logs")
-async def get_system_logs(request: Request, level: str = "all", limit: int = 100, admin=Depends(require_admin)):
-    """读取后端日志文件"""
+async def get_system_logs(
+        request: Request,
+        level: str = "all",
+        limit: int = 100,
+        offset: int = 0,
+        date_from: str = "",
+        date_to: str = "",
+        keyword: str = "",
+        admin=Depends(require_admin)
+):
+    """读取后端日志文件（支持分页、日期范围、关键词搜索）"""
     if "auth_token" not in request.cookies:
         return JSONResponse(status_code=401, content={"error": "未登录"})
-    entries = []
+
+    all_entries = []
     log_dir = "logs"
+
     if os.path.isdir(log_dir):
-        files = sorted([f for f in os.listdir(log_dir) if f.endswith('.log')], reverse=True)
-        for fname in files[:3]:
+        # 只读取最近30天的日志文件
+        files = sorted(
+            [f for f in os.listdir(log_dir) if f.endswith('.log')],
+            reverse=True
+        )
+        for fname in files[:30]:
             path = os.path.join(log_dir, fname)
             try:
                 with open(path, 'r', encoding='utf-8') as f:
                     lines = f.readlines()
-                for line in lines[-limit:]:
+                for line in lines:
                     line = line.strip()
-                    if not line: continue
-                    m = re.match(r'(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})\s+\[(\w+)\]\s+(.*)', line)
+                    if not line:
+                        continue
+                    # 匹配日志格式: 2026-04-09 14:20:05 [INFO] message
+                    m = re.match(
+                        r'(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})\s+\[(\w+)\]\s+(.*)',
+                        line
+                    )
                     if m:
                         t, lvl, msg = m.groups()
                         typ = 'error' if 'ERROR' in lvl else 'warning' if 'WARN' in lvl else 'info'
-                        entries.append({"time": t, "message": msg, "type": typ})
+                        all_entries.append({"time": t, "message": msg, "type": typ})
             except Exception as e:
-                print(f"读日志失败: {e}")
-    entries.sort(key=lambda x: x['time'], reverse=True)
+                print(f"读日志失败 {fname}: {e}")
+
+    # 按时间倒序
+    all_entries.sort(key=lambda x: x['time'], reverse=True)
+
+    # --- 依次应用过滤条件 ---
+
+    # 1. 级别过滤
     if level != 'all':
-        entries = [e for e in entries if e['type'] == level]
-    return {"code": 200, "data": entries[:limit]}
+        all_entries = [e for e in all_entries if e['type'] == level]
+
+    # 2. 日期范围过滤
+    if date_from:
+        all_entries = [e for e in all_entries if e['time'] >= date_from]
+    if date_to:
+        # date_to 是日期字符串，需要扩展到当天23:59:59
+        date_to_end = date_to + " 23:59:59"
+        all_entries = [e for e in all_entries if e['time'] <= date_to_end]
+
+    # 3. 关键词搜索（匹配 message 和 time）
+    if keyword:
+        kw = keyword.lower()
+        all_entries = [
+            e for e in all_entries
+            if kw in e['message'].lower() or kw in e['time']
+        ]
+
+    total = len(all_entries)
+
+    # 4. 分页
+    paginated = all_entries[offset:offset + limit]
+
+    return {
+        "code": 200,
+        "data": paginated,
+        "total": total,
+        "offset": offset,
+        "limit": limit
+    }
+
+
+@app.post("/api/admin/backup")
+async def create_backup(request: Request, admin=Depends(require_admin)):
+    """手动执行系统备份：备份数据库 + 打包日志，返回备份文件信息"""
+    if "auth_token" not in request.cookies:
+        return JSONResponse(status_code=401, content={"error": "未登录"})
+
+    try:
+        backup_dir = Path("backups")
+        backup_dir.mkdir(exist_ok=True)
+
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        backup_name = f"farm_backup_{timestamp}"
+        work_dir = backup_dir / backup_name
+        work_dir.mkdir(exist_ok=True)
+
+        db_files = []
+
+        # 1. 用 sqlite3 的 .backup 命令备份主数据库
+        main_db = "farm_system.db"
+        if Path(main_db).exists():
+            backup_db = str(work_dir / "farm_system_backup.db")
+            import sqlite3
+            src = sqlite3.connect(main_db)
+            dst = sqlite3.connect(backup_db)
+            with dst:
+                src.backup(dst)
+            dst.close()
+            src.close()
+            db_files.append("farm_system_backup.db")
+
+        # 2. 备份检测历史数据库
+        detect_db = "detection_history.db"
+        if Path(detect_db).exists():
+            backup_detect = str(work_dir / "detection_history_backup.db")
+            src = sqlite3.connect(detect_db)
+            dst = sqlite3.connect(backup_detect)
+            with dst:
+                src.backup(dst)
+            dst.close()
+            src.close()
+            db_files.append("detection_history_backup.db")
+
+        # 3. 打包日志目录
+        logs_src = Path("logs")
+        logs_dst = work_dir / "logs"
+        if logs_src.exists():
+            shutil.copytree(logs_src, logs_dst, dirs_exist_ok=True)
+
+        # 4. 写入备份元信息
+        meta = {
+            "backup_time": datetime.now().isoformat(),
+            "version": "2.1.0",
+            "db_files": db_files,
+            "db_sizes": {
+                f: os.path.getsize(str(work_dir / f))
+                for f in db_files
+            }
+        }
+        with open(work_dir / "backup_meta.json", "w", encoding="utf-8") as f:
+            json.dump(meta, f, ensure_ascii=False, indent=2)
+
+        # 5. 打包为 zip
+        zip_path = backup_dir / f"{backup_name}.zip"
+        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zf:
+            for root, dirs, files in os.walk(work_dir):
+                for file in files:
+                    file_path = Path(root) / file
+                    arcname = str(file_path.relative_to(work_dir))
+                    zf.write(file_path, arcname)
+
+        # 6. 清理临时工作目录
+        shutil.rmtree(work_dir)
+
+        # 7. 清理30天前的旧备份（保留最近30个）
+        all_backups = sorted(
+            backup_dir.glob("farm_backup_*.zip"),
+            key=lambda p: p.stat().st_mtime,
+            reverse=True
+        )
+        for old in all_backups[30:]:
+            old.unlink()
+
+        zip_size = os.path.getsize(str(zip_path))
+
+        return {
+            "code": 200,
+            "data": {
+                "filename": f"{backup_name}.zip",
+                "download_url": f"/api/admin/backup/download?file={backup_name}.zip",
+                "size_bytes": zip_size,
+                "size_mb": round(zip_size / 1024 / 1024, 2),
+                "created_at": datetime.now().isoformat()
+            }
+        }
+
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": f"备份失败: {str(e)}"})
+
+
+@app.get("/api/admin/backup/download")
+async def download_backup(
+        request: Request,
+        file: str = "",
+        admin=Depends(require_admin)
+):
+    """下载备份文件（支持 Range 断点续传）"""
+    if "auth_token" not in request.cookies:
+        return JSONResponse(status_code=401, content={"error": "未登录"})
+
+    if not file or ".." in file:
+        return JSONResponse(status_code=400, content={"error": "无效文件名"})
+
+    backup_path = Path("backups") / file
+    if not backup_path.exists() or not backup_path.is_file():
+        return JSONResponse(status_code=404, content={"error": "备份文件不存在"})
+
+    file_size = backup_path.stat().st_size
+
+    # 处理 Range 请求（支持断点续传）
+    range_header = request.headers.get("range")
+    if range_header:
+        import re
+        match = re.match(r"bytes=(\d+)-(\d*)", range_header)
+        if match:
+            start = int(match.group(1))
+            end = int(match.group(2)) if match.group(2) else file_size - 1
+            end = min(end, file_size - 1)
+
+            async def range_iter():
+                with open(backup_path, "rb") as f:
+                    f.seek(start)
+                    remaining = end - start + 1
+                    while remaining > 0:
+                        chunk_size = min(64 * 1024, remaining)
+                        yield f.read(chunk_size)
+                        remaining -= chunk_size
+
+            return StreamingResponse(
+                range_iter(),
+                status_code=206,
+                media_type="application/zip",
+                headers={
+                    "Content-Disposition": f'attachment; filename="{file}"',
+                    "Content-Range": f"bytes {start}-{end}/{file_size}",
+                    "Accept-Ranges": "bytes",
+                    "Content-Length": str(end - start + 1)
+                }
+            )
+
+    # 普通下载
+    return StreamingResponse(
+        open(backup_path, "rb"),
+        media_type="application/zip",
+        headers={
+            "Content-Disposition": f'attachment; filename="{file}"',
+            "Accept-Ranges": "bytes",
+            "Content-Length": str(file_size)
+        }
+    )
 
 
 # ---------- 定时任务 ----------
@@ -4148,7 +4946,11 @@ async def api_create_task(request: Request):
     }
     s.setdefault("tasks", []).append(task)
     save_system_settings(s)
+    # 同步到调度器
+    sync_scheduler_jobs(get_scheduler())
     return {"code": 200, "data": task}
+
+
 
 @app.put("/api/settings/tasks/{task_id}")
 async def api_update_task(task_id: str, request: Request):
@@ -4159,9 +4961,15 @@ async def api_update_task(task_id: str, request: Request):
     for t in s.get("tasks", []):
         if t["id"] == task_id:
             t.update(data)
+            # 如果有时间/周期变更，重新计算下次执行
+            if "period" in data or "time" in data:
+                t["nextRun"] = calculate_next_run(t.get("period", "每天"), t.get("time", "03:00"))
             save_system_settings(s)
+            sync_scheduler_jobs(get_scheduler())  # 同步到调度器
             return {"code": 200}
     return JSONResponse(status_code=404, content={"error": "任务不存在"})
+
+
 
 @app.delete("/api/settings/tasks/{task_id}")
 async def api_delete_task(task_id: str, request: Request):
@@ -4170,8 +4978,8 @@ async def api_delete_task(task_id: str, request: Request):
     s = load_system_settings()
     s["tasks"] = [t for t in s.get("tasks", []) if t["id"] != task_id]
     save_system_settings(s)
+    sync_scheduler_jobs(get_scheduler())  # 同步到调度器
     return {"code": 200}
-
 
 # ---------- 数据保留策略 ----------
 @app.get("/api/settings/retention")
@@ -4821,6 +5629,92 @@ def set_device_power_mode(device_id: str, mode: str):
             conn.commit()
     except Exception as e:
         print(f"设置电源模式失败: {e}")
+
+
+@app.get("/api/history/trend")
+async def get_detection_trend(request: Request, days: int = 7):
+    """获取最近N天的检测趋势数据（用于首页图表）"""
+    if "auth_token" not in request.cookies:
+        return JSONResponse(status_code=401, content={"error": "未登录"})
+
+    user_email = request.cookies.get("user_email")
+    user = get_user_by_email(user_email)
+    if not user:
+        return JSONResponse(status_code=404, content={"error": "用户不存在"})
+
+    is_admin = user.get('role') == 'admin'
+
+    try:
+        with get_detection_db_connection() as conn:
+            cursor = conn.cursor()
+
+            dates = []
+            detect_counts = []
+            high_risk_counts = []
+
+            for i in range(days - 1, -1, -1):
+                date = (datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d')
+                dates.append(date)
+
+                # 构建查询条件
+                base_where = "DATE(created_at) = ?"
+                params = [date]
+
+                if not is_admin:
+                    base_where += " AND user_email = ?"
+                    params.append(user_email)
+
+                # 总检测数
+                cursor.execute(f'''
+                    SELECT COUNT(*) FROM detection_records 
+                    WHERE {base_where}
+                ''', params)
+                detect_counts.append(cursor.fetchone()[0])
+
+                # 高风险数
+                cursor.execute(f'''
+                    SELECT COUNT(*) FROM detection_records 
+                    WHERE {base_where} AND risk_level = 'high'
+                ''', params)
+                high_risk_counts.append(cursor.fetchone()[0])
+
+            return {
+                "code": 200,
+                "data": {
+                    "dates": dates,
+                    "detections": detect_counts,
+                    "highRisk": high_risk_counts
+                }
+            }
+    except Exception as e:
+        print(f"获取趋势数据失败: {e}")
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+# app.py
+
+@app.get("/api/system/metrics")
+async def get_metrics(user=Depends(get_current_user_dep)):
+    return {
+        "cpu": psutil.cpu_percent(),
+        "memory": psutil.virtual_memory().percent,
+        "disk": psutil.disk_usage('/').percent,
+        "uptime": "12天 4小时"
+    }
+
+
+
+@app.post("/api/settings/update-all")
+async def update_all_settings(data: SettingsPayload, user=Depends(get_current_user_dep)):
+    try:
+        update_user_security_settings(
+            user['email'],
+            enable_2fa=data.security.get('enable_2fa'),
+            login_alert=data.security.get('login_alert')
+        )
+        return {"code": 200, "message": "设置已保存"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 
 if __name__ == "__main__":

@@ -1040,11 +1040,8 @@
             color: #ff4d4f;
         }
     </style>
-<base target="_blank">
-<base target="_blank">
-<base target="_blank">
-<base target="_blank">
-<base target="_blank">
+
+
 </head>
 <body>
     <div id="app" style="display: contents;">
@@ -1223,9 +1220,9 @@
                         </div>
                         <div class="action-bar">
                             <button class="btn btn-default" @click="resetSettings">重置</button>
-                            <button class="btn btn-primary" :disabled="saving" @click="saveSettings">
-                                <i class="fas fa-save"></i>
-                                {{ saving ? '保存中...' : '保存设置' }}
+                            <button class="btn-primary" @click="saveAllSettings" :disabled="saveLoading">
+                                <i class="fas" :class="saveLoading ? 'fa-spinner fa-spin' : 'fa-save'"></i>
+                                {{ saveLoading ? '正在保存...' : '保存所有设置' }}
                             </button>
                         </div>
                     </div>
@@ -1310,18 +1307,36 @@
                             </div>
                             <div class="switch-wrapper">
                                 <div class="switch-info">
-                                    <h4>高风险告警推送</h4>
-                                    <p>当检测到高风险病虫害时，自动发送邮件和短信通知</p>
+                                    <h4>双重身份验证 (2FA)</h4>
+                                    <p>登录时需要输入邮箱验证码</p>
                                 </div>
                                 <label class="switch">
-                                    <input type="checkbox" v-model="settings.enableAlert">
+                                    <input
+                                        type="checkbox"
+                                        v-model="settings.enable2FA"
+                                        @change="saveSecuritySettings"
+                                    >
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="switch-wrapper">
+                                <div class="switch-info">
+                                    <h4>登录提醒</h4>
+                                    <p>新设备登录时发送邮件提醒</p>
+                                </div>
+                                <label class="switch">
+                                    <input
+                                        type="checkbox"
+                                        v-model="settings.loginAlert"
+                                        @change="saveSecuritySettings"
+                                    >
                                     <span class="slider"></span>
                                 </label>
                             </div>
                             <div class="switch-wrapper">
                                 <div class="switch-info">
                                     <h4>每日数据报告</h4>
-                                    <p>每天自动发送当日监测摘要报告</p>
+                                    <p>每天自动生成农场运行摘要并推送</p>
                                 </div>
                                 <label class="switch">
                                     <input type="checkbox" v-model="settings.enableDailyReport">
@@ -1349,6 +1364,7 @@
                                     <p>当边缘设备离线超过{{ settings.offlineAlertThreshold || 5 }}分钟时发送提醒</p>
                                 </div>
                                 <label class="switch">
+                                    <!-- 原来绑错了 settings.enable2FA，改成下面这样 -->
                                     <input type="checkbox" v-model="settings.enableOfflineAlert">
                                     <span class="slider"></span>
                                 </label>
@@ -1621,8 +1637,7 @@
                     </div>
 
                     <!-- 数据管理 -->
-                    <div v-if="activeTab === 'data'">
-                        <div class="card">
+                    <div v-if="activeTab === 'data'" class="card">
                             <div class="section-title">
                                 <i class="fas fa-database"></i>
                                 数据管理
@@ -1650,9 +1665,14 @@
                                     <p>包含所有上传的图片和识别结果</p>
                                     <div class="data-meta">共占用存储空间：{{ dataStats.detectionSize }}MB</div>
                                 </div>
-                                <button class="btn btn-danger" @click="clearData('detection')">
-                                    <i class="fas fa-trash-alt"></i> 清空
-                                </button>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <button class="btn btn-secondary" @click="exportData('detection')">
+                                        <i class="fas fa-download"></i> 导出
+                                    </button>
+                                    <button class="btn btn-danger" @click="clearData('detection')">
+                                        <i class="fas fa-trash-alt"></i> 清空
+                                    </button>
+                                </div>
                             </div>
 
                             <div class="data-card">
@@ -1674,19 +1694,32 @@
                                     <i class="fas fa-external-link-alt"></i> 前往管理
                                 </a>
                             </div>
-                        </div>
 
-                        <!-- 数据备份：后端支持自动备份后恢复此区域 -->
-                        <div class="card" style="margin-top: 20px;">
-                            <div class="section-title">
-                                <i class="fas fa-shield-alt"></i>
-                                数据备份
-                            </div>
-                            <div style="padding: 12px; background: #f6ffed; border-radius: 8px; color: #389e0d; font-size: 13px;">
-                                <i class="fas fa-info-circle"></i> 系统每日凌晨自动执行数据备份
-                            </div>
-                        </div>
-                    </div>
+                            <div class="data-card">
+                                <div class="data-info">
+                                    <h4><i class="fas fa-hdd" style="color: #52c41a;"></i> 系统备份</h4>
+                                    <p>备份数据库、检测记录和日志文件</p>
+                                    <div v-if="lastBackupInfo" class="data-meta" style="color: #52c41a;">
+                                        <i class="fas fa-check-circle"></i>
+                                        上次备份: {{ lastBackupInfo.size_mb }}MB @ {{ lastBackupInfo.created_at?.slice(0, 16).replace('T', ' ') }}
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <a
+                                        v-if="lastBackupInfo"
+                                        :href="lastBackupInfo.download_url"
+                                        class="btn btn-default"
+                                        style="text-decoration: none;"
+                                        download
+                                    >
+                                        <i class="fas fa-download"></i> 下载
+                                    </a>
+                                    <button class="btn btn-primary" @click="manualBackup" :disabled="backupLoading">
+                                        <i class="fas" :class="backupLoading ? 'fa-spinner fa-spin' : 'fa-hdd'"></i>
+                                        {{ backupLoading ? '备份中...' : '立即备份' }}
+                                    </button>
+                                </div>
+
 
                     <!-- 系统日志 -->
                     <div v-if="activeTab === 'logs'" class="card">
@@ -1694,32 +1727,82 @@
                             <i class="fas fa-file-alt"></i>
                             系统日志
                             <div style="margin-left: auto; font-size: 13px; color: #8c8c8c; font-weight: normal;">
-                                <i class="fas fa-info-circle"></i> 显示最近100条日志
+                                <i class="fas fa-info-circle"></i> 共 {{ logTotal }} 条记录
                             </div>
                         </div>
 
-                        <div style="margin-bottom: 16px; display: flex; gap: 12px;">
-                            <select v-model="logLevel" style="padding: 6px 12px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                        <!-- 搜索和筛选栏 -->
+                        <div style="margin-bottom: 16px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+                            <select v-model="logLevel" @change="loadLogs(0)" style="padding: 6px 12px; border: 1px solid #d9d9d9; border-radius: 4px; min-width: 100px;">
                                 <option value="all">全部级别</option>
                                 <option value="info">信息</option>
                                 <option value="warning">警告</option>
                                 <option value="error">错误</option>
                             </select>
-                            <button class="btn btn-default" @click="refreshLogs">
-                                <i class="fas fa-sync-alt"></i> 刷新
+                            <input
+                                v-model="logKeyword"
+                                @keyup.enter="loadLogs(0)"
+                                placeholder="搜索关键词..."
+                                style="padding: 6px 12px; border: 1px solid #d9d9d9; border-radius: 4px; min-width: 160px; flex: 1;"
+                            >
+                            <input
+                                type="date"
+                                v-model="logDateFrom"
+                                @change="loadLogs(0)"
+                                style="padding: 6px 10px; border: 1px solid #d9d9d9; border-radius: 4px;"
+                                title="起始日期"
+                            >
+                            <span style="color: #999;">至</span>
+                            <input
+                                type="date"
+                                v-model="logDateTo"
+                                @change="loadLogs(0)"
+                                style="padding: 6px 10px; border: 1px solid #d9d9d9; border-radius: 4px;"
+                                title="结束日期"
+                            >
+                            <button class="btn btn-default" @click="loadLogs(0)">
+                                <i class="fas fa-search"></i> 查询
+                            </button>
+                            <button class="btn btn-default" @click="resetLogFilters">
+                                <i class="fas fa-undo"></i> 重置
                             </button>
                             <button class="btn btn-default" @click="exportLogs">
-                                <i class="fas fa-download"></i> 导出日志
+                                <i class="fas fa-download"></i> 导出
                             </button>
                         </div>
 
-                        <div class="log-container">
-                            <div v-for="(log, index) in filteredLogs" :key="index" :class="['log-entry', log.type]">
+                        <!-- 日志列表 -->
+                        <div class="log-container" style="min-height: 200px;">
+                            <div v-for="(log, index) in logs" :key="offset + index" :class="['log-entry', log.type]">
                                 <span class="log-time">[{{ log.time }}]</span>
                                 <span>{{ log.message }}</span>
                             </div>
-                            <div v-if="filteredLogs.length === 0" style="text-align: center; color: #6e6e6e; padding: 40px;">
-                                暂无日志记录
+                            <div v-if="logs.length === 0" style="text-align: center; color: #6e6e6e; padding: 40px;">
+                                <i class="fas fa-inbox" style="font-size: 32px; display: block; margin-bottom: 12px; color: #d9d9d9;"></i>
+                                暂无匹配日志
+                            </div>
+                        </div>
+
+                        <!-- 分页控件 -->
+                        <div v-if="logTotal > 0" style="margin-top: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                            <div style="font-size: 13px; color: #8c8c8c;">
+                                显示第 {{ offset + 1 }} - {{ Math.min(offset + logLimit, logTotal) }} 条，共 {{ logTotal }} 条
+                            </div>
+                            <div style="display: flex; gap: 6px; align-items: center;">
+                                <select v-model="logLimit" @change="loadLogs(0)" style="padding: 4px 8px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 13px;">
+                                    <option :value="20">20条/页</option>
+                                    <option :value="50">50条/页</option>
+                                    <option :value="100">100条/页</option>
+                                </select>
+                                <button class="btn btn-default" @click="loadLogs(offset - logLimit)" :disabled="offset <= 0" style="padding: 4px 10px; font-size: 13px;">
+                                    <i class="fas fa-chevron-left"></i> 上一页
+                                </button>
+                                <span style="font-size: 13px; color: #595959; padding: 0 8px;">
+                                    第 {{ Math.floor(offset / logLimit) + 1 }} / {{ Math.ceil(logTotal / logLimit) }} 页
+                                </span>
+                                <button class="btn btn-default" @click="loadLogs(offset + logLimit)" :disabled="offset + logLimit >= logTotal" style="padding: 4px 10px; font-size: 13px;">
+                                    下一页 <i class="fas fa-chevron-right"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -1824,7 +1907,7 @@
                                 <p>新设备登录时发送邮件提醒</p>
                             </div>
                             <label class="switch">
-                                <input type="checkbox" v-model="settings.loginAlert">
+                                <input type="checkbox" v-model="settings.loginAlert" @change="saveSecuritySettings">
                                 <span class="slider"></span>
                             </label>
                         </div>
@@ -1906,8 +1989,8 @@
                     <label class="form-label">执行时间</label>
                     <div class="time-picker" style="background: #f6ffed; border: 1px solid #b7eb8f;">
                         <select v-model="addTaskForm.hour" style="padding: 8px 12px; font-size: 16px; border: 1px solid #d9d9d9; border-radius: 6px;">
-                            <option v-for="h in 24" :key="h" :value="String(h).padStart(2, '0')">
-                                {{ String(h).padStart(2, '0') }} 时
+                            <option v-for="h in 24" :key="h-1" :value="String(h-1).padStart(2, '0')">
+                                {{ String(h-1).padStart(2, '0') }} 时
                             </option>
                         </select>
                         <span style="font-size: 20px; color: #999; font-weight: 300;">:</span>
@@ -2009,7 +2092,14 @@
                 const changingPassword = ref(false);
                 const geocoding = ref(false);
                 const geocodeResult = ref(null);
+                // 日志分页和搜索
                 const logLevel = ref('all');
+                const logKeyword = ref('');
+                const logDateFrom = ref('');
+                const logDateTo = ref('');
+                const logLimit = ref(20);
+                const offset = ref(0);
+                const logTotal = ref(0);
                 const currentUser = ref(null);
                 const pendingComments = ref(0);
 
@@ -2283,13 +2373,14 @@
                 };
 
                 // 设置数据
-                const settings = reactive({
-                    farmName: '增城智慧农场',
-                    farmCode: 'ZC-2024-001',
-                    manager: '张管理员',
-                    phone: '13800138000',
-                    address: '广东省广州市增城区XX街道',
-                    description: '专注于水稻种植的智慧农业示范农场',
+                // 默认值仅作为 fallback，onMounted 中会优先从后端 /api/config/full 读取
+                const DEFAULT_SETTINGS = {
+                    farmName: '',
+                    farmCode: '',
+                    manager: '',
+                    phone: '',
+                    address: '',
+                    description: '',
                     enableAlert: true,
                     enableDailyReport: false,
                     dailyReportTime: '18:00',
@@ -2297,21 +2388,17 @@
                     streetAddress: '',
                     offlineAlertThreshold: 5,
                     amapKey: '',
-                    centerLng: '113.8291',
-                    centerLat: '23.3242',
+                    centerLng: '',
+                    centerLat: '',
                     zoom: '14',
                     refreshInterval: 30,
-                    modelPath: './models/best.pt',
-                    confThreshold: 0.25,
-                    iouThreshold: 0.45,
-                    aiApiUrl: 'http://localhost:11434/v1',
-                    aiModel: 'deepseek-r1:1.5b',
-                    useGpu: true,
                     autoBackup: true,
-                    email: 'admin@farm.com',
-                    enable2FA: true,
+                    email: '',
+                    enable2FA: false,
                     loginAlert: true
-                });
+                };
+
+                const settings = reactive({ ...DEFAULT_SETTINGS });
 
                 // 密码表单
                 const passwordForm = reactive({
@@ -2438,24 +2525,7 @@
                 });
 
                 // 日志数据
-                const logs = ref([
-                    { time: '2026-04-09 16:10:23', message: '系统启动成功，加载模型完成', type: 'success' },
-                    { time: '2026-04-09 16:08:15', message: '用户 admin 登录系统', type: 'info' },
-                    { time: '2026-04-09 15:45:32', message: '检测到高风险：叶斑病 (置信度: 87%)', type: 'warning' },
-                    { time: '2026-04-09 15:30:00', message: '自动备份完成，耗时 2.3s', type: 'success' },
-                    { time: '2026-04-09 14:22:18', message: '设备 树莓派_增城_02 重新上线', type: 'info' },
-                    { time: '2026-04-09 14:20:05', message: '设备 树莓派_增城_02 连接超时', type: 'warning' },
-                    { time: '2026-04-09 12:10:45', message: '新增农事记录：施肥作业', type: 'info' },
-                    { time: '2026-04-09 10:05:22', message: 'AI 模型加载失败：CUDA out of memory', type: 'error' },
-                    { time: '2026-04-09 10:05:20', message: '尝试启用 GPU 加速', type: 'info' },
-                    { time: '2026-04-09 09:00:00', message: '每日数据报告已发送', type: 'success' }
-                ]);
-
-                // 过滤后的日志
-                const filteredLogs = computed(() => {
-                    if (logLevel.value === 'all') return logs.value;
-                    return logs.value.filter(log => log.type === logLevel.value);
-                });
+                const logs = ref([]);
 
                 // Toast提示方法
                 const showToast = (msg) => {
@@ -2684,9 +2754,19 @@
                     }
                 };
 
+
                 // 保存所有设置
                 const saveAllSettings = async () => {
-                    await saveSettings();
+                    saving.value = true;
+                    try {
+                        await saveSettings();
+                        await saveSecuritySettings();
+                        showToast('所有设置已同步成功');
+                    } catch (error) {
+                        showToast('部分设置保存失败，请检查网络');
+                    } finally {
+                        saving.value = false;
+                    }
                 };
 
                 // 页面加载时从后端读取配置和用户信息
@@ -2694,27 +2774,55 @@
                     await fetchCurrentUser();
                     await loadUserProfileForDisplay();
 
-                    // 1. 加载农场配置（你已有的代码保留）
+                    // 2. 加载安全设置（enable_2fa, login_alert）
                     try {
                         const res = await fetch('/api/config/full');
                         if (res.ok) {
                             const config = await res.json();
+
+                            // 后端有值就用后端的，没有就用默认值（?? 运算符：仅对 null/undefined 生效）
                             Object.assign(settings, {
-                                farmName: config.farmName || settings.farmName,
-                                centerLng: String(config.centerLng || settings.centerLng),
-                                centerLat: String(config.centerLat || settings.centerLat),
-                                zoom: String(config.zoom || settings.zoom),
-                                enableAlert: config.enableAlert ?? settings.enableAlert,
-                                enableDailyReport: config.enableDailyReport ?? settings.enableDailyReport,
-                                dailyReportTime: config.dailyReportTime || '18:00',
-                                enableOfflineAlert: config.enableOfflineAlert ?? settings.enableOfflineAlert,
-                                offlineAlertThreshold: config.offlineAlertThreshold || 5,
-                                mapAddress: config.mapAddress || settings.mapAddress || '',
+                                farmName: config.farmName ?? DEFAULT_SETTINGS.farmName,
+                                farmCode: config.farmCode ?? DEFAULT_SETTINGS.farmCode,
+                                manager: config.manager ?? DEFAULT_SETTINGS.manager,
+                                phone: config.phone ?? DEFAULT_SETTINGS.phone,
+                                address: config.address ?? DEFAULT_SETTINGS.address,
+                                description: config.description ?? DEFAULT_SETTINGS.description,
+                                centerLng: String(config.centerLng ?? DEFAULT_SETTINGS.centerLng),
+                                centerLat: String(config.centerLat ?? DEFAULT_SETTINGS.centerLat),
+                                zoom: String(config.zoom ?? DEFAULT_SETTINGS.zoom),
+                                enableAlert: config.enableAlert ?? DEFAULT_SETTINGS.enableAlert,
+                                enableDailyReport: config.enableDailyReport ?? DEFAULT_SETTINGS.enableDailyReport,
+                                dailyReportTime: config.dailyReportTime ?? DEFAULT_SETTINGS.dailyReportTime,
+                                enableOfflineAlert: config.enableOfflineAlert ?? DEFAULT_SETTINGS.enableOfflineAlert,
+                                offlineAlertThreshold: config.offlineAlertThreshold ?? DEFAULT_SETTINGS.offlineAlertThreshold,
+                                refreshInterval: config.refreshInterval ?? DEFAULT_SETTINGS.refreshInterval,
+                                autoBackup: config.autoBackup ?? DEFAULT_SETTINGS.autoBackup,
+                                mapAddress: config.mapAddress || '',
                                 amapServiceKey: config.amapServiceKey || window.APP_CONFIG?.AMAP_SERVICE_KEY || ''
                             });
+
+                            // 如果后端没有配置过基础信息，给出一个友好的提示默认值
+                            if (!config.farmName) settings.farmName = '我的农场';
+                            if (!config.centerLng) settings.centerLng = '113.8291';
+                            if (!config.centerLat) settings.centerLat = '23.3242';
+                        } else {
+                            // 后端接口失败，使用带提示的默认值
+                            settings.farmName = '我的农场';
+                            settings.centerLng = '113.8291';
+                            settings.centerLat = '23.3242';
                         }
                     } catch (e) {
                         console.error('加载配置失败:', e);
+                        // 接口异常时使用默认值
+                        settings.farmName = '我的农场';
+                        settings.centerLng = '113.8291';
+                        settings.centerLat = '23.3242';
+                    }
+
+                    // 1.5 邮箱使用当前登录用户的真实邮箱（不再写死）
+                    if (currentUser.value && currentUser.value.email) {
+                        settings.email = currentUser.value.email;
                     }
 
                     // 2. 加载数据统计（真实接口）
@@ -2763,13 +2871,7 @@
                     } catch (e) { console.error('加载性能指标失败:', e); }
 
                     // 7. 加载系统日志
-                    try {
-                        const res = await fetch(`/api/admin/logs?level=${logLevel.value}&limit=100`);
-                        if (res.ok) {
-                            const result = await res.json();
-                            if (result.code === 200 && result.data) logs.value = result.data;
-                        }
-                    } catch (e) { console.error('加载日志失败:', e); }
+                    loadLogs(0);
                 });
 
                 // 保存设置
@@ -2782,6 +2884,10 @@
                             body: JSON.stringify({
                                 mapAddress: settings.mapAddress,
                                 farmName: settings.farmName,
+                                manager: settings.manager,
+                                phone: settings.phone,
+                                address: settings.address,
+                                description: settings.description,
                                 // amapKey 由后端.env文件管理，不在前端保存
                                 centerLng: parseFloat(settings.centerLng),
                                 centerLat: parseFloat(settings.centerLat),
@@ -2807,6 +2913,12 @@
                     }
                 };
 
+                const state = reactive({
+                    backupLoading: false,
+                    lastBackupInfo: null,
+                    saveLoading: false,
+                });
+
                 // 重置设置
                 const resetSettings = () => {
                     if (confirm('确定要重置当前页面的设置吗？')) {
@@ -2815,8 +2927,14 @@
                 };
 
                 // 测试地图
-                const testMap = () => {
-                    showToast('正在测试地图连接...Key有效，服务正常');
+                const testMap = async () => {
+                    try {
+                        const key = window.APP_CONFIG?.AMAP_SERVICE_KEY;
+                        if (!key) { showToast('未配置地图Key'); return; }
+                        const res = await fetch(`https://restapi.amap.com/v3/geocode/geo?address=北京市&key=${key}`);
+                        const data = await res.json();
+                        showToast(data.status === '1' ? '地图连接正常' : 'Key无效或服务异常');
+                    } catch (e) { showToast('测试失败: ' + e.message); }
                 };
 
                 // 测试模型
@@ -2893,18 +3011,74 @@
                 };
 
                 // 导出数据
-                const exportData = (type) => {
-                    showToast(`正在导出${type}数据...`);
+                const exportData = async (type) => {
+                    const names = { detection: '检测历史', chat: '对话记录', farm: '农事记录' };
+                    showToast(`正在导出${names[type]}...`);
+                    try {
+                        const res = await fetch(`/api/export/${type}`);
+                        if (!res.ok) throw new Error('导出失败');
+                        const blob = await res.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `${type}_export_${new Date().toISOString().slice(0,10)}.csv`;
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        showToast('导出成功');
+                    } catch (e) {
+                        showToast('导出失败: ' + e.message);
+                    }
                 };
 
-                // 手动备份
-                const manualBackup = () => {
-                    showToast('正在备份数据...备份完成：backup_20260409.zip');
+
+                const manualBackup = async () => {
+                    if (state.backupLoading) return;
+
+                    if (!confirm('确定立即执行系统备份？\n备份内容包括：数据库、检测记录、日志文件。')) {
+                        return;
+                    }
+
+                    state.backupLoading = true;
+                    showToast('正在备份，请稍候...');
+
+                    try {
+                        const res = await fetch('/api/admin/backup', {
+                            method: 'POST',
+                            credentials: 'same-origin'
+                        });
+                        const result = await res.json();
+
+                        if (result.code === 200) {
+                            state.lastBackupInfo = result.data;
+                            showToast(`备份完成！文件大小: ${result.data.size_mb}MB`);
+                        } else {
+                            showToast('备份失败: ' + (result.error || '未知错误'));
+                        }
+                    } catch (e) {
+                        showToast('备份失败: ' + e.message);
+                    } finally {
+                        state.backupLoading = false;
+                    }
                 };
 
                 // 导出日志
                 const exportLogs = () => {
-                    showToast('正在导出日志文件...');
+                    if (logs.value.length === 0) {
+                        showToast('当前没有可导出的日志');
+                        return;
+                    }
+                    let csv = '\uFEFF时间,类型,内容\n';
+                    logs.value.forEach(log => {
+                        csv += `${log.time},${log.type},"${log.message.replace(/"/g, '""')}"\n`;
+                    });
+                    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `系统日志_${new Date().toISOString().slice(0,10)}.csv`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    showToast('日志导出成功');
                 };
 
                 // 退出登录
@@ -3011,18 +3185,68 @@
                     }
                 };
 
-                // 刷新日志
-                const refreshLogs = async () => {
+                // 保存安全设置（2FA、登录提醒）
+                const saveSecuritySettings = async () => {
                     try {
-                        const res = await fetch(`/api/admin/logs?level=${logLevel.value}&limit=100`);
-                        if (res.ok) {
-                            const result = await res.json();
-                            if (result.code === 200) logs.value = result.data;
-                            showToast('日志已刷新');
+                        const res = await fetch('/api/user/security', {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                enable_2fa: settings.enable2FA,
+                                login_alert: settings.loginAlert
+                            })
+                        });
+                        const result = await res.json();
+                        if (result.code === 200) {
+                            showToast('安全设置已保存');
+                        } else {
+                            showToast('保存失败: ' + (result.error || '未知错误'));
                         }
                     } catch (e) {
-                        showToast('刷新失败: ' + e.message);
+                        showToast('保存失败: ' + e.message);
                     }
+                };
+
+                // 加载日志（带分页、搜索、日期范围）
+                const loadLogs = async (newOffset = 0) => {
+                    offset.value = Math.max(0, newOffset);
+                    try {
+                        const params = new URLSearchParams({
+                            level: logLevel.value,
+                            limit: String(logLimit.value),
+                            offset: String(offset.value)
+                        });
+                        if (logDateFrom.value) params.append('date_from', logDateFrom.value);
+                        if (logDateTo.value) params.append('date_to', logDateTo.value);
+                        if (logKeyword.value) params.append('keyword', logKeyword.value);
+
+                        const res = await fetch(`/api/admin/logs?${params.toString()}`);
+                        if (res.ok) {
+                            const result = await res.json();
+                            if (result.code === 200) {
+                                logs.value = result.data;
+                                logTotal.value = result.total || 0;
+                            }
+                        }
+                    } catch (e) {
+                        console.error('加载日志失败:', e);
+                    }
+                };
+
+                // 重置日志筛选条件
+                const resetLogFilters = () => {
+                    logLevel.value = 'all';
+                    logKeyword.value = '';
+                    logDateFrom.value = '';
+                    logDateTo.value = '';
+                    logLimit.value = 20;
+                    loadLogs(0);
+                };
+
+                // 刷新日志（保持当前页）
+                const refreshLogs = () => {
+                    loadLogs(offset.value);
+                    showToast('日志已刷新');
                 };
 
                 // 系统诊断刷新指标
@@ -3041,11 +3265,12 @@
                     }
                 };
 
-                return {
+                                return {
                     activeTab,
                     basicMenuItems,
-                    advancedMenuItems,
-                    manageMenuItems,
+                    adminOnlyMenuItems,
+                    adminManageMenuItems,
+                    farmerManageMenuItems,
                     addTaskModal,
                     addTaskForm,
                     taskTypeConfig,
@@ -3069,7 +3294,6 @@
                     dataStats,
                     logs,
                     logLevel,
-                    filteredLogs,
                     saveSettings,
                     resetSettings,
                     testMap,
@@ -3097,6 +3321,7 @@
                     systemDiagnostics,
                     geocodeAddress,
                     saveAllSettings,
+                    refreshAllData,
                     // 任务管理新方法
                     openAddTaskModal,
                     closeAddTaskModal,
@@ -3108,6 +3333,19 @@
                     loadUserProfileForDisplay,
                     saveRetention,
                     saveAlerts,
+                    saveSecuritySettings,
+                    logKeyword,
+                    logDateFrom,
+                    logDateTo,
+                    logLimit,
+                    offset,
+                    logTotal,
+                    loadLogs,
+                    resetLogFilters,
+                    backupLoading: computed(() => state.backupLoading),
+                    lastBackupInfo: computed(() => state.lastBackupInfo),
+                    state,
+                    saveLoading: computed(() => state.saveLoading),
                 };
             }
         }).mount('#app');

@@ -195,8 +195,8 @@ class RiskMapGenerator:
                 if lat and lng:
                     valid_records.append(record)
 
-            if len(valid_records) < 2:
-                print(f"[预测] 带位置记录不足: {len(valid_records)}条，需要至少2条")
+            if len(valid_records) < 15:
+                print(f"[预测] 带位置记录不足: {len(valid_records)}条，需要至少15条才生成可靠预测")
                 return []
 
             # 按病虫害类型分组
@@ -206,8 +206,8 @@ class RiskMapGenerator:
                 if pest not in pest_groups:
                     pest_groups[pest] = []
                 pest_groups[pest].append({
-                    'lat': lat,
-                    'lng': lng,
+                    'lat': record.get('location_lat'),
+                    'lng': record.get('location_lng'),
                     'confidence': record.get('confidence', 50),
                     'date': record.get('created_at', '')[:10] if isinstance(record.get('created_at'), str) else ''
                 })

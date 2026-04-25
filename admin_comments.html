@@ -1126,8 +1126,7 @@
             }
         }
     </style>
-<base target="_blank">
-<base target="_blank">
+
 </head>
 <body>
     <div id="app">
@@ -1770,7 +1769,7 @@
                 const fetchCurrentUser = async () => {
                     try {
                         const response = await fetch('/api/auth/me', {
-                            credentials: 'same-origin'  
+                            credentials: 'same-origin'
                         });
                         if (response.ok) {
                             currentUser.value = await response.json();
@@ -1850,7 +1849,7 @@
                     pollTimer = setInterval(async () => {
                         try {
                             const response = await fetch('/api/comments?limit=1&status=pending', {
-                                credentials: 'same-origin'  
+                                credentials: 'same-origin'
                             });
                             if (response.ok) {
                                 const data = await response.json();
@@ -1990,7 +1989,7 @@
                         const response = await fetch(`/api/comments/${id}/status`, {
                             method: 'PUT',
                             headers: { 'Content-Type': 'application/json' },
-                            credentials: 'same-origin',  
+                            credentials: 'same-origin',
                             body: JSON.stringify({ status })
                         });
                         if (response.ok) {
@@ -2176,7 +2175,7 @@
                         'pending': '暂无待审核评论',
                         'approved': '暂无已通过评论',
                         'rejected': '暂无已拒绝评论',
-                        'pinned': '暂无置顶评论'  
+                        'pinned': '暂无置顶评论'
                     };
                     return titles[currentFilter.value] || '暂无数据';
                 };

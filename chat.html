@@ -2,7 +2,6 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <base target="_blank">
     <title>AI 农技专家 - 智能问诊</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -966,7 +965,7 @@
             .scroll-to-bottom-btn { right: 20px; bottom: 140px; }
         }
     </style>
-<base target="_blank">
+
 </head>
 <body>
     <div id="app" style="display: contents;">
@@ -1149,6 +1148,14 @@
                                 <i class="fas fa-stop-circle"></i> 已停止
                             </div>
 
+                            <div style="display:flex;align-items:center;gap:8px;padding:8px 15px;border-bottom:1px solid #f0f0f0;background:#f6ffed;">
+                                <i class="fas fa-user-md" style="color:#2d5a27;"></i>
+                                <span style="font-size:13px;color:#2d5a27;font-weight:600;">植保专家方案</span>
+                                <span style="font-size:11px;color:#8c8c8c;margin-left:auto;">
+                                    <i class="fas fa-shield-alt"></i> 含用药安全提示
+                                </span>
+                            </div>
+
                             <!-- 思考过程 -->
                             <div v-if="msg.thinking" class="thinking-section">
                                 <div class="thinking-header" @click="msg.showThinking = !msg.showThinking">
@@ -1172,6 +1179,9 @@
                                 <button class="action-btn" @click="toggleFavorite(i)" title="收藏防治方案">
                                     <i :class="msg.isFavorite ? 'fas fa-star favorited' : 'far fa-star'"></i>
                                     {{ msg.isFavorite ? '已收藏' : '收藏' }}
+                                </button>
+                                <button class="action-btn" @click="exportPlan(msg)" title="导出为文本">
+                                    <i class="fas fa-download"></i> 导出方案
                                 </button>
                             </div>
 
@@ -1350,6 +1360,24 @@
                     });
                 };
 
+                const enhanceProfessionalDisplay = (htmlContent) => {
+                    if (!htmlContent) return htmlContent;
+                    let enhanced = htmlContent;
+                    enhanced = enhanced.replace(
+                        /(安全间隔期|轮换用药|稀释倍数|亩用量|注意事项|风险警示)/g,
+                        '<span style="color:#ff4d4f;font-weight:bold;">$1</span>'
+                    );
+                    enhanced = enhanced.replace(
+                        /([^\n]+?(?:菊酯|菌素|霉素|威|脒|磷|胺|醇|酮|脲|嗪)\d*%?)/g,
+                        '<span style="color:#2d5a27;font-weight:600;">$1</span>'
+                    );
+                    enhanced = enhanced.replace(
+                        /(\d+\s*(?:毫升|克|亩|天|次|倍|℃|%))/g,
+                        '<code style="background:#f6ffed;padding:1px 4px;border-radius:3px;color:#2d5a27;">$1</code>'
+                    );
+                    return enhanced;
+                };
+
                 // 修复2：优化打字机效果，正确处理中断状态
                 const typeWriter = async (msgIndex, text, speed = 20) => {
                     return new Promise(async (resolve) => {
@@ -1409,7 +1437,7 @@
 
                         // 完成生成 - 修复：保存 rawContent
                         msg.isTyping = false;
-                        msg.displayContent = marked.parse(text);
+                        msg.displayContent = enhanceProfessionalDisplay(marked.parse(text));
                         msg.content = text; // 保存完整内容
                         msg.rawContent = text; // 保存原始内容供后续恢复使用
                         msg.interruptedContent = null;
@@ -1429,6 +1457,21 @@
                     } catch (err) {
                         showToast('复制失败，请手动复制', 'fas fa-exclamation-circle');
                     }
+                };
+
+                const exportPlan = (msg) => {
+                    const text = msg.content ? msg.content.replace(/<[^>]*>/g, '') : '';
+                    const blob = new Blob(
+                        [`=== 病虫害防治方案 ===\n生成时间：${new Date().toLocaleString()}\n\n${text}`],
+                        { type: 'text/plain' }
+                    );
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `防治方案_${new Date().getTime()}.txt`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    showToast('方案已导出', 'fas fa-download');
                 };
 
                 const toggleFavorite = async (msgIndex) => {
@@ -2048,7 +2091,8 @@
                     copyMessage,
                     toggleFavorite,
                     openImagePreview,
-                    closeImagePreview
+                    closeImagePreview,
+                    exportPlan,
                 };
             }
         }).mount('#app');
